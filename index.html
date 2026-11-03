@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f2234"><meta name="description" content="TMS Carretas: viagens, custos, XML e acerto financeiro.">
+<title>TMS Carretas | Gestão de Viagens</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script defer src="config.js"></script><script defer src="app.js"></script>
+</head><body>
+<div id="toast" role="status" aria-live="polite"></div>
+<section id="login" class="login-screen"><div class="login-card"><div class="logo">🚛 TMS <span>CARRETAS</span></div><h1>Controle de viagens e custos</h1><p>Entre com sua conta autorizada para acessar o sistema.</p>
+<form id="login-form"><label>E-mail<input name="email" type="email" required autocomplete="username"></label><label>Senha<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Entrar</button></form>
+<div id="login-error" class="error"></div><small>O gestor cria os usuários no Supabase Authentication e autoriza o perfil no banco.</small></div></section>
+<div id="app" hidden><header class="topbar"><div class="brand">🚛 <span>TMS CARRETAS</span><small>Gestão operacional</small></div><div class="header-actions"><span id="user-badge"></span><button class="ghost" id="refresh-btn">↻ Atualizar</button><button class="ghost" id="logout-btn">Sair</button></div></header>
+<div class="shell"><nav class="sidebar" aria-label="Menu principal"><button data-page="dashboard" class="active">▦ Painel</button><button data-page="viagens">🛣 Viagens</button><button data-page="despesas">🧾 Gastos / Motorista</button><button data-page="fechamento">▤ Fechamento / DRE</button><button data-page="cadastros" class="manager-only">🚚 Cadastros</button><button data-page="usuarios" class="manager-only">👤 Usuários</button><div class="nav-foot">V1.0 • Supabase / PWA<br>Sem consulta online à SEFAZ</div></nav>
+<main id="main" class="content" tabindex="-1"></main></div>
+<nav class="mobile-nav"><button data-page="dashboard">Painel</button><button data-page="viagens">Viagens</button><button data-page="despesas">Gastos</button><button data-page="fechamento">DRE</button><button class="manager-only" data-page="cadastros">Cadastros</button></nav>
+</div>
+<dialog id="modal"><form method="dialog" id="modal-close-form"><button class="close" aria-label="Fechar">✕</button></form><div id="modal-content"></div></dialog>
+</body></html>
