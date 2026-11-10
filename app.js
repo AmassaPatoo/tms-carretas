@@ -33,9 +33,9 @@ async function upload(file,trip){if(!file||!file.size)return null;if(file.size>1
  const {error:e}=await state.db.storage.from('tms-comprovantes').upload(path,file,{upsert:false,contentType:file.type||'application/xml'});if(e)throw e;return path;
 }
 async function openFile(path){if(!path)return;const {data,error:e}=await state.db.storage.from('tms-comprovantes').createSignedUrl(path,120);if(e)throw e;window.open(data.signedUrl,'_blank','noopener,noreferrer')}
-async function refresh(){const [v,d,t,c]=await Promise.all([query('veiculos'),query('funcionarios'),query('viagens','*',q=>q.order('data_saida',{ascending:false})),query('tms_ctes','*',q=>q.order('created_at',{ascending:false}))]);state.vehicles=v;state.drivers=d;state.trips=t;state.ctes=c}
-function goto(p){if(!gestor()&&['cadastros','usuarios'].includes(p))return;state.page=p;$$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render();window.scrollTo({top:0,behavior:'instant'})}
-function render(){switch(state.page){case 'dashboard':return dashboard();case 'viagens':return viagens();case 'despesas':return gastos();case 'fechamento':return fechamento();case 'cadastros':return cadastros();case 'usuarios':return usuarios();}}
+async function refresh(){const [v,d,t,c]=await Promise.all([query('veiculos'),query('funcionarios'),query('viagens','*',q=>q.order('data_saida',{ascending:false})),query('tms_ctes','*',q=>q.order('created_at',{ascending:false}))]);state.vehicles=v;state.drivers=d;state.trips=gestor()?t:t.filter(x=>x.funcionario_id===state.profile?.funcionario_id);state.ctes=gestor()?c:c.filter(x=>state.trips.some(v=>v.id===x.viagem_id))}
+function goto(p){if(!gestor()&&!['motorista','motorista-historico'].includes(p))p='motorista';if(gestor()&&['motorista','motorista-historico'].includes(p))p='dashboard';state.page=p;$$('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render();window.scrollTo({top:0,behavior:'instant'})}
+function render(){switch(state.page){case 'dashboard':return dashboard();case 'viagens':return viagens();case 'despesas':return gastos();case 'fechamento':return fechamento();case 'cadastros':return cadastros();case 'usuarios':return usuarios();case 'motorista':return motoristaHome();case 'motorista-historico':return motoristaHistorico();}}
 function dashboard(){let abertas=state.trips.filter(v=>v.status==='Em Aberto');let fim=state.trips.filter(v=>v.status==='Finalizada');
  main.innerHTML=title('Painel de transportes','Viagens, frota e lançamentos em um só lugar.',gestor()?'<button class="primary" id="new-trip">+ Abrir viagem</button>':'')+
  `<div class="grid"><div class="card"><div class="metric-label">Viagens em aberto</div><div class="metric">${abertas.length}</div><div class="metric-note">Em execução</div></div><div class="card"><div class="metric-label">Viagens finalizadas</div><div class="metric">${fim.length}</div><div class="metric-note">No histórico</div></div><div class="card"><div class="metric-label">Carretas disponíveis</div><div class="metric">${state.vehicles.filter(v=>v.status==='Disponível').length}</div><div class="metric-note">Prontas para sair</div></div><div class="card"><div class="metric-label">Frota em manutenção</div><div class="metric">${state.vehicles.filter(v=>v.status==='Manutenção').length}</div></div></div>`+
@@ -54,6 +54,7 @@ function openTripForm(){const vehicles=state.vehicles.filter(x=>x.status==='Disp
  $('#trip-form').onsubmit=async e=>{e.preventDefault();const f=formData(e.currentTarget);try{await insert('viagens',{veiculo_id:f.veiculo_id,funcionario_id:f.funcionario_id,data_saida:iso(f.data_saida),origens:f.origens.trim(),destinos:f.destinos.trim(),km_inicial:n(f.km_inicial),created_by:state.user.id});closeModal();await refresh();goto('viagens')}catch(ex){error(ex)}};
 }
 async function detail(id){
+ if(!gestor())return motoristaTrip(id);
  const trip=state.trips.find(v=>v.id===id);if(!trip)return;
  state.selected=id;state.detail=null;
  main.innerHTML=title('Viagem '+(vehicle(trip.veiculo_id)?.placa||''),'Carregando registros...');
@@ -182,6 +183,87 @@ function cteView(id){const c=state.ctes.find(x=>x.id===id);if(!c)return toast('C
 }
 async function cteOpenFile(path){if(!path)return;const {data,error:e}=await state.db.storage.from('tms-cte').createSignedUrl(path,120);if(e)throw e;window.open(data.signedUrl,'_blank','noopener,noreferrer')}
 
+// ===== MOTORISTA V1.2 | integrado ao TMS existente =====
+function configureMotoristaNav(){
+ const side=$('.sidebar'), mobile=$('.mobile-nav');
+ if(!side.querySelector('[data-page="motorista"]')){
+  const home=document.createElement('button');home.dataset.page='motorista';home.textContent='🚛 Minha Viagem';home.className='driver-only';side.insertBefore(home,side.firstChild);
+  const hist=document.createElement('button');hist.dataset.page='motorista-historico';hist.textContent='📋 Meu Histórico';hist.className='driver-only';side.insertBefore(hist,home.nextSibling);
+ }
+ if(!mobile.querySelector('[data-page="motorista"]')){
+  mobile.insertAdjacentHTML('afterbegin','<button class="driver-only" data-page="motorista">Minha viagem</button><button class="driver-only" data-page="motorista-historico">Histórico</button>');
+ }
+ for(const b of document.querySelectorAll('.sidebar [data-page],.mobile-nav [data-page]')){
+  const driverPage=['motorista','motorista-historico'].includes(b.dataset.page);
+  b.hidden=gestor()?driverPage:!driverPage;
+  b.style.display=b.hidden?'none':'';
+ }
+}
+function minhaViagem(id){return state.trips.find(v=>v.id===id&&v.funcionario_id===state.profile?.funcionario_id)}
+function motoristaHome(){
+ const abertas=state.trips.filter(v=>v.status==='Em Aberto');
+ const ultimas=state.trips.filter(v=>v.status!=='Em Aberto');
+ const nome=state.drivers.find(d=>d.id===state.profile.funcionario_id)?.nome || 'Motorista';
+ main.innerHTML=title('Minha Viagem',`Bem-vindo, ${nome}. Acompanhe sua rota e seus lançamentos.`)+
+ (abertas.length?abertas.map(v=>`<article class="card mt-hero"><div class="row"><strong>VIAGEM EM ANDAMENTO</strong>${statusTag(v.status)}</div><h3>${esc(v.origens)} → ${esc(v.destinos)}</h3><div class="mt-metrics"><div><small>Veículo</small><b>${esc(vehicle(v.veiculo_id)?.placa||'—')}</b></div><div><small>Saída</small><b>${fdate(v.data_saida)}</b></div><div><small>KM inicial</small><b>${n(v.km_inicial).toLocaleString('pt-BR')}</b></div></div><div class="mt-actions"><button class="primary" data-action="motorista-trip" data-id="${esc(v.id)}">Abrir minha viagem</button><button class="secondary" data-action="motorista-add" data-type="despesas" data-id="${esc(v.id)}">+ Gasto</button><button class="secondary" data-action="motorista-add" data-type="abastecimentos" data-id="${esc(v.id)}">+ Abastecimento</button></div></article>`).join(''):'<div class="card empty">Nenhuma viagem em aberto para seu cadastro. Quando o gestor abrir uma viagem para você, ela aparecerá aqui.</div>')+
+ (ultimas.length?`<div class="section card"><div class="row"><h3>Viagens anteriores</h3><button class="outline" data-action="navigate" data-target="motorista-historico">Ver histórico</button></div>${motoristaHistoricoHTML(ultimas.slice(0,3))}</div>`:'');
+}
+function motoristaHistoricoHTML(rows){return `<div class="mt-list">${rows.map(v=>`<div class="item mt-list-item"><div><b>${esc(v.origens)} → ${esc(v.destinos)}</b><p class="mini">${esc(vehicle(v.veiculo_id)?.placa||'Carreta')} • ${fdate(v.data_saida)} • ${esc(v.status)}</p></div><button class="outline" data-action="motorista-trip" data-id="${esc(v.id)}">Consultar</button></div>`).join('')}</div>`}
+function motoristaHistorico(){const rows=state.trips.filter(v=>v.status!=='Em Aberto');main.innerHTML=title('Meu Histórico','Consulte seus percursos encerrados e respectivos documentos.')+(rows.length?`<div class="card">${motoristaHistoricoHTML(rows)}</div>`:'<div class="card empty">Nenhuma viagem finalizada.</div>')}
+async function motoristaTrip(id){
+ const v=minhaViagem(id);if(!v){toast('Viagem não disponível para este motorista.');return goto('motorista')}
+ state.motoristaSelected=id;
+ main.innerHTML=title('Minha Viagem','Carregando gastos, abastecimentos e CT-es...');
+ try{
+  const [d,a]=await Promise.all([
+   query('despesas_viagem','*',q=>q.eq('viagem_id',id).order('data',{ascending:false})),
+   query('abastecimentos','*',q=>q.eq('viagem_id',id).order('created_at',{ascending:false}))
+  ]);
+  if(!minhaViagem(id))throw Error('Acesso à viagem não autorizado.');
+  state.driverDetail={trip:v,d,a,ctes:state.ctes.filter(c=>c.viagem_id===id)};
+  motoristaRenderDetail();
+ }catch(ex){state.driverDetail=null;error(ex);main.innerHTML=title('Minha Viagem','Falha ao carregar os registros.',`<button class="secondary" data-action="navigate" data-target="motorista">← Voltar</button><button class="outline" data-action="motorista-trip" data-id="${esc(id)}">Tentar novamente</button>`)+`<div class="warning">${esc(ex?.message||String(ex))}</div>`}
+}
+function motoristaRenderDetail(){
+ const det=state.driverDetail;if(!det)return;const {trip:v,d,a,ctes}=det,open=v.status==='Em Aberto';
+ const totalGastos=d.reduce((s,x)=>s+n(x.valor),0),totalAbast=a.reduce((s,x)=>s+n(x.valor_total),0);
+ main.innerHTML=title('Minha Viagem',`${esc(vehicle(v.veiculo_id)?.placa||'Carreta')} • ${v.origens} → ${v.destinos}`,`<button class="outline" data-action="navigate" data-target="motorista">← Voltar</button>`)+
+ `<div class="card mt-hero"><div class="row"><h3>Dados da viagem</h3>${statusTag(v.status)}</div><div class="mt-metrics"><div><small>Saída</small><b>${fdate(v.data_saida)}</b></div><div><small>KM inicial</small><b>${n(v.km_inicial).toLocaleString('pt-BR')}</b></div><div><small>Chegada</small><b>${fdate(v.data_chegada)}</b></div></div>${open?`<div class="mt-actions"><button class="primary" data-action="motorista-add" data-type="despesas" data-id="${esc(v.id)}">+ Registrar gasto</button><button class="secondary" data-action="motorista-add" data-type="abastecimentos" data-id="${esc(v.id)}">+ Abastecimento</button></div>`:'<p class="help">Viagem finalizada: lançamentos bloqueados para preservar o histórico.</p>'}</div>`+
+ `<div class="mt-metrics mt-summary"><div class="card"><small>Gastos registrados</small><b>${brl(totalGastos)}</b></div><div class="card"><small>Abastecimentos</small><b>${brl(totalAbast)}</b></div><div class="card"><small>CT-es vinculados</small><b>${ctes.length}</b></div></div>`+
+ `<section class="card section"><h3>📄 CT-es da viagem</h3><p class="help">Documentos cadastrados pelo gestor e vinculados ao seu percurso.</p><div class="mt-list">${ctes.map(c=>`<div class="item mt-list-item"><div><b>CT-e ${esc(c.numero)}</b><p class="mini">${cteRoute(c)}</p><p class="mini mt-key">${esc(c.chave_acesso)}</p></div><div class="toolbar"><button class="outline" data-action="motorista-cte" data-id="${esc(c.id)}">Visualizar</button><button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button></div></div>`).join('')||'<div class="empty">Nenhum CT-e vinculado ainda.</div>'}</div></section>`+
+ `<section class="card section"><h3>🧾 Despesas registradas</h3><div class="mt-list">${d.map(x=>`<div class="item mt-list-item"><div><b>${esc(x.categoria?.replaceAll('_',' ')||'Gasto')} · ${brl(x.valor)}</b><p class="mini">${fdate(x.data)}${x.observacao?' • '+esc(x.observacao):''}</p></div>${x.comprovante_url?`<button class="outline" data-action="file" data-path="${esc(x.comprovante_url)}">Comprovante</button>`:''}</div>`).join('')||'<div class="empty">Nenhuma despesa registrada.</div>'}</div></section>`+
+ `<section class="card section"><h3>⛽ Abastecimentos registrados</h3><div class="mt-list">${a.map(x=>`<div class="item mt-list-item"><div><b>${esc(x.posto_nome||'Posto')} · ${brl(x.valor_total)}</b><p class="mini">${n(x.litros).toLocaleString('pt-BR')} L • KM ${n(x.km_no_abastecimento).toLocaleString('pt-BR')}</p></div>${x.foto_comprovante?`<button class="outline" data-action="file" data-path="${esc(x.foto_comprovante)}">Comprovante</button>`:''}</div>`).join('')||'<div class="empty">Nenhum abastecimento registrado.</div>'}</div></section>`;
+}
+function motoristaCteView(id){
+ const c=state.ctes.find(x=>x.id===id&&minhaViagem(x.viagem_id));if(!c)return toast('Documento não disponível para seu perfil.');
+ const d=c.dados||{};
+ const fmt=(k)=>esc(d[k]??'—');
+ showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">Dados fornecidos pelo gestor; consulte o documento original para conferência.</p><div class="cte-view-group"><h3>Identificação e rota</h3><div class="cte-view-grid"><div><small>Número</small><p>${esc(c.numero)}</p></div><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Origem</small><p>${fmt('origem_municipio')} / ${fmt('origem_uf')}</p></div><div><small>Destino</small><p>${fmt('destino_municipio')} / ${fmt('destino_uf')}</p></div><div><small>Produto</small><p>${fmt('produto')}</p></div><div><small>Peso</small><p>${fmt('peso')}</p></div></div></div><div class="cte-view-group"><h3>Anexos</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">Abrir PDF</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button></div></div></div>`);
+}
+function driverRecordForm(type,id){
+ const v=minhaViagem(id);if(!v||v.status!=='Em Aberto')return toast('Esta viagem não está aberta para lançamentos.');
+ if(!['despesas','abastecimentos'].includes(type))return;
+ const body=type==='despesas'?`<label>Categoria<select name="categoria" required>${['Pedagio','Gastos_Pessoais_Motorista','Manutencao_Urgente','Chapa_Descarga','Outros'].map(x=>`<option value="${x}">${x.replaceAll('_',' ')}</option>`).join('')}</select></label>${moneyInput('valor','Valor (R$)')}<label>Data<input name="data" type="datetime-local" value="${dtlocal()}" required></label><label class="full">Observação<textarea name="observacao" rows="3" maxlength="500"></textarea></label>`:
+ `<label>Posto de combustível<input name="posto_nome" maxlength="150" required></label>${moneyInput('litros','Litros','min="0.001" step="0.001"')}${moneyInput('valor_por_litro','Preço por litro (R$)','min="0.0001" step="0.0001"')}<label>KM no abastecimento<input name="km_no_abastecimento" type="number" min="${n(v.km_inicial)}" step="0.1" required></label>`;
+ showModal(`<h2>${type==='despesas'?'Registrar gasto':'Registrar abastecimento'}</h2><p class="help">Viagem ${esc(vehicle(v.veiculo_id)?.placa||'—')} • ${esc(v.origens)} → ${esc(v.destinos)}</p><form id="motorista-record-form" class="form-grid">${body}<label class="full">Comprovante (foto ou PDF)<input name="arquivo" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf" required></label><p class="warning full">Confira os valores antes de salvar. Os lançamentos enviados não podem ser editados ou excluídos pelo motorista; informe o gestor se houver erro.</p><div class="full form-actions"><button class="primary" type="submit">Salvar lançamento</button></div></form>`);
+ $('#motorista-record-form').onsubmit=async e=>{
+  e.preventDefault();const form=e.currentTarget,btn=form.querySelector('button[type="submit"]');if(btn.disabled)return;
+  btn.disabled=true;let path=null;
+  try{
+   if(!minhaViagem(id)||minhaViagem(id).status!=='Em Aberto')throw Error('Viagem não está aberta.');
+   const f=formData(form),file=form.elements.arquivo.files[0];if(!file)throw Error('Anexe um comprovante.');
+   if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type))throw Error('Utilize JPG, PNG, WEBP ou PDF.');
+   if(type==='abastecimentos'&&(n(f.litros)<=0||n(f.valor_por_litro)<=0||n(f.km_no_abastecimento)<n(v.km_inicial)))throw Error('Confira litros, preço e KM.');
+   if(type==='despesas'&&n(f.valor)<=0)throw Error('Informe um valor positivo.');
+   path=await upload(file,id);
+   const row=type==='despesas'?{viagem_id:id,categoria:f.categoria,valor:n(f.valor),data:iso(f.data),observacao:f.observacao?.trim()||null,comprovante_url:path,created_by:state.user.id}:{viagem_id:id,posto_nome:f.posto_nome.trim(),litros:n(f.litros),valor_por_litro:n(f.valor_por_litro),km_no_abastecimento:n(f.km_no_abastecimento),foto_comprovante:path,created_by:state.user.id};
+   await insert(type==='despesas'?'despesas_viagem':'abastecimentos',row);
+   closeModal();await refresh();await motoristaTrip(id);
+  }catch(ex){error(ex)}finally{btn.disabled=false}
+ };
+}
+// ===== FIM MOTORISTA V1.2 =====
+
 function cadastros(){if(!gestor())return goto('dashboard');main.innerHTML=title('Cadastros','Frota e motoristas disponíveis para abertura de viagens.')+
  `<div class="two"><div class="card"><div class="row"><h3>Veículos</h3><button class="primary" id="add-vehicle">+ Veículo</button></div><div class="list" style="margin-top:14px">${state.vehicles.map(v=>`<div class="item"><b>${esc(v.placa)}</b> • ${esc(v.modelo)} • ${esc(v.status)}<div class="mini">Ano ${v.ano} • KM ${v.km_inicial} • Estimativa ${v.consumo_medio_estimado||'—'} km/L</div></div>`).join('')||'Nenhum cadastrado'}</div></div>
  <div class="card"><div class="row"><h3>Motoristas</h3><button class="primary" id="add-driver">+ Motorista</button></div><div class="list" style="margin-top:14px">${state.drivers.map(v=>`<div class="item"><b>${esc(v.nome)}</b><div class="mini">Comissão ${v.comissao_percentual}% • Diária ${brl(v.valor_diaria)}</div></div>`).join('')||'Nenhum cadastrado'}</div></div></div>`;
@@ -203,13 +285,13 @@ async function profileForm(id){let [p]=await query('profiles','*',q=>q.eq('id',i
 async function setupSession(){const {data:{user},error:e}=await state.db.auth.getUser();if(e)throw e;state.user=user;if(!user){$('#login').hidden=false;$('#app').hidden=true;return}
  const {data:p,error:pe}=await state.db.from('profiles').select('*').eq('id',user.id).single();if(pe)throw pe;state.profile=p;if(!p||p.role==='pendente'||(p.role==='motorista'&&!p.funcionario_id)){
  $('#login').hidden=false;$('#app').hidden=true;$('#login-error').textContent='Conta autenticada, mas aguardando autorização do gestor.';return}
- $('#login').hidden=true;$('#app').hidden=false;$('#user-badge').textContent=p.role==='gestor'?'Gestor':'Motorista';$$('.manager-only').forEach(x=>x.hidden=!gestor());await refresh();goto(state.page);
+ $('#login').hidden=true;$('#app').hidden=false;$('#user-badge').textContent=p.role==='gestor'?'Gestor':'Motorista';$$('.manager-only').forEach(x=>x.hidden=!gestor());configureMotoristaNav();await refresh();goto(gestor()?(['motorista','motorista-historico'].includes(state.page)?'dashboard':state.page):'motorista');
 }
-async function initialize(){try{if(!window.supabase)throw Error('Biblioteca Supabase não carregou. Verifique a internet.');const cfg=window.TMS_CONFIG||{};if(!cfg.supabaseUrl||cfg.supabaseUrl.includes('SEU-PROJETO')||!cfg.supabaseAnonKey||cfg.supabaseAnonKey.includes('SUA_CHAVE'))throw Error('Configure web/config.js com URL e chave pública do seu Supabase.');state.db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
+async function initialize(){try{if(/[?&](?:password|email)=/i.test(location.search))history.replaceState(null,'',location.pathname+location.hash);if(!window.supabase)throw Error('Biblioteca Supabase não carregou. Verifique a internet.');const cfg=window.TMS_CONFIG||{};if(!cfg.supabaseUrl||cfg.supabaseUrl.includes('SEU-PROJETO')||!cfg.supabaseAnonKey||cfg.supabaseAnonKey.includes('SUA_CHAVE'))throw Error('Configure web/config.js com URL e chave pública do seu Supabase.');state.db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
  $('#login-form').onsubmit=async e=>{e.preventDefault();const f=formData(e.currentTarget);$('#login-error').textContent='';try{const {error:err}=await state.db.auth.signInWithPassword({email:f.email,password:f.password});if(err)throw err;await setupSession()}catch(ex){$('#login-error').textContent=ex.message}}
- $('#logout-btn').onclick=async()=>{await state.db.auth.signOut();state.user=null;state.profile=null;state.trips=[];await setupSession()};$('#refresh-btn').onclick=async()=>{try{await refresh();render();toast('Dados atualizados.')}catch(ex){error(ex)}};
+ $('#logout-btn').onclick=async()=>{await state.db.auth.signOut();state.user=null;state.profile=null;state.trips=[];state.motoristaSelected=null;state.driverDetail=null;await setupSession()};$('#refresh-btn').onclick=async()=>{try{await refresh();if(!gestor()&&state.motoristaSelected)await motoristaTrip(state.motoristaSelected);else render();toast('Dados atualizados.')}catch(ex){error(ex)}};
  $('#modal-close-form').onsubmit=ev=>{ev.preventDefault();closeModal()};
- document.addEventListener('click',async e=>{const nav=e.target.closest('[data-page]');if(nav){goto(nav.dataset.page);return}if(e.target.id==='new-trip'){openTripForm();return}const tab=e.target.closest('[data-tab]');if(tab){state.tab=tab.dataset.tab;renderTab();return}const act=e.target.closest('[data-action]');if(!act)return;try{let a=act.dataset.action;if(a==='navigate')goto(act.dataset.target);if(a==='trip')await detail(act.dataset.id);if(a==='quick'){state.tab=act.dataset.type;await detail(act.dataset.id);addForm(act.dataset.type)}if(a==='add')addForm(act.dataset.type);if(a==='xml')importXmlForm();if(a==='review')reviewForm(act.dataset.id);if(a==='file')await openFile(act.dataset.path);if(a==='profile')await profileForm(act.dataset.id);if(a==='new-cte')cteForm(act.dataset.trip||'');if(a==='view-cte')cteView(act.dataset.id);if(a==='cte-file')await cteOpenFile(act.dataset.path);if(a==='cte-copy'){await navigator.clipboard.writeText(act.dataset.key);toast('Chave de acesso copiada.')} }catch(ex){error(ex)}});
+ document.addEventListener('click',async e=>{const nav=e.target.closest('[data-page]');if(nav){goto(nav.dataset.page);return}if(e.target.id==='new-trip'){openTripForm();return}const tab=e.target.closest('[data-tab]');if(tab){state.tab=tab.dataset.tab;renderTab();return}const act=e.target.closest('[data-action]');if(!act)return;try{let a=act.dataset.action;if(a==='navigate')goto(act.dataset.target);if(a==='trip')await detail(act.dataset.id);if(a==='quick'){if(gestor()){state.tab=act.dataset.type;await detail(act.dataset.id);addForm(act.dataset.type)}else driverRecordForm(act.dataset.type,act.dataset.id)}if(a==='add')addForm(act.dataset.type);if(a==='xml')importXmlForm();if(a==='review')reviewForm(act.dataset.id);if(a==='file')await openFile(act.dataset.path);if(a==='profile')await profileForm(act.dataset.id);if(a==='new-cte')cteForm(act.dataset.trip||'');if(a==='view-cte')cteView(act.dataset.id);if(a==='cte-file')await cteOpenFile(act.dataset.path);if(a==='cte-copy'){await navigator.clipboard.writeText(act.dataset.key);toast('Chave de acesso copiada.')}if(a==='motorista-trip')await motoristaTrip(act.dataset.id);if(a==='motorista-add')driverRecordForm(act.dataset.type,act.dataset.id);if(a==='motorista-cte')motoristaCteView(act.dataset.id); }catch(ex){error(ex)}});
  await setupSession();if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(console.warn);
  }catch(ex){$('#login-error').textContent=ex.message;console.error(ex)}}
 initialize();
