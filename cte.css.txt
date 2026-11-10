@@ -1,0 +1,16 @@
+/* Acrescente este arquivo depois de styles.css */
+.cte-section {margin-bottom:20px}
+.cte-list {display:grid;gap:12px;margin-top:16px}
+.cte-card {padding:16px}
+.cte-card p {margin:6px 0}
+.cte-key {border-top:1px solid #d9e2ec;padding-top:12px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.cte-key code,.cte-break {overflow-wrap:anywhere;word-break:break-word}
+.cte-fieldset {border:1px solid #d5e0ea;border-radius:10px;padding:14px;min-width:0;margin:8px 0}
+.cte-fieldset legend {font-weight:700;padding:0 6px}
+.cte-fieldset .form-grid {padding-top:8px}
+#modal:has(.cte-view),#modal:has(#cte-form) {width:min(980px,96vw);max-width:96vw;max-height:90dvh;overflow:auto}
+.cte-view-group {border-top:1px solid #d5e0ea;margin-top:22px;padding-top:12px}
+.cte-view-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.cte-view-grid small {display:block;color:#62748a;margin-bottom:3px}
+.cte-view-grid p {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:680px){.cte-key{align-items:stretch}.cte-fieldset{padding:9px}.cte-view-grid{grid-template-columns:1fr}}
