@@ -1,0 +1,25 @@
+/* TMS Carretas V1.2 - Módulo Motorista (adicione depois de cte.css) */
+.mt-hero {border-left:4px solid #0284ad;margin-bottom:18px}
+.mt-hero h3 {margin:12px 0 18px;overflow-wrap:anywhere;font-size:clamp(1.2rem,3vw,1.65rem)}
+.mt-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
+.mt-metrics > div {display:flex;flex-direction:column;gap:6px;min-width:0}
+.mt-metrics small {color:#60718a;font-size:.78rem}
+.mt-metrics b {overflow-wrap:anywhere;font-size:1rem}
+.mt-summary {margin:18px 0}.mt-summary .card{padding:14px}
+.mt-actions {display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.mt-list {display:grid;gap:10px;margin-top:12px}
+.mt-list-item {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mt-list-item > div:first-child {min-width:0;flex:1}
+.mt-list-item .mini {margin:6px 0;overflow-wrap:anywhere}
+.mt-key {font-family:monospace;word-break:break-all}
+#modal:has(#motorista-record-form),#modal:has(.cte-view) {width:min(760px,96vw);max-width:96vw;max-height:90dvh;overflow-y:auto}
+@media(max-width:720px){
+ .mt-metrics {grid-template-columns:1fr 1fr}
+ .mt-summary {grid-template-columns:1fr 1fr}
+ .mt-actions{display:grid;grid-template-columns:1fr}
+ .mt-actions > button {width:100%;min-height:45px}
+ .mt-list-item > button {min-height:40px}
+ .mt-list-item .toolbar {width:100%;display:flex;flex-wrap:wrap}
+ .mt-list-item .toolbar button {flex:1}
+}
+@media(max-width:390px){.mt-metrics,.mt-summary{grid-template-columns:1fr}}
