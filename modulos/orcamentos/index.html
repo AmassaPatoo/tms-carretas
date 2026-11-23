@@ -2896,6 +2896,15 @@ details.card[open]>summary{margin-bottom:14px}
 .pv-pags canvas{display:block;background:#fff;box-shadow:0 2px 10px rgba(6,38,58,.18);border-radius:2px;max-width:100%}
 .pv-vazio{margin:auto;color:var(--muted);text-align:center;font-size:14px;max-width:280px;line-height:1.5}
 
+.pix-cob{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.pix-qr{width:190px;height:190px;flex:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px}
+.pix-qr svg{width:100%;height:100%;display:block}
+.pix-dados{flex:1;min-width:200px}
+.pix-atalhos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip-mini{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:999px;padding:5px 10px;font-size:12.5px;font-weight:700}
+.chip-mini:hover{border-color:var(--navy)}
+@media (max-width:520px){ .pix-cob{justify-content:center} .pix-qr{width:220px;height:220px} }
+
 /* Painel de orçamentos */
 .overlay{position:fixed;inset:34px 0 0 0;z-index:50;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
 .ov-head{position:sticky;top:0;z-index:2;background:linear-gradient(120deg,var(--deep),var(--navy));color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
@@ -3125,8 +3134,9 @@ details.card[open]>summary{margin-bottom:14px}
     <div class="hint">Ao assinar, o orçamento é marcado como "Aprovado" e a assinatura sai no PDF.</div>
     <div class="sublabel">Aprovação à distância</div>
     <div id="linkBox"></div>
-    <div class="sublabel">Depois de aprovado</div>
+    <div class="sublabel">Cobrança e documentos</div>
     <div class="btn-row">
+      <button class="btn-sec" data-act="cobrar-pix">💠 Cobrar via Pix</button>
       <button class="btn-sec" data-act="recibo">🧾 Recibo de pagamento</button>
       <button class="btn-sec" data-act="garantia">🛡️ Termo de garantia</button>
     </div>
@@ -4050,6 +4060,12 @@ document.addEventListener('click',async e=>{
     case 'sig-ok': sigSalvar(); return;
     case 'fechar-modal': fecharModal(); return;
     case 'recibo': abrirRecibo(); return;
+    case 'cobrar-pix': abrirCobrancaPix(); return;
+    case 'pix-valor': $('#cpValor').value=b.dataset.v; atualizarCobrancaPix(); return;
+    case 'pix-copiar': copiarTexto($('#cpCodigo').value); return;
+    case 'pix-wa': window.open('https://wa.me/'+foneWa(state.foneCliente)+'?text='+encodeURIComponent(mensagemPix()),'_blank'); return;
+    case 'pix-baixar': baixarQRPix(); return;
+    case 'pix-cadastrar': fecharModal(); { const d=$('#cardEmpresa'); d.open=true; const i=document.querySelector('[data-c="pix.chave"]'); i.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>i.focus(),400); } return;
     case 'garantia': abrirGarantia(); return;
     case 'gerar-recibo': gerarDocumento('recibo',b.dataset.modo); return;
     case 'gerar-garantia': gerarDocumento('garantia',b.dataset.modo); return;
@@ -4826,6 +4842,76 @@ function abrirRecibo(){
     </div>
     <div class="btn-row"><button class="btn-sec" data-act="gerar-recibo" data-modo="baixar">📄 Baixar</button><button class="btn-pri" data-act="gerar-recibo" data-modo="enviar">📤 Enviar</button></div>`);
   $('#rcValor').addEventListener('input',()=>{ $('#rcSaldo').value=inNum(Math.max(0,calcTudo().total-toNum($('#rcValor').value))); });
+}
+/* ---------- cobrança Pix avulsa (QR + copia e cola) ---------- */
+function abrirCobrancaPix(){
+  const c=calcTudo();
+  if(!String(cfg.pix.chave||'').trim()){
+    abrirModal(`<h3>💠 Cobrar via Pix <button class="serv-rm" data-act="fechar-modal" aria-label="Fechar">×</button></h3>
+      <p class="hint" style="font-size:14px">Para gerar o Pix, cadastre primeiro a chave Pix da empresa (CPF, CNPJ, telefone, e-mail ou chave aleatória). É só uma vez: depois vale para todos os orçamentos.</p>
+      <div class="btn-row" style="margin-top:12px"><button class="btn-pri" data-act="pix-cadastrar">Cadastrar chave Pix</button></div>`);
+    return;
+  }
+  if(c.total<=0) return toast('Preencha o orçamento antes de cobrar.');
+  const pct=Math.min(100,Math.max(1,toNum(state.pix.pct)||50));
+  const ent=Math.round(c.total*pct)/100;
+  const padrao=state.pix.modo==='entrada' ? ent : c.total;
+  abrirModal(`<h3>💠 Cobrar via Pix <button class="serv-rm" data-act="fechar-modal" aria-label="Fechar">×</button></h3>
+    <div class="pix-cob">
+      <div class="pix-qr" id="cpQR"></div>
+      <div class="pix-dados">
+        <label>Valor a cobrar</label>
+        <div class="money"><span>R$</span><input id="cpValor" inputmode="decimal" value="${inNum(padrao)}"></div>
+        <div class="pix-atalhos">
+          <button class="chip-mini" data-act="pix-valor" data-v="${inNum(c.total)}">Total ${money(c.total)}</button>
+          <button class="chip-mini" data-act="pix-valor" data-v="${inNum(ent)}">Entrada ${fmtQ(pct)}% ${money(ent)}</button>
+          ${pct!==100?`<button class="chip-mini" data-act="pix-valor" data-v="${inNum(Math.round((c.total-ent)*100)/100)}">Restante ${money(c.total-ent)}</button>`:''}
+        </div>
+        <div class="hint" style="margin-top:8px">Recebedor: <b>${esc(cfg.pix.nome||cfg.empresa.nome||'')}</b><br>Chave: ${esc(cfg.pix.chave)}</div>
+      </div>
+    </div>
+    <label style="margin-top:12px">Pix copia e cola</label>
+    <textarea id="cpCodigo" rows="3" readonly style="font-family:monospace;font-size:12px"></textarea>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn-sec" data-act="pix-copiar">📋 Copiar código</button>
+      <button class="btn-sec" data-act="pix-baixar">⬇️ Baixar QR Code</button>
+      <button class="btn-pri" data-act="pix-wa">💬 Enviar no WhatsApp</button>
+    </div>
+    <p class="hint" style="margin-top:8px">O cliente pode ler o QR Code ou colar o código no app do banco (Pix › Copia e Cola). O dinheiro cai direto na sua conta.</p>`);
+  $('#cpValor').addEventListener('input',atualizarCobrancaPix);
+  atualizarCobrancaPix();
+}
+function valorCobrancaPix(){ return Math.round(Math.max(0,toNum(($('#cpValor')||{}).value))*100)/100; }
+function atualizarCobrancaPix(){
+  const v=valorCobrancaPix(), cod=pixPayload(v);
+  $('#cpCodigo').value=cod;
+  const qr=qrcode(0,'M'); qr.addData(cod); qr.make();
+  $('#cpQR').innerHTML=qr.createSvgTag({cellSize:4,margin:2,scalable:true});
+}
+function mensagemPix(){
+  const v=valorCobrancaPix(), nome=(state.cliente||'').trim().split(' ')[0];
+  const cap=nome?nome.charAt(0).toUpperCase()+nome.slice(1):'';
+  return `Olá${cap?', '+cap:''}!\nSegue o Pix de *${money(v)}* referente ao orçamento nº ${pad4(state.numero)} da *${cfg.empresa.nome||'KE Obra Fácil'}*.\n\n`+
+    `Recebedor: ${cfg.pix.nome||cfg.empresa.nome||''}\nChave Pix: ${cfg.pix.chave}\n\n`+
+    `Ou copie o código abaixo e cole no app do banco em Pix > Copia e Cola:\n\n${pixPayload(v)}`;
+}
+function baixarQRPix(){
+  const v=valorCobrancaPix(), cod=pixPayload(v);
+  const qr=qrcode(0,'M'); qr.addData(cod); qr.make();
+  const n=qr.getModuleCount(), cel=10, m=4*cel, topo=110, base=120, W=n*cel+2*m+80;
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=topo+n*cel+2*m+base;
+  const g=cv.getContext('2d');
+  g.fillStyle='#fff'; g.fillRect(0,0,cv.width,cv.height);
+  g.fillStyle='#0c3446'; g.fillRect(0,0,W,topo-20);
+  g.fillStyle='#fff'; g.textAlign='center'; g.font='bold 30px sans-serif'; g.fillText(cfg.empresa.nome||'Pix',W/2,48);
+  g.font='22px sans-serif'; g.fillText('Orçamento nº '+pad4(state.numero),W/2,78);
+  const ox=(W-n*cel)/2, oy=topo+m-20;
+  g.fillStyle='#000';
+  for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(qr.isDark(r,c)) g.fillRect(ox+c*cel,oy+r*cel,cel,cel);
+  g.fillStyle='#0c3446'; g.font='bold 40px sans-serif'; g.fillText(money(v),W/2,oy+n*cel+m+30);
+  g.fillStyle='#6b7a88'; g.font='20px sans-serif'; g.fillText('Pague com o app do seu banco: Pix › Ler QR Code',W/2,oy+n*cel+m+70);
+  const a=document.createElement('a'); a.href=cv.toDataURL('image/png'); a.download=nomeArquivo('Pix').replace(/\.pdf$/i,'')+'.png'; a.click();
+  toast('QR Code baixado!');
 }
 function abrirGarantia(){
   abrirModal(`<h3>🛡️ Termo de garantia <button class="serv-rm" data-act="fechar-modal" aria-label="Fechar">×</button></h3>
