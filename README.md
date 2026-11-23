@@ -20,6 +20,9 @@ vendor/supabase.js         biblioteca do Supabase (embutida)
 manifest.webmanifest, sw.js, icons/   aplicativo instalável
 modulos/orcamentos/        sistema de orçamentos
 modulos/carreta/           sistema de carretas (TMS)
+modulos/cotacoes/          pesquisa de preços de material nas lojas
+aprovar/                   página pública: cliente aprova o orçamento
+cotar/                     página pública: loja responde a cotação
 supabase/migrations/       comandos do banco (rodar no SQL Editor, em ordem)
 ```
 
@@ -32,10 +35,12 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
    "Minha Transportadora" com os dados atuais e passa os usuários para ela. Roda numa transação: se der erro, nada muda.
 3. `003_orcamento_link_aprovacao.sql`: link para o cliente aprovar e assinar o orçamento sem login.
 4. `004_link_curto.sql`: links de aprovação com 16 caracteres.
+5. `005_cotacoes.sql`: módulo Cotações (itens, lojas, preços e pedidos de cotação respondidos por link).
+   Depois, em **Administração**, ligue "Cotações" na empresa.
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
 
-Padrão dos nomes: `core_` = núcleo · `orc_` = Orçamentos · `car_` = Carreta.
+Padrão dos nomes: `core_` = núcleo · `orc_` = Orçamentos · `car_` = Carreta · `cot_` = Cotações.
 
 ### Configurar o login (uma vez)
 
@@ -86,6 +91,16 @@ Para atualizar depois: suba os arquivos alterados de novo e **aumente o número 
 - O link nunca mostra custos e lucro internos. Depois de aprovado, não aceita outra assinatura. Orçamento vencido não pode ser aprovado.
 - A página do link é `aprovar/index.html` (endereço `…/aprovar/?c=CODIGO`). A prévia do WhatsApp usa `aprovar/previa.png`;
   se o endereço do site mudar, atualize o `og:image` dessa página.
+
+## Cotações (preços do mercado)
+
+- **Itens** e **Lojas**: o que você acompanha e onde pesquisa.
+- **Lançar preços**: escolha a loja e digite os preços que pesquisou (telefone, balcão, site, nota).
+- **Pedir cotação**: escolha itens e lojas; cada loja recebe pelo WhatsApp um link `cotar/?c=CODIGO`,
+  preenche os preços no celular sem login e o comparativo se monta sozinho.
+- **Mercado**: menor, média e maior preço de cada item, tendência no período, gráfico e ranking das lojas.
+
+A loja só enxerga o próprio pedido; nada de outros preços, lojas ou custos.
 
 ## Instalar no celular
 

@@ -2,14 +2,15 @@
    Os dados vêm sempre do Supabase (precisa de internet); aqui guardamos só
    os arquivos do app para abrir rápido e mesmo com sinal fraco.
    Ao publicar uma versão nova, aumente o número da VERSAO. */
-const VERSAO = 'plataforma-v9';
+const VERSAO = 'plataforma-v10';
 const ARQUIVOS = [
   './', './index.html', './config.js', './manifest.webmanifest',
   './core/plataforma.js', './core/inicio.js', './core/inicio.css', './vendor/supabase.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png',
   './modulos/carreta/index.html', './modulos/carreta/app.js', './modulos/carreta/styles.css',
   './modulos/carreta/cte.css', './modulos/carreta/motorista.css',
-  './modulos/orcamentos/index.html', './aprovar/index.html', './vendor/qrcode.js', './vendor/pdfjs/pdf.min.js', './vendor/pdfjs/pdf.worker.min.js'
+  './modulos/orcamentos/index.html', './aprovar/index.html', './vendor/qrcode.js', './vendor/pdfjs/pdf.min.js', './vendor/pdfjs/pdf.worker.min.js',
+  './modulos/cotacoes/index.html', './modulos/cotacoes/cotacoes.js', './modulos/cotacoes/cotacoes.css', './cotar/index.html'
 ];
 self.addEventListener('install', e => e.waitUntil(
   caches.open(VERSAO).then(c => Promise.all(ARQUIVOS.map(a => c.add(a).catch(() => null)))).then(() => self.skipWaiting())

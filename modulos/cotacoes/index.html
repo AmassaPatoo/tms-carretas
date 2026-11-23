@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KE Cotações">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon.svg" type="image/svg+xml">
+<title>Cotações · Plataforma KE</title>
+<link rel="stylesheet" href="cotacoes.css">
+<script src="../../vendor/supabase.js"></script>
+<script src="../../config.js"></script>
+<script src="../../core/plataforma.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">🏷️</div>
+    <div><strong>Cotações de preço</strong><small id="subtitulo">Pesquisa de preços no mercado</small></div>
+  </div>
+  <button class="tb-btn" data-act="recarregar" title="Buscar respostas novas">⟳<span class="lbl"> Atualizar</span></button>
+</header>
+
+<nav class="abas" id="abas">
+  <button data-aba="mercado" class="on">📊 Mercado</button>
+  <button data-aba="precos">✍️ Lançar preços</button>
+  <button data-aba="cotacoes">📨 Pedir cotação</button>
+  <button data-aba="itens">📦 Itens</button>
+  <button data-aba="lojas">🏪 Lojas</button>
+</nav>
+
+<main id="conteudo">
+  <div class="carregando">Carregando…</div>
+</main>
+
+<div class="modal" id="modal" hidden><div class="modal-box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="cotacoes.js"></script>
+</body>
+</html>

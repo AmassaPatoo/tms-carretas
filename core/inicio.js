@@ -9,8 +9,8 @@
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 
   /* Módulos que têm app próprio dentro da pasta modulos/ */
-  const APPS = { orcamentos: 'modulos/orcamentos/index.html', carreta: 'modulos/carreta/index.html' };
-  const ICONES = { 'users': '👥', 'file-text': '📄', 'truck': '🚛' };
+  const APPS = { orcamentos: 'modulos/orcamentos/index.html', carreta: 'modulos/carreta/index.html', cotacoes: 'modulos/cotacoes/index.html' };
+  const ICONES = { 'users': '👥', 'file-text': '📄', 'truck': '🚛', 'tag': '🏷️' };
   const PAPEIS = { dono: 'Dono', gerente: 'Gerente', usuario: 'Usuário', admin: 'Administrador' };
 
   const st = { user: null, perfil: null, admin: false, empresas: [], empresa: null, catalogo: [], modsAdmin: [], aba: 'inicio', clientes: [] };

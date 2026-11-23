@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<title>Pedido de cotação de preços</title>
+<meta name="description" content="Toque para ver os itens e responder com os seus preços, direto pelo celular.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="🏷️ Pedido de cotação de preços">
+<meta property="og:description" content="Toque para ver os itens e responder com os seus preços pelo celular. Leva 1 minuto.">
+<meta property="og:image" content="https://amassapatoo.github.io/tms-carretas/cotar/previa.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script src="../vendor/supabase.js"></script>
+<script src="../config.js"></script>
+<style>
+:root{--navy:#0C3446;--deep:#06263a;--orange:#FF6A00;--orange-soft:#fff3ea;--bg:#f2f5f8;--ink:#15212d;--muted:#6b7a88;--line:#dde5ec;--ok:#1e8a50;--ok-soft:#e8f6ee;--danger:#c62828;
+  --shadow:0 1px 2px rgba(12,52,70,.06),0 8px 24px rgba(12,52,70,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;padding-bottom:30px}
+button{font:inherit;cursor:pointer} input,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.topo{background:linear-gradient(120deg,var(--deep),var(--navy));color:#fff;padding:18px 16px 22px;border-bottom:4px solid var(--orange)}
+.topo-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.logo{width:54px;height:54px;border-radius:13px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-weight:900;font-size:22px;color:var(--navy)}
+.logo img{width:100%;height:100%;object-fit:contain}
+.topo h1{font-size:18px;line-height:1.2}
+.topo p{opacity:.8;font-size:13px}
+main{max-width:640px;margin:-10px auto 0;padding:0 12px;display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px}
+.card h2{font-size:16px;color:var(--navy);margin-bottom:4px}
+.muted{color:var(--muted);font-size:13px}
+.aviso{border-radius:12px;padding:12px 14px;font-size:14px}
+.aviso.ok{background:var(--ok-soft);color:var(--ok)}
+.aviso.lar{background:var(--orange-soft);color:#8a3a00}
+.aviso.erro{background:#fdecec;color:var(--danger)}
+.item{padding:12px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:none}
+.item b{display:block;font-size:15px}
+.item small{color:var(--muted);font-size:12.5px}
+.linha{display:flex;gap:8px;align-items:center;margin-top:8px}
+.money{position:relative;flex:1}
+.money span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+input.preco{width:100%;height:48px;border:1px solid var(--line);background:#f8fafc;border-radius:12px;padding:0 12px 0 38px;font-size:18px;font-weight:700;text-align:right;outline:none}
+input.preco:focus,input.txt:focus,textarea:focus{border-color:var(--orange);background:#fff;box-shadow:0 0 0 3px rgba(255,106,0,.12)}
+input.preco:disabled{opacity:.45}
+.nao{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:pointer}
+.nao input{width:20px;height:20px;accent-color:var(--orange)}
+.obs-btn{background:none;border:none;color:var(--navy);font-size:12.5px;font-weight:700;margin-top:6px;padding:0}
+input.txt,textarea{width:100%;border:1px solid var(--line);background:#f8fafc;border-radius:12px;padding:11px 12px;outline:none}
+input.txt{height:46px}
+label.l{display:block;font-weight:700;color:var(--navy);font-size:13px;margin:12px 0 5px}
+.total{display:flex;justify-content:space-between;align-items:center;font-weight:800;color:var(--navy);font-size:16px;padding-top:10px;border-top:2px solid var(--line);margin-top:4px}
+.btn{width:100%;height:54px;border:none;border-radius:14px;background:var(--orange);color:#fff;font-weight:800;font-size:17px;box-shadow:0 6px 18px rgba(255,106,0,.3);margin-top:14px}
+.btn:disabled{opacity:.6}
+.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:none;height:48px;font-size:15px}
+.rodape{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+.carregando{text-align:center;padding:50px 10px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="topo"><div class="topo-in">
+  <div class="logo" id="logo">🏷️</div>
+  <div><h1 id="empNome">Pedido de cotação</h1><p id="empSub">Carregando…</p></div>
+</div></div>
+<main id="app"><div class="card carregando">Carregando o pedido…</div></main>
+
+<script>
+(() => {
+'use strict';
+const cfg = window.PLAT_CONFIG || {};
+const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = v => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const dataBR = iso => iso ? String(iso).slice(0, 10).split('-').reverse().join('/') : '';
+const fmtN = v => (Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+const emReais = v => v == null ? '' : Number(v).toFixed(2).replace('.', ',');
+function toNum(s) { s = String(s || '').trim().replace(/[R$\s]/g, ''); if (!s) return NaN; if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); return parseFloat(s); }
+const token = new URL(location.href).searchParams.get('c') || '';
+const LS = 'cotar_nome';
+let V = null;
+
+function erroTela(msg) { $('#app').innerHTML = `<div class="card"><div class="aviso erro">${esc(msg)}</div></div>`; $('#empSub').textContent = ''; }
+
+async function carregar() {
+  if (token.length < 16) return erroTela('Link incompleto. Confira se copiou o link inteiro.');
+  const { data, error } = await db.rpc('cot_publico_ver', { p_token: token });
+  if (error) return erroTela('Não foi possível abrir agora. Verifique a internet e tente de novo.');
+  if (!data) return erroTela('Este link não existe mais ou foi cancelado pela empresa.');
+  V = data; render();
+}
+
+function render() {
+  const e = V.empresa || {};
+  $('#empNome').textContent = e.nome || 'Pedido de cotação';
+  $('#empSub').textContent = 'Pedido de cotação para ' + (V.loja || 'a sua loja');
+  if (e.logo && /^data:image\//.test(e.logo)) $('#logo').innerHTML = `<img src="${esc(e.logo)}" alt="">`;
+  else $('#logo').textContent = (e.nome || 'K').trim().charAt(0).toUpperCase();
+  document.title = 'Cotação · ' + (e.nome || '');
+  const temQtd = V.itens.some(i => i.qtd);
+  let nome = V.respondente || ''; try { nome = nome || localStorage.getItem(LS) || ''; } catch (x) {}
+  $('#app').innerHTML = `
+    <div class="card">
+      <h2>${esc(V.titulo)}</h2>
+      <div class="muted">Olá! A <b>${esc(e.nome || '')}</b> pediu os preços dos itens abaixo.${V.prazo ? ` Responda até <b>${dataBR(V.prazo)}</b>.` : ''}</div>
+      ${V.obs_cotacao ? `<div class="aviso lar" style="margin-top:10px">📝 ${esc(V.obs_cotacao)}</div>` : ''}
+      ${V.respondido_em ? `<div class="aviso ok" style="margin-top:10px">✓ Resposta enviada em ${new Date(V.respondido_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}${V.aberta ? '. Se precisar, corrija e envie de novo.' : '.'}</div>` : ''}
+      ${!V.aberta ? `<div class="aviso erro" style="margin-top:10px">Esta cotação não está mais recebendo respostas${V.prazo && !V.respondido_em ? ' (prazo encerrado)' : ''}. Obrigado!</div>` : ''}
+    </div>
+    <div class="card">
+      <h2>Itens</h2>
+      <div class="muted">Digite o preço ${temQtd ? '<b>por unidade</b> ' : ''}de cada item. Se não trabalha com algum, marque “não tenho”.</div>
+      <div id="itens">${V.itens.map(i => `<div class="item" data-id="${i.id}">
+        <b>${esc(i.nome)}</b>
+        <small>Preço por ${esc(i.unidade)}${i.qtd ? ` · quantidade: ${fmtN(i.qtd)} ${esc(i.unidade)}` : ''}${i.obs_item ? ' · ' + esc(i.obs_item) : ''}</small>
+        <div class="linha">
+          <div class="money"><span>R$</span><input class="preco" inputmode="decimal" placeholder="0,00" value="${i.disponivel === false ? '' : emReais(i.preco)}"${i.disponivel === false || !V.aberta ? ' disabled' : ''} aria-label="Preço de ${esc(i.nome)}"></div>
+          <label class="nao"><input type="checkbox" class="sem"${i.disponivel === false ? ' checked' : ''}${V.aberta ? '' : ' disabled'}> não tenho</label>
+        </div>
+        ${i.qtd ? `<small class="sub-total" style="display:block;text-align:right;margin-top:4px"></small>` : ''}
+        ${V.aberta ? `<button class="obs-btn" type="button"${i.obs ? ' hidden' : ''}>＋ observação (marca, prazo…)</button>` : ''}
+        <input class="txt obs" maxlength="300" placeholder="Ex.: marca Tarkett, entrega em 2 dias" value="${esc(i.obs || '')}"${i.obs ? '' : ' hidden'} style="margin-top:6px"${V.aberta ? '' : ' disabled'}>
+      </div>`).join('')}</div>
+      ${temQtd ? `<div class="total"><span>Total do pedido</span><span id="total">R$ 0,00</span></div>` : ''}
+    </div>
+    ${V.aberta ? `<div class="card">
+      <label class="l" style="margin-top:0">Seu nome</label>
+      <input class="txt" id="nome" maxlength="120" placeholder="Quem está respondendo" value="${esc(nome)}" autocomplete="name">
+      <label class="l">Recado para a empresa <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+      <textarea id="obsGeral" rows="2" maxlength="1000" placeholder="Ex.: preços válidos por 7 dias, frete grátis no centro">${esc(V.obs || '')}</textarea>
+      <button class="btn" id="enviar">${V.respondido_em ? 'Enviar correção' : 'Enviar preços'}</button>
+      <div class="rodape">Os preços vão direto para a ${esc(e.nome || 'empresa')}. Não precisa de cadastro.</div>
+    </div>` : ''}
+    ${e.telefone ? `<div class="rodape">Dúvidas? Fale com a ${esc(e.nome)}: ${esc(e.telefone)}</div>` : ''}`;
+  somar();
+}
+
+function somar() {
+  if (!$('#total')) return;
+  let t = 0;
+  document.querySelectorAll('.item').forEach(el => {
+    const i = V.itens.find(x => x.id === el.dataset.id), v = toNum(el.querySelector('.preco').value), st = el.querySelector('.sub-total');
+    const ok = !el.querySelector('.sem').checked && v >= 0 && i.qtd;
+    if (ok) t += v * i.qtd;
+    if (st) st.textContent = ok ? `${fmtN(i.qtd)} × ${money(v)} = ${money(v * i.qtd)}` : '';
+  });
+  $('#total').textContent = money(t);
+}
+
+document.addEventListener('input', e => { if (e.target.classList.contains('preco')) somar(); });
+document.addEventListener('change', e => {
+  if (!e.target.classList.contains('sem')) return;
+  const inp = e.target.closest('.item').querySelector('.preco');
+  inp.disabled = e.target.checked; if (e.target.checked) inp.value = '';
+  somar();
+});
+document.addEventListener('click', async e => {
+  if (e.target.classList.contains('obs-btn')) { e.target.hidden = true; const o = e.target.nextElementSibling; o.hidden = false; o.focus(); return; }
+  if (e.target.id !== 'enviar') return;
+  const nome = $('#nome').value.trim();
+  if (nome.length < 2) { $('#nome').focus(); return alert('Digite o seu nome.'); }
+  const resp = []; let inval = '';
+  document.querySelectorAll('.item').forEach(el => {
+    const sem = el.querySelector('.sem').checked, txt = el.querySelector('.preco').value.trim(), v = toNum(txt), obs = el.querySelector('.obs').value.trim();
+    if (sem) return resp.push({ item_id: el.dataset.id, disponivel: false, obs });
+    if (!txt) return;
+    if (!(v >= 0 && v < 1e7)) { inval = el.querySelector('b').textContent; return; }
+    resp.push({ item_id: el.dataset.id, preco: Math.round(v * 100) / 100, disponivel: true, obs });
+  });
+  if (inval) return alert('Confira o preço de: ' + inval);
+  if (!resp.length) return alert('Preencha o preço de pelo menos um item (ou marque "não tenho").');
+  const faltam = V.itens.length - resp.length;
+  if (faltam > 0 && !confirm(`${faltam} item(ns) ficaram sem preço. Enviar assim mesmo?`)) return;
+  const b = e.target; b.disabled = true; b.textContent = 'Enviando…';
+  const { error } = await db.rpc('cot_publico_responder', { p_token: token, p_nome: nome, p_respostas: resp, p_obs: $('#obsGeral').value });
+  if (error) { b.disabled = false; b.textContent = 'Enviar preços'; return alert(error.message || 'Não foi possível enviar. Tente de novo.'); }
+  try { localStorage.setItem(LS, nome); } catch (x) {}
+  $('#app').innerHTML = `<div class="card" style="text-align:center;padding:30px 18px">
+    <div style="font-size:46px">✅</div><h2 style="margin:8px 0 6px">Preços enviados!</h2>
+    <div class="muted">A ${esc(V.empresa.nome || 'empresa')} já recebeu a sua cotação. Obrigado, ${esc(nome.split(' ')[0])}!</div>
+    <button class="btn sec" id="rever" style="margin-top:18px">Ver ou corrigir minha resposta</button></div>`;
+  scrollTo({ top: 0 });
+});
+document.addEventListener('click', e => { if (e.target.id === 'rever') { $('#app').innerHTML = '<div class="card carregando">Carregando…</div>'; carregar(); } });
+carregar();
+})();
+</script>
+</body>
+</html>
