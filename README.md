@@ -30,6 +30,7 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
 1. `001_plataforma_base.sql`: núcleo (empresas, perfis, módulos, clientes) e Orçamentos. *(já rodado)*
 2. `002_carreta_na_plataforma.sql`: coloca a Carreta dentro da plataforma (tabelas `car_`), cria a empresa
    "Minha Transportadora" com os dados atuais e passa os usuários para ela. Roda numa transação: se der erro, nada muda.
+3. `003_orcamento_link_aprovacao.sql`: link para o cliente aprovar e assinar o orçamento sem login.
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
 
@@ -74,6 +75,15 @@ Para atualizar depois: suba os arquivos alterados de novo e **aumente o número 
 | Empresa | **Gerente** | configurações dos Orçamentos (Pix, preços) |
 | Empresa | **Usuário** | usar os sistemas liberados |
 | Carreta | **Gestor / Motorista / Pendente** | definido dentro da Carreta |
+
+## Link para o cliente aprovar e assinar
+
+- No orçamento, o botão **📤 Enviar** já manda o PDF com o link de aprovação na mensagem.
+- Também dá para gerar, copiar, mandar pelo WhatsApp ou cancelar o link em **8 · Aprovação e documentos**.
+- O cliente abre o link **sem login**, confere serviços, valores, condições e o Pix, assina com o dedo e aprova.
+- O orçamento vira **Aprovado** sozinho, com nome, data/hora e assinatura, e o PDF passa a sair assinado.
+- O link nunca mostra custos e lucro internos. Depois de aprovado, não aceita outra assinatura. Orçamento vencido não pode ser aprovado.
+- A página do link é `modulos/orcamentos/aprovar.html`.
 
 ## Instalar no celular
 

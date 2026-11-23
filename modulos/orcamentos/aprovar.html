@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="../../icons/icon.svg" type="image/svg+xml">
+<title>Aprovação de orçamento</title>
+<script src="../../vendor/supabase.js"></script>
+<script src="../../config.js"></script>
+<script src="../../vendor/qrcode.js"></script>
+<style>
+:root{--navy:#0C3446;--deep:#06263a;--orange:#FF6A00;--orange-soft:#fff3ea;--bg:#f2f5f8;--ink:#15212d;--muted:#6b7a88;--line:#dde5ec;--ok:#1e8a50;--danger:#c62828;
+  --shadow:0 1px 2px rgba(12,52,70,.06),0 8px 24px rgba(12,52,70,.07)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;padding-bottom:30px}
+button{font:inherit;cursor:pointer} input{font:inherit}
+[hidden]{display:none!important}
+.topo{background:linear-gradient(120deg,var(--deep),var(--navy));color:#fff;padding:18px 16px 22px;border-bottom:4px solid var(--orange)}
+.topo-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.logo{width:54px;height:54px;border-radius:13px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-weight:900;font-size:22px;color:var(--navy)}
+.logo img{width:100%;height:100%;object-fit:contain}
+.topo h1{font-size:18px}
+.topo small{display:block;opacity:.8;font-size:12.5px}
+main{max-width:640px;margin:-10px auto 0;padding:0 12px;display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px}
+.card h2{font-size:15px;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.cab{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cab b{color:var(--navy);font-size:17px}
+.muted{color:var(--muted);font-size:13.5px}
+.serv{border-top:1px solid var(--line);padding:11px 0}
+.serv:first-of-type{border-top:none;padding-top:0}
+.serv .l{display:flex;justify-content:space-between;gap:10px}
+.serv .l b{color:var(--navy)}
+.serv .l span{font-weight:800;white-space:nowrap}
+.serv ul{list-style:none;margin-top:5px}
+.serv li{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;color:var(--muted);padding:2px 0}
+.linha{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.linha:last-child{border:none}
+.desc span:last-child{color:#b84c00;font-weight:700}
+.total{margin-top:10px;border-radius:13px;padding:15px 16px;background:linear-gradient(115deg,var(--deep),var(--navy));color:#fff;display:flex;justify-content:space-between;align-items:center;border-left:6px solid var(--orange)}
+.total small{font-size:12px;letter-spacing:.08em;font-weight:700;opacity:.85}
+.total b{font-size:24px}
+.cond{display:grid;grid-template-columns:130px 1fr;gap:6px 10px;font-size:14px}
+.cond dt{color:var(--muted)}
+.obs li{margin-left:18px;font-size:14px;padding:2px 0}
+.pix{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.pix canvas,.pix img{width:150px;height:150px;border-radius:8px;border:1px solid var(--line);background:#fff;padding:6px}
+.pix .t{flex:1;min-width:180px}
+.pix .t b{display:block;font-size:20px;color:var(--navy)}
+.btn{height:48px;padding:0 18px;border-radius:12px;font-weight:700;font-size:15px;border:1.5px solid var(--line);background:#fff;color:var(--navy);width:100%}
+.btn.pri{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn.zap{background:#1fa855;border-color:#1fa855;color:#fff}
+.btn:disabled{opacity:.55}
+label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:10px}
+input[type=text]{display:block;width:100%;height:46px;margin-top:5px;padding:0 12px;border:1.5px solid var(--line);border-radius:12px;background:#f8fafc;font-size:16px}
+input[type=text]:focus{outline:none;border-color:var(--orange);background:#fff}
+.assin{border:2px dashed var(--line);border-radius:12px;background:#fbfcfd;position:relative;touch-action:none;margin:6px 0}
+.assin canvas{display:block;width:100%;height:190px;touch-action:none}
+.assin .dica{position:absolute;left:0;right:0;bottom:46%;text-align:center;color:#b9c5cf;font-size:14px;pointer-events:none}
+.assin .linha-ass{position:absolute;left:8%;right:8%;bottom:34px;border-bottom:1.5px solid #c9d4dc;pointer-events:none}
+.acoes{display:flex;gap:8px;margin-top:8px}
+.acoes .btn{width:auto;flex:1}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:14px;color:var(--ink);margin:12px 0}
+.check input{width:22px;height:22px;flex-shrink:0;accent-color:var(--orange);margin-top:1px}
+.status{border-radius:14px;padding:14px 16px;font-size:15px}
+.status.ok{background:#e8f6ee;border:1px solid #b9e2c9;color:#145c35}
+.status.av{background:#fff7e6;border:1px solid #ffd59a;color:#7a4b00}
+.status.err{background:#fdecec;border:1px solid #f5c2c2;color:#8a1f1f}
+.status b{display:block;font-size:17px;margin-bottom:2px}
+.msg{color:var(--danger);font-size:14px;margin-top:8px;min-height:1em}
+.rodape{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
+.carregando{text-align:center;padding:60px 20px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="topo"><div class="topo-in"><div class="logo" id="logo">KE</div><div><h1 id="empNome">Orçamento</h1><small id="empInfo"></small></div></div></header>
+<main id="app"><div class="card carregando">Carregando orçamento…</div></main>
+
+<script>
+(() => {
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const money = n => 'R$ ' + Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const dataBR = d => { if (!d) return ''; const [y, m, dd] = String(d).slice(0, 10).split('-'); return `${dd}/${m}/${y}`; };
+  const pad4 = n => String(n || '').padStart(4, '0');
+  const zap = (f, txt) => { let d = String(f || '').replace(/\D/g, ''); if (d.length === 10 || d.length === 11) d = '55' + d; return 'https://wa.me/' + d + (txt ? '?text=' + encodeURIComponent(txt) : ''); };
+  const cfg = window.PLAT_CONFIG || {};
+  const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const token = new URLSearchParams(location.search).get('t') || '';
+  let O = null, sig = null;
+
+  function erroTela(titulo, texto) {
+    $('#app').innerHTML = `<div class="status err"><b>${esc(titulo)}</b>${esc(texto)}</div>`;
+  }
+
+  async function carregar() {
+    const { data, error } = await db.rpc('orc_publico_ver', { p_token: token });
+    if (error) return erroTela('Não foi possível abrir', 'Verifique a sua internet e tente de novo.');
+    if (!data) return erroTela('Link inválido ou cancelado', 'Peça um novo link para a empresa que enviou o orçamento.');
+    O = data; render();
+  }
+
+  function render() {
+    const e = O.empresa || {}, r = O.resumo || {};
+    document.title = `Orçamento nº ${pad4(O.numero)} · ${e.nome || ''}`;
+    $('#empNome').textContent = e.nome || 'Orçamento';
+    $('#empInfo').textContent = [e.slogan, e.telefone, e.cidade].filter(Boolean).join(' · ');
+    $('#logo').innerHTML = e.logo ? `<img src="${esc(e.logo)}" alt="">` : 'K<span style="color:#FF6A00">E</span>';
+    const msgZap = `Olá! Sobre o orçamento nº ${pad4(O.numero)}${O.cliente ? ' (' + O.cliente + ')' : ''}:`;
+    const aprovado = !!O.aprovado_em;
+
+    let h = `<div class="card"><div class="cab"><div><b>Orçamento nº ${pad4(O.numero)}</b>
+        <div class="muted">${O.cliente ? 'Para ' + esc(O.cliente) + ' · ' : ''}emitido em ${dataBR(O.data)}</div>
+        ${O.local ? `<div class="muted">📍 ${esc(O.local)}</div>` : ''}</div>
+        <div class="muted" style="text-align:right">Válido até<br><b style="font-size:15px;color:var(--navy)">${dataBR(O.valido_ate)}</b></div></div></div>`;
+
+    if (aprovado) h += `<div class="status ok"><b>✅ Orçamento aprovado</b>Aprovado por ${esc(O.aprovado_nome)} em ${new Date(O.aprovado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}. Obrigado!</div>`;
+    else if (O.status === 'recusado' || O.status === 'executado') h += `<div class="status av"><b>Orçamento indisponível</b>Este orçamento não está mais aberto para aprovação. Fale com a empresa.</div>`;
+    else if (O.vencido) h += `<div class="status av"><b>Prazo de validade vencido</b>Este orçamento valia até ${dataBR(O.valido_ate)}. Fale com a empresa para receber um orçamento atualizado.</div>`;
+
+    // serviços
+    const servs = r.servicos || [];
+    if (servs.length || (r.extras || []).length) {
+      h += `<div class="card"><h2>🧾 Serviços</h2>`;
+      servs.forEach(s => {
+        const sub = [...(s.ambientes || []).map(a => [a.nome, a.qtd]), ...(s.itens || []).map(i => [i.desc + (i.qtd ? ' · ' + i.qtd : ''), money(i.valor)]),
+                     ...(s.materiais || []).map(m => ['Material: ' + m.desc, m.qtd])];
+        h += `<div class="serv"><div class="l"><b>${esc(s.titulo)}${s.tipo ? ' · ' + esc(s.tipo) : ''}</b><span>${money(s.valor)}</span></div>
+          ${s.qtd ? `<div class="muted">${esc(s.qtd)}</div>` : ''}
+          ${sub.length ? `<ul>${sub.map(([a, b]) => `<li><span>${esc(a)}</span><span>${esc(b)}</span></li>`).join('')}</ul>` : ''}</div>`;
+      });
+      (r.extras || []).forEach(x => { h += `<div class="serv"><div class="l"><b>${esc(x.desc)}</b><span>${money(x.valor)}</span></div><div class="muted">${esc(x.qtd)}</div></div>`; });
+      if (r.desconto > 0) h += `<div class="linha" style="margin-top:6px"><span>Subtotal</span><span>${money(r.bruto)}</span></div>
+          <div class="linha desc"><span>Desconto${r.descontoTxt ? ' (' + esc(r.descontoTxt) + ')' : ''}</span><span>− ${money(r.desconto)}</span></div>`;
+      h += `<div class="total"><small>INVESTIMENTO TOTAL</small><b>${money(r.total ?? O.total)}</b></div></div>`;
+    } else {
+      h += `<div class="card"><div class="total" style="margin:0"><small>INVESTIMENTO TOTAL</small><b>${money(O.total)}</b></div></div>`;
+    }
+
+    // condições
+    const cond = [['Pagamento', r.pagamento], ['Prazo de execução', r.prazo], ['Garantia', r.garantia], ['Validade', dataBR(O.valido_ate)]].filter(c => c[1]);
+    if (cond.length || (r.obs || []).length) {
+      h += `<div class="card"><h2>📋 Condições</h2><dl class="cond">${cond.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl>
+        ${(r.obs || []).length ? `<ul class="obs" style="margin-top:10px">${r.obs.map(o => `<li>${esc(o)}</li>`).join('')}</ul>` : ''}</div>`;
+    }
+
+    // Pix
+    if (r.pix && r.pix.codigo) {
+      h += `<div class="card"><h2>💠 Pagar com Pix</h2><div class="pix"><canvas id="qr"></canvas><div class="t">
+          <span class="muted">${r.pix.modo === 'entrada' ? 'Entrada de ' + String(r.pix.pct).replace('.', ',') + '%' : 'Valor total'}</span><b>${money(r.pix.valor)}</b>
+          <span class="muted">${esc(r.pix.nome || '')}</span>
+          <button class="btn" id="copiaPix" style="margin-top:10px">Copiar código Pix (copia e cola)</button></div></div></div>`;
+    }
+
+    // aprovação
+    if (!aprovado && !O.vencido && !['recusado', 'executado'].includes(O.status)) {
+      h += `<div class="card" id="cardAprovar"><h2>✍️ Aprovar orçamento</h2>
+        <label>Seu nome completo<input type="text" id="nome" autocomplete="name" value="${esc(O.cliente || '')}"></label>
+        <div style="font-size:13px;font-weight:600;color:var(--navy)">Sua assinatura</div>
+        <div class="assin"><canvas id="cv"></canvas><div class="linha-ass"></div><div class="dica" id="dica">Assine aqui com o dedo</div></div>
+        <div class="acoes"><button class="btn" id="limpar" style="height:40px">Limpar</button></div>
+        <label class="check"><input type="checkbox" id="aceite"> Li e concordo com os serviços, valores e condições deste orçamento.</label>
+        <button class="btn pri" id="aprovar" disabled>Aprovar orçamento</button>
+        <div class="msg" id="msg"></div></div>`;
+    }
+    if (e.telefone) h += `<a class="btn zap" style="display:flex;align-items:center;justify-content:center;text-decoration:none" target="_blank" rel="noopener" href="${zap(e.telefone, msgZap)}">💬 Falar com ${esc(e.nome || 'a empresa')} no WhatsApp</a>`;
+    h += `<p class="rodape">${esc(e.nome || '')}${e.documento ? ' · ' + esc(e.documento) : ''}</p>`;
+    $('#app').innerHTML = h;
+
+    if (r.pix && r.pix.codigo) desenharQR(r.pix.codigo);
+    if ($('#cardAprovar')) prepararAssinatura();
+  }
+
+  function desenharQR(texto) {
+    try {
+      const qr = qrcode(0, 'M'); qr.addData(texto); qr.make();
+      const n = qr.getModuleCount(), cv = $('#qr'), esc2 = 6, tam = (n + 2) * esc2;
+      cv.width = tam; cv.height = tam;
+      const c = cv.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, tam, tam); c.fillStyle = '#000';
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (qr.isDark(i, j)) c.fillRect((j + 1) * esc2, (i + 1) * esc2, esc2, esc2);
+    } catch (e) { console.warn(e); }
+    $('#copiaPix').onclick = async () => {
+      try { await navigator.clipboard.writeText(texto); } catch (e) { const t = document.createElement('textarea'); t.value = texto; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+      $('#copiaPix').textContent = '✓ Código copiado! Cole no app do banco.';
+    };
+  }
+
+  function prepararAssinatura() {
+    const cv = $('#cv'), dpr = window.devicePixelRatio || 1;
+    cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr;
+    const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr); ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0b2233'; ctx.fillStyle = '#0b2233';
+    sig = { cv, desenhou: false, ativo: false, last: null };
+    const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    cv.addEventListener('pointerdown', e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); sig.ativo = true; sig.last = pos(e); ctx.beginPath(); ctx.arc(sig.last[0], sig.last[1], 1.1, 0, 7); ctx.fill(); sig.desenhou = true; $('#dica').hidden = true; atualizar(); });
+    cv.addEventListener('pointermove', e => { if (!sig.ativo) return; e.preventDefault(); const p = pos(e); ctx.beginPath(); ctx.moveTo(...sig.last); ctx.lineTo(...p); ctx.stroke(); sig.last = p; });
+    const fim = () => { sig.ativo = false; }; cv.addEventListener('pointerup', fim); cv.addEventListener('pointercancel', fim);
+    $('#limpar').onclick = () => { ctx.clearRect(0, 0, cv.width, cv.height); sig.desenhou = false; $('#dica').hidden = false; atualizar(); };
+    $('#aceite').onchange = atualizar; $('#nome').oninput = atualizar;
+    $('#aprovar').onclick = aprovar;
+  }
+  function atualizar() { $('#aprovar').disabled = !(sig && sig.desenhou && $('#aceite').checked && $('#nome').value.trim().length >= 3); }
+
+  function recortar() {
+    const cv = sig.cv, d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+    let x0 = cv.width, y0 = cv.height, x1 = 0, y1 = 0;
+    for (let y = 0; y < cv.height; y += 2) for (let x = 0; x < cv.width; x += 2) if (d[(y * cv.width + x) * 4 + 3] > 10) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    const m = 12; x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(cv.width, x1 + m); y1 = Math.min(cv.height, y1 + m);
+    const o = document.createElement('canvas'); o.width = x1 - x0; o.height = y1 - y0;
+    o.getContext('2d').drawImage(cv, x0, y0, o.width, o.height, 0, 0, o.width, o.height);
+    return { src: o.toDataURL('image/png'), w: o.width, h: o.height };
+  }
+
+  async function aprovar() {
+    const b = $('#aprovar'); b.disabled = true; b.textContent = 'Enviando…'; $('#msg').textContent = '';
+    const { error } = await db.rpc('orc_publico_aprovar', { p_token: token, p_nome: $('#nome').value.trim(), p_assinatura: recortar() });
+    if (error) { $('#msg').textContent = error.message || 'Não foi possível aprovar. Tente de novo.'; b.textContent = 'Aprovar orçamento'; atualizar(); return; }
+    await carregar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (!token) erroTela('Link incompleto', 'Abra o link exatamente como recebeu da empresa.');
+  else carregar().catch(() => erroTela('Não foi possível abrir', 'Verifique a sua internet e tente de novo.'));
+})();
+</script>
+</body>
+</html>

@@ -3098,6 +3098,8 @@ details.card[open]>summary{margin-bottom:14px}
       <button class="btn-sec" data-act="del-ass-cliente" id="btnDelAssCli" hidden>Apagar</button>
     </div>
     <div class="hint">Ao assinar, o orçamento é marcado como "Aprovado" e a assinatura sai no PDF.</div>
+    <div class="sublabel">Aprovação à distância</div>
+    <div id="linkBox"></div>
     <div class="sublabel">Depois de aprovado</div>
     <div class="btn-row">
       <button class="btn-sec" data-act="recibo">🧾 Recibo de pagamento</button>
@@ -3359,6 +3361,7 @@ function novoEstado(){
 let state=null;
 let fotos=[];
 let salvoNoBanco=false, pendente=false, avisouSalvar=false;
+let linkAtual=null, aprovadoEm=null, aprovadoNome=null;
 
 function temConteudo(){ const c=calcTudo(); return !!(String(state.cliente||'').trim() || String(state.local||'').trim() || c.bruto>0 || fotos.length); }
 function dadosParaSalvar(){ const d=JSON.parse(JSON.stringify(state)); delete d.empresa; return d; }
@@ -3368,7 +3371,7 @@ async function persistir(forcar){
   const c=calcTudo();
   const row={id:state.id, empresa_id:EMP, numero:parseInt(state.numero,10)||1, cliente_id:state.clienteId||null,
     cliente_nome:String(state.cliente||'').trim()||null, local:String(state.local||'').trim()||null, data:state.data||hojeISO(),
-    status:state.status, total:Math.round(c.total*100)/100, dados:dadosParaSalvar()};
+    status:state.status, total:Math.round(c.total*100)/100, dados:dadosParaSalvar(), resumo:montarResumo()};
   if(!salvoNoBanco) row.criado_por=CTX.usuario.id;
   let r=await db.from('orc_orcamentos').upsert(row);
   if(r.error && r.error.code==='23505'){                            // número já usado por outro orçamento
@@ -3399,6 +3402,7 @@ async function carregarRegistro(id){
   Object.assign(state,{id:row.id, numero:String(row.numero), status:row.status, data:String(row.data||hojeISO()).slice(0,10),
     cliente:row.cliente_nome??state.cliente??'', local:row.local??state.local??'', clienteId:row.cliente_id});
   state.empresa=cfg.empresa; salvoNoBanco=true;
+  linkAtual=row.link_token||null; aprovadoEm=row.aprovado_em||null; aprovadoNome=row.aprovado_nome||null;
   fotos=await carregarFotos(row.id);
   try{ localStorage.setItem('orc_atual_'+EMP,row.id); }catch(e){}
   return true;
@@ -3634,8 +3638,9 @@ function renderBrand(){
   $('#btnDelAssEmp').hidden = !cfg.assEmpresa;
 }
 function renderAssCliente(){
-  $('#assCliPrev').innerHTML = state.assCliente ? `<img src="${state.assCliente.src}" alt="Assinatura do cliente"><span class="hint" style="margin:0">Assinado em ${isoBR(state.assData)}</span>` : '<span class="hint" style="margin:0">Ainda não assinado.</span>';
-  $('#btnDelAssCli').hidden = !state.assCliente;
+  $('#assCliPrev').innerHTML = state.assCliente ? `<img src="${state.assCliente.src}" alt="Assinatura do cliente"><span class="hint" style="margin:0">${state.assVia==='link'?`Assinado pelo link por <b>${esc(state.assNome||'')}</b> em ${esc(horaAss())}`:'Assinado em '+isoBR(state.assData)}</span>` : '<span class="hint" style="margin:0">Ainda não assinado.</span>';
+  $('#btnDelAssCli').hidden = !state.assCliente || state.assVia==='link';
+  renderLink();
 }
 function renderTabela(){
   const rows=[];
@@ -3901,7 +3906,11 @@ document.addEventListener('click',async e=>{
         state.assCliente=a; state.assData=hojeISO();
         if(state.status==='rascunho'||state.status==='enviado') state.status='aprovado';
         syncInputs(); renderAssCliente(); recalc(); save(); toast('Assinado! Orçamento marcado como aprovado.'); }); return;
-    case 'del-ass-cliente': state.assCliente=null; state.assData=''; renderAssCliente(); save(); return;
+    case 'del-ass-cliente': if(state.assVia==='link') return toast('A assinatura feita pelo cliente no link não pode ser apagada.'); state.assCliente=null; state.assData=''; renderAssCliente(); save(); return;
+    case 'gerar-link': await gerarLink(); return;
+    case 'copiar-link': copiarTexto(urlLink()); return;
+    case 'wa-link': window.open('https://wa.me/'+foneWa(state.foneCliente)+'?text='+encodeURIComponent(mensagemCliente(calcTudo(),urlLink())),'_blank'); return;
+    case 'cancelar-link': await cancelarLink(); return;
     case 'sig-limpar': sigLimpar(); return;
     case 'sig-ok': sigSalvar(); return;
     case 'fechar-modal': fecharModal(); return;
@@ -3952,15 +3961,16 @@ async function novoOrcamento(){
     p.pix={modo:velho.pix.modo, pct:velho.pix.pct};
     KEYS.forEach(k=>['ativo','tipo','preco','modo','minimo','pecaCm','rend','perda'].forEach(f=>p.servicos[k][f]=velho.servicos[k][f]));
   }
-  state=p; fotos=[]; salvoNoBanco=false;
+  state=p; fotos=[]; salvoNoBanco=false; linkAtual=null; aprovadoEm=null; aprovadoNome=null;
   renderTudo(); fecharLista(); window.scrollTo({top:0,behavior:'smooth'});
   toast('Novo orçamento nº '+pad4(p.numero)+'. Ele é salvo assim que você começar a preencher.');
 }
 async function abrirLista(){
   await persistir().catch(erroSalvar);
-  const rows=await db.from('orc_orcamentos').select('id,numero,cliente_nome,local,data,status,total,atualizado_em')
+  const rows=await db.from('orc_orcamentos').select('id,numero,cliente_nome,local,data,status,total,atualizado_em,aprovado_em')
     .eq('empresa_id',EMP).order('atualizado_em',{ascending:false}).then(ok);
-  listaCache=rows.map(r=>({id:r.id, numero:r.numero, cliente:r.cliente_nome, local:r.local, data:String(r.data||'').slice(0,10), status:r.status, total:Number(r.total)||0}));
+  listaCache=rows.map(r=>({id:r.id, numero:r.numero, cliente:r.cliente_nome, local:r.local, data:String(r.data||'').slice(0,10), status:r.status, total:Number(r.total)||0, assinado:!!r.aprovado_em}));
+  verificarAprovacao();
   if(state && !salvoNoBanco) listaCache.unshift({id:state.id, numero:state.numero, cliente:state.cliente, local:state.local, data:state.data, status:state.status, total:calcTudo().total, novo:true});
   renderLista(); $('#painel').hidden=false; document.body.classList.add('lock');
 }
@@ -3981,7 +3991,7 @@ function renderLista(){
   const lista=listaCache.filter(r=>(filtroStatus==='todos'||r.status===filtroStatus) &&
     (!q || [r.cliente,r.local,pad4(r.numero),r.numero].join(' ').toLowerCase().includes(q)));
   $('#listaOrc').innerHTML = lista.map(r=>`<div class="orc st-${r.status}${state&&r.id===state.id?' atual':''}" data-id="${r.id}">
-      <div class="orc-main" data-act="abrir-orc"><b>Nº ${pad4(r.numero)} · ${esc(r.cliente||'Sem nome')}</b><small>${esc(r.local||'—')} · ${isoBR(r.data)}${state&&r.id===state.id?' · aberto agora':''}${r.novo?' · ainda não salvo':''}</small></div>
+      <div class="orc-main" data-act="abrir-orc"><b>Nº ${pad4(r.numero)} · ${esc(r.cliente||'Sem nome')}</b><small>${esc(r.local||'—')} · ${isoBR(r.data)}${state&&r.id===state.id?' · aberto agora':''}${r.novo?' · ainda não salvo':''}${r.assinado?' · ✍️ assinado pelo cliente':''}</small></div>
       <div class="orc-side"><b>${money(r.total||0)}</b>
         <select data-st="1" aria-label="Situação">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}"${r.status===k?' selected':''}>${v}</option>`).join('')}</select></div>
       <div class="orc-acts"><button data-act="abrir-orc">Abrir</button><button data-act="dup-orc">Duplicar</button><button class="del" data-act="del-orc">Excluir</button></div>
@@ -4011,7 +4021,8 @@ async function duplicarOrcamento(id){
   const fotosOrig=fotos.map(f=>({...f}));
   state=JSON.parse(JSON.stringify(dadosParaSalvar())); state=merge(novoEstado(),state);
   Object.assign(state,{id:novoId(), numero:await proximoNumero(), status:'rascunho', data:hojeISO(), assCliente:null, assData:'', criado:Date.now()});
-  state.empresa=cfg.empresa; salvoNoBanco=false; fotos=[];
+  state.empresa=cfg.empresa; salvoNoBanco=false; fotos=[]; linkAtual=null; aprovadoEm=null; aprovadoNome=null;
+  ['assEmIso','assNome','assVia'].forEach(k=>delete state[k]);
   renderTudo(); await persistir(true).catch(erroSalvar);
   for(const [i,f] of fotosOrig.entries()){
     const n={...f, id:novoId(), caminho:null}; fotos.push(n);
@@ -4032,7 +4043,7 @@ async function excluirOrcamento(id){
     listaCache=listaCache.filter(r=>r.id!==id);
     if(state && id===state.id){
       const outro=listaCache.find(r=>!r.novo);
-      if(!(outro && await carregarRegistro(outro.id))){ state=novoEstado(); state.numero=await proximoNumero(); fotos=[]; salvoNoBanco=false; }
+      if(!(outro && await carregarRegistro(outro.id))){ state=novoEstado(); state.numero=await proximoNumero(); fotos=[]; salvoNoBanco=false; linkAtual=null; aprovadoEm=null; aprovadoNome=null; }
       renderTudo();
     }
     renderLista(); toast('Orçamento excluído.');
@@ -4099,10 +4110,11 @@ $('#restoreInput').addEventListener('change',async e=>{
 /* =========================================================
    ENVIAR (WhatsApp / compartilhar)
 ========================================================= */
-function mensagemCliente(c){
+function mensagemCliente(c,link){
   const nome=(state.cliente||'').trim().split(' ')[0];
   return `Olá${nome?' '+nome:''}! Segue o orçamento nº ${pad4(state.numero)} da ${cfg.empresa.nome||'KE Obra Fácil'}.\n`+
     `Valor total: ${money(c.total)}\nVálido até ${somaDias(state.data,Math.max(1,parseInt(state.validade,10)||7))}.\n`+
+    (link?`\nPara conferir e aprovar com a sua assinatura, é só abrir:\n${link}\n\n`:'')+
     `Qualquer dúvida, estou à disposição.`;
 }
 async function entregarPDF(doc,arquivo,texto,enviar){
@@ -4120,9 +4132,84 @@ async function entregarPDF(doc,arquivo,texto,enviar){
 }
 async function enviarOrcamento(){
   const r=construirPDF(); if(!r) return;
-  const ok=await entregarPDF(r.doc,r.arquivo,mensagemCliente(calcTudo()),true);
+  let link=null;
+  if(!aprovadoEm && !['aprovado','executado','recusado'].includes(state.status)){
+    try{ await persistir(true); if(!linkAtual) linkAtual=await P.rpc('orc_gerar_link',{p_orcamento:state.id}); link=urlLink(); renderLink(); }
+    catch(e){ console.warn('link',e); }
+  }
+  const ok=await entregarPDF(r.doc,r.arquivo,mensagemCliente(calcTudo(),link),true);
   if(ok && state.status==='rascunho'){ state.status='enviado'; syncInputs(); recalc(); save(); }
 }
+
+/* =========================================================
+   LINK PARA O CLIENTE APROVAR E ASSINAR
+========================================================= */
+function horaAss(){ return state.assEmIso ? new Date(state.assEmIso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : isoBR(state.assData); }
+function urlLink(){ return linkAtual ? new URL('aprovar.html?t='+linkAtual, location.href).href : ''; }
+/* o que o cliente vê na página do link (nunca custos e lucro internos) */
+function montarResumo(){
+  const c=calcTudo(), servicos=[];
+  KEYS.forEach(k=>{
+    const s=state.servicos[k], r=c.serv[k]; if(!s.ativo || r.total<=0) return;
+    const item={titulo:SERV[k].titulo, tipo:(s.tipo&&s.tipo!==SERV[k].titulo)?s.tipo:'', valor:Math.round(r.total*100)/100};
+    if(kind(k)==='lista') item.itens=s.materiais.filter(m=>m.desc.trim()||matTotal(m)>0).map(m=>({desc:m.desc.trim()||'Item', qtd:fmtQ(qtdMat(m))+' '+(m.un||'un'), valor:matTotal(m)}));
+    else {
+      item.qtd=r.cobr>0?qF(k,r.cobr,true):'';
+      item.ambientes=s.itens.filter(i=>qtdItem(k,i)>0).map(i=>({nome:i.nome.trim()||'Ambiente', qtd:qF(k,qtdItem(k,i),true)}));
+      item.materiais=s.materiais.filter(m=>m.desc.trim()).map(m=>({desc:m.desc.trim(), qtd:fmtQ(qtdMat(m))+' '+(m.un||'un')}));
+    }
+    servicos.push(item);
+  });
+  const vp=valorPix(c), temPix=vp>0 && String(cfg.pix.chave||'').trim();
+  return {servicos,
+    extras:state.extras.filter(m=>m.desc.trim()||matTotal(m)>0).map(m=>({desc:m.desc.trim()||'Item', qtd:fmtQ(qtdMat(m))+' '+(m.un||'un'), valor:matTotal(m)})),
+    bruto:c.bruto, desconto:c.desconto, descontoTxt:state.desconto.tipo==='%'&&c.desconto>0?fmtQ(toNum(state.desconto.valor))+'%':'', total:c.total,
+    pagamento:state.pagamento||'', prazo:state.prazo||'', garantia:state.garantia||'',
+    obs:String(state.obs||'').split('\n').map(t=>t.trim()).filter(Boolean),
+    pix: temPix ? {valor:vp, modo:state.pix.modo, pct:toNum(state.pix.pct), codigo:pixPayload(vp), nome:cfg.pix.nome||cfg.empresa.nome} : null};
+}
+function renderLink(){
+  const box=$('#linkBox'); if(!box) return;
+  if(aprovadoEm){
+    box.innerHTML=`<div class="hint" style="margin:0;color:#1e8a50;font-weight:600">✅ Aprovado pelo cliente (${esc(aprovadoNome||'')}) em ${new Date(aprovadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}, pelo link.</div>`;
+    return;
+  }
+  if(linkAtual){
+    box.innerHTML=`<input readonly value="${esc(urlLink())}" onclick="this.select()" style="font-size:13px;margin-bottom:8px">
+      <div class="btn-row"><button class="btn-sec" data-act="copiar-link">📋 Copiar link</button><button class="btn-pri" data-act="wa-link">💬 Enviar no WhatsApp</button></div>
+      <button class="link" data-act="cancelar-link" style="margin-top:4px">Cancelar este link</button>
+      <div class="hint">O cliente abre o link sem precisar de login, confere o orçamento, assina com o dedo e aprova. Você é avisado aqui.</div>`;
+  }else{
+    box.innerHTML=`<div class="btn-row"><button class="btn-sec" data-act="gerar-link">🔗 Gerar link para o cliente assinar</button></div>
+      <div class="hint">O botão 📤 Enviar já manda o link junto com o PDF.</div>`;
+  }
+}
+async function gerarLink(){
+  try{
+    if(!temConteudo()) return toast('Preencha o orçamento antes de gerar o link.');
+    await persistir(true);
+    linkAtual=await P.rpc('orc_gerar_link',{p_orcamento:state.id});
+    renderLink(); copiarTexto(urlLink());
+  }catch(e){ toast('Não foi possível gerar o link: '+e.message,5000); }
+}
+async function cancelarLink(){
+  if(!confirm('Cancelar o link? Quem tiver o link antigo não vai mais conseguir abrir nem aprovar.')) return;
+  try{ await P.rpc('orc_cancelar_link',{p_orcamento:state.id}); linkAtual=null; renderLink(); toast('Link cancelado.'); }
+  catch(e){ toast('Não foi possível cancelar: '+e.message,5000); }
+}
+/* o cliente aprovou pelo link enquanto o orçamento estava aberto aqui? */
+async function verificarAprovacao(){
+  if(!state || !salvoNoBanco || aprovadoEm || !linkAtual) return;
+  try{
+    const r=await db.from('orc_orcamentos').select('aprovado_em,aprovado_nome').eq('id',state.id).maybeSingle().then(ok);
+    if(r && r.aprovado_em){
+      clearTimeout(save._t); await persistir().catch(()=>{});   // guarda o que estava sendo digitado
+      await carregarRegistro(state.id); renderTudo();
+      toast('✅ '+(r.aprovado_nome||'O cliente')+' aprovou e assinou o orçamento pelo link!',7000);
+    }
+  }catch(e){ console.warn(e); }
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) verificarAprovacao(); });
 
 /* =========================================================
    LISTA DE COMPRAS
@@ -4380,7 +4467,7 @@ function montarPDF(J,calc,nivel,comFotos,docTipo,extra={}){
     }
   }
   const assEmp={nome, rotulo:'Contratada', img:cfg.assEmpresa};
-  const assCli={nome:state.cliente||'Cliente', rotulo:state.assCliente?'Contratante - assinado em '+isoBR(state.assData):'Contratante', img:state.assCliente};
+  const assCli={nome:(state.assVia==='link'&&state.assNome)||state.cliente||'Cliente', rotulo:!state.assCliente?'Contratante':state.assVia==='link'?'Contratante - assinado eletronicamente em '+horaAss():'Contratante - assinado em '+isoBR(state.assData), img:state.assCliente};
 
   cabecalho1();
   blocoCliente();
@@ -4644,6 +4731,7 @@ async function gerarDocumento(tipo,modo){
       if(rows.length) abriu=await carregarRegistro(rows[0].id);
     }
     if(!abriu){ state=novoEstado(); state.numero=await proximoNumero(); fotos=[]; salvoNoBanco=false; }
+    setInterval(()=>{ if(!document.hidden) verificarAprovacao(); },40000);
     renderTudo();
     if(!podeEditarEmpresa) document.querySelectorAll('#cardEmpresa [data-k^="empresa."], #logoInput, [data-act="del-logo"]').forEach(el=>el.disabled=true);
     if(!podeConfigurar){ document.querySelectorAll('#cardEmpresa input, #cardEmpresa select, #cardEmpresa textarea, #cardEmpresa button').forEach(el=>el.disabled=true); $('#avisoCfg').hidden=false; }
