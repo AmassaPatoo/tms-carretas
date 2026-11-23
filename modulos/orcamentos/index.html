@@ -3328,6 +3328,13 @@ function baixar(blob,nome){
 }
 function primeiroFone(f){ const partes=String(f||'').split(/\s*(?:\/|,|;|\||\be\b|\bou\b)\s*/i).map(p=>p.replace(/\D/g,'')).filter(p=>p.length>=10); let d=partes[0]||''; if(d.length===10||d.length===11) d='55'+d; return (d.length===12||d.length===13)?d:''; }
 function foneWa(f){ return primeiroFone(f); }
+/* No celular abre o app; no computador vai direto ao WhatsApp Web (sem a página intermediária) */
+function ehCelular(){ return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints>1 && matchMedia('(pointer:coarse)').matches); }
+function abrirWhats(fone,texto){
+  const t=encodeURIComponent(texto||''), f=fone||'';
+  if(ehCelular()) return window.open('https://wa.me/'+f+'?text='+t,'_blank');
+  window.open('https://web.whatsapp.com/send?'+(f?'phone='+f+'&':'')+'text='+t,'ke-whatsapp');
+}
 
 /* Valor por extenso (reais) */
 function extenso(v){
@@ -4044,7 +4051,7 @@ document.addEventListener('click',async e=>{
     case 'enviar': await enviarOrcamento(); return;
     case 'compras': abrirCompras(); return;
     case 'copiar-compras': copiarTexto(textoCompras()); return;
-    case 'wa-compras': window.open('https://wa.me/?text='+encodeURIComponent(textoCompras()),'_blank'); return;
+    case 'wa-compras': abrirWhats('',textoCompras()); return;
     case 'ass-empresa': coletarAssinatura('Sua assinatura',a=>{ cfg.assEmpresa=a; saveCfg(); renderBrand(); toast('Assinatura salva.'); }); return;
     case 'del-ass-empresa': cfg.assEmpresa=null; saveCfg(); renderBrand(); return;
     case 'ass-cliente': coletarAssinatura('Assinatura de '+(state.cliente||'cliente'),a=>{
@@ -4054,7 +4061,7 @@ document.addEventListener('click',async e=>{
     case 'del-ass-cliente': if(state.assVia==='link') return toast('A assinatura feita pelo cliente no link não pode ser apagada.'); state.assCliente=null; state.assData=''; renderAssCliente(); save(); return;
     case 'gerar-link': await gerarLink(); return;
     case 'copiar-link': copiarTexto(urlLink()); return;
-    case 'wa-link': window.open('https://wa.me/'+foneWa(state.foneCliente)+'?text='+encodeURIComponent(mensagemCliente(calcTudo(),urlLink())),'_blank'); return;
+    case 'wa-link': abrirWhats(foneWa(state.foneCliente),mensagemCliente(calcTudo(),urlLink())); return;
     case 'cancelar-link': await cancelarLink(); return;
     case 'sig-limpar': sigLimpar(); return;
     case 'sig-ok': sigSalvar(); return;
@@ -4063,7 +4070,7 @@ document.addEventListener('click',async e=>{
     case 'cobrar-pix': abrirCobrancaPix(); return;
     case 'pix-valor': $('#cpValor').value=b.dataset.v; atualizarCobrancaPix(); return;
     case 'pix-copiar': copiarTexto($('#cpCodigo').value); return;
-    case 'pix-wa': window.open('https://wa.me/'+foneWa(state.foneCliente)+'?text='+encodeURIComponent(mensagemPix()),'_blank'); return;
+    case 'pix-wa': abrirWhats(foneWa(state.foneCliente),mensagemPix()); return;
     case 'pix-baixar': baixarQRPix(); return;
     case 'pix-cadastrar': fecharModal(); { const d=$('#cardEmpresa'); d.open=true; const i=document.querySelector('[data-c="pix.chave"]'); i.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>i.focus(),400); } return;
     case 'garantia': abrirGarantia(); return;
@@ -4287,7 +4294,7 @@ async function entregarPDF(doc,arquivo,texto,enviar){
   }catch(e){ if(e.name==='AbortError') return false; }
   baixar(blob,arquivo);
   const tel=foneWa(state.foneCliente);
-  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent(texto),'_blank');
+  abrirWhats(tel,texto);
   toast('PDF baixado. Anexe o arquivo na conversa do WhatsApp que abriu.',5000);
   return true;
 }
@@ -4453,7 +4460,7 @@ function crc16(s){ let c=0xFFFF; for(let i=0;i<s.length;i++){ c^=s.charCodeAt(i)
 function pixPayload(valor){
   const f=(id,v)=>id+String(v.length).padStart(2,'0')+v;
   const nome=(semAcento(cfg.pix.nome||cfg.empresa.nome)||'RECEBEDOR').slice(0,25);
-  const cidade=(semAcento(cfg.pix.cidade||(cfg.empresa.cidade||'').split('/')[0])||'BRASIL').slice(0,15);
+  const cidade=(semAcento(String(cfg.pix.cidade||cfg.empresa.cidade||'').split(/[\/,\-–]/)[0])||'BRASIL').slice(0,15);
   const txid=('ORC'+pad4(state.numero)).replace(/[^A-Za-z0-9]/g,'').slice(0,25);
   const p=f('00','01')+f('26',f('00','br.gov.bcb.pix')+f('01',chavePix()))+f('52','0000')+f('53','986')+
     (valor>0?f('54',valor.toFixed(2)):'')+f('58','BR')+f('59',nome)+f('60',cidade)+f('62',f('05',txid))+'6304';

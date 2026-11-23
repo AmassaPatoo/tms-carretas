@@ -187,13 +187,15 @@
     const l = st.clientes.filter(c => !q || [c.nome, c.telefone, c.cidade, c.documento, c.email].join(' ').toLowerCase().includes(q));
     $('#listaCli').innerHTML = l.map(c => `<div class="linha"><div class="info"><b>${esc(c.nome)}</b>
         <small>${esc([c.telefone, c.cidade, c.documento].filter(Boolean).join(' · ') || '—')}</small></div>
-        ${c.telefone ? `<a class="btn sm" href="https://wa.me/${foneWa(c.telefone)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
+        ${c.telefone ? `<a class="btn sm" href="${linkWhats(foneWa(c.telefone))}" target="${ehCelular()?'_blank':'ke-whatsapp'}" rel="noopener">WhatsApp</a>` : ''}
         <button class="btn sm" data-cli="${c.id}">Editar</button></div>`).join('')
       || `<div class="card vazio">${q ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado ainda.'}</div>`;
     $$('[data-cli]').forEach(b => b.onclick = () => formCliente(st.clientes.find(c => c.id === b.dataset.cli)));
   }
   function primeiroFone(f){ const partes=String(f||'').split(/\s*(?:\/|,|;|\||\be\b|\bou\b)\s*/i).map(p=>p.replace(/\D/g,'')).filter(p=>p.length>=10); let d=partes[0]||''; if(d.length===10||d.length===11) d='55'+d; return (d.length===12||d.length===13)?d:''; }
   const foneWa = primeiroFone;
+  const ehCelular = () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && matchMedia('(pointer:coarse)').matches);
+  const linkWhats = f => ehCelular() ? 'https://wa.me/' + f : 'https://web.whatsapp.com/send?phone=' + f;
   function formCliente(c = {}) {
     modal(`<h3>${c.id ? 'Editar cliente' : 'Novo cliente'}</h3>
       <form id="fCli" class="form-grid">
