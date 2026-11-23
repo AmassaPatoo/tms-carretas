@@ -192,7 +192,8 @@
       || `<div class="card vazio">${q ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado ainda.'}</div>`;
     $$('[data-cli]').forEach(b => b.onclick = () => formCliente(st.clientes.find(c => c.id === b.dataset.cli)));
   }
-  function foneWa(f) { let d = String(f || '').replace(/\D/g, ''); if (d.length === 10 || d.length === 11) d = '55' + d; return d; }
+  function primeiroFone(f){ const partes=String(f||'').split(/\s*(?:\/|,|;|\||\be\b|\bou\b)\s*/i).map(p=>p.replace(/\D/g,'')).filter(p=>p.length>=10); let d=partes[0]||''; if(d.length===10||d.length===11) d='55'+d; return (d.length===12||d.length===13)?d:''; }
+  const foneWa = primeiroFone;
   function formCliente(c = {}) {
     modal(`<h3>${c.id ? 'Editar cliente' : 'Novo cliente'}</h3>
       <form id="fCli" class="form-grid">

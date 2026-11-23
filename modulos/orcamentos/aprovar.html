@@ -86,7 +86,8 @@ input[type=text]:focus{outline:none;border-color:var(--orange);background:#fff}
   const money = n => 'R$ ' + Number(n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const dataBR = d => { if (!d) return ''; const [y, m, dd] = String(d).slice(0, 10).split('-'); return `${dd}/${m}/${y}`; };
   const pad4 = n => String(n || '').padStart(4, '0');
-  const zap = (f, txt) => { let d = String(f || '').replace(/\D/g, ''); if (d.length === 10 || d.length === 11) d = '55' + d; return 'https://wa.me/' + d + (txt ? '?text=' + encodeURIComponent(txt) : ''); };
+  function primeiroFone(f){ const partes=String(f||'').split(/\s*(?:\/|,|;|\||\be\b|\bou\b)\s*/i).map(p=>p.replace(/\D/g,'')).filter(p=>p.length>=10); let d=partes[0]||''; if(d.length===10||d.length===11) d='55'+d; return (d.length===12||d.length===13)?d:''; }
+  const zap = (f, txt) => 'https://wa.me/' + primeiroFone(f) + (txt ? '?text=' + encodeURIComponent(txt) : '');
   const cfg = window.PLAT_CONFIG || {};
   const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const token = new URLSearchParams(location.search).get('t') || '';
@@ -166,7 +167,7 @@ input[type=text]:focus{outline:none;border-color:var(--orange);background:#fff}
         <button class="btn pri" id="aprovar" disabled>Aprovar orçamento</button>
         <div class="msg" id="msg"></div></div>`;
     }
-    if (e.telefone) h += `<a class="btn zap" style="display:flex;align-items:center;justify-content:center;text-decoration:none" target="_blank" rel="noopener" href="${zap(e.telefone, msgZap)}">💬 Falar com ${esc(e.nome || 'a empresa')} no WhatsApp</a>`;
+    if (primeiroFone(e.telefone)) h += `<a class="btn zap" style="display:flex;align-items:center;justify-content:center;text-decoration:none" target="_blank" rel="noopener" href="${zap(e.telefone, msgZap)}">💬 Falar com ${esc(e.nome || 'a empresa')} no WhatsApp</a>`;
     h += `<p class="rodape">${esc(e.nome || '')}${e.documento ? ' · ' + esc(e.documento) : ''}</p>`;
     $('#app').innerHTML = h;
 

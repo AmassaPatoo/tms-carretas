@@ -3264,11 +3264,8 @@ function baixar(blob,nome){
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nome;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
 }
-function foneWa(f){
-  let d=String(f||'').replace(/\D/g,'');
-  if(d.length===10||d.length===11) d='55'+d;
-  return (d.length===12||d.length===13) ? d : '';
-}
+function primeiroFone(f){ const partes=String(f||'').split(/\s*(?:\/|,|;|\||\be\b|\bou\b)\s*/i).map(p=>p.replace(/\D/g,'')).filter(p=>p.length>=10); let d=partes[0]||''; if(d.length===10||d.length===11) d='55'+d; return (d.length===12||d.length===13)?d:''; }
+function foneWa(f){ return primeiroFone(f); }
 
 /* Valor por extenso (reais) */
 function extenso(v){
