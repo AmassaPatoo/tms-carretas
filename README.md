@@ -102,6 +102,13 @@ Para atualizar depois: suba os arquivos alterados de novo e **aumente o número 
 
 A loja só enxerga o próprio pedido; nada de outros preços, lojas ou custos.
 
+### 🤖 Robô de pesquisa na internet
+
+Uma tarefa agendada do Claude pesquisa toda semana os itens de `robo/itens.json` em sites e anúncios
+(seguindo `robo/INSTRUCOES.md`) e grava `robo/achados.json` (+ cópia em `robo/historico/`).
+O robô **não acessa o Supabase**: na aba **🤖 Internet** você confere os achados e escolhe o que guardar
+no histórico de preços. Para mudar a lista de itens do robô, edite `robo/itens.json` (ou peça ao Claude).
+
 ## Instalar no celular
 
 - **Android (Chrome)**: abra o endereço → menu ⋮ → **Instalar app** (ou pelo botão 👤 → Instalar aplicativo).

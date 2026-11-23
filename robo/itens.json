@@ -1,0 +1,67 @@
+{
+  "cidade": "Manaus",
+  "estado": "AM",
+  "obs": "Lista de itens que o robô pesquisa toda semana. Para mudar, peça ao Claude ou edite este arquivo.",
+  "itens": [
+    {
+      "termo": "Piso vinílico colado 2 mm",
+      "unidade": "m²",
+      "dica": "régua ou manta vinílica colada de 2 mm; converter caixa para preço por m²"
+    },
+    {
+      "termo": "Piso vinílico clicado (SPC/rígido)",
+      "unidade": "m²",
+      "dica": "piso vinílico click / rígido; converter caixa para preço por m²"
+    },
+    {
+      "termo": "Cola para piso vinílico (balde 4 kg)",
+      "unidade": "balde",
+      "dica": "adesivo acrílico para piso vinílico, balde de 4 kg"
+    },
+    {
+      "termo": "Rodapé de poliestireno 7 cm",
+      "unidade": "barra",
+      "dica": "barra de 2,40 m (ou informar o comprimento)"
+    },
+    {
+      "termo": "Ripa de MDF para ripado (2,70 m)",
+      "unidade": "peça",
+      "dica": "ripa avulsa de MDF de ~2,70 m; kits e painéis prontos não entram na comparação (preço por peça muda muito)"
+    },
+    {
+      "termo": "Placa de drywall ST 1,20 x 1,80",
+      "unidade": "placa",
+      "dica": "chapa de gesso acartonado standard"
+    },
+    {
+      "termo": "Massa corrida PVA 25 kg",
+      "unidade": "lata",
+      "dica": "lata/balde/caixa de 25 kg"
+    },
+    {
+      "termo": "Papel de parede vinílico",
+      "unidade": "rolo",
+      "dica": "rolo de ~10 m x 0,53 m (informar a medida)"
+    },
+    {
+      "termo": "Grama sintética decorativa 25 mm",
+      "unidade": "m²",
+      "dica": "converter rolo/pedaço para preço por m²"
+    },
+    {
+      "termo": "Forro mineral 625 x 625",
+      "unidade": "m²",
+      "dica": "converter caixa para preço por m²"
+    },
+    {
+      "termo": "Manta vinílica hospitalar",
+      "unidade": "m²",
+      "dica": "manta vinílica heterogênea/homogênea para clínicas"
+    },
+    {
+      "termo": "Manta líquida impermeabilizante 18 kg",
+      "unidade": "balde",
+      "dica": "impermeabilizante acrílico; informar o peso"
+    }
+  ]
+}

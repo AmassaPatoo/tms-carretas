@@ -525,10 +525,107 @@ function formAddLoja() {
     `<div class="btn-row"><button class="btn" data-act="loja-nova-cot">＋ Cadastrar loja nova</button>${lojas.length ? '<button class="btn pri" data-act="ped-add-salvar" style="flex:1">Adicionar</button>' : ''}</div>`);
 }
 
+/* ---------------- 🤖 robô de pesquisa na internet ----------------
+   O robô (tarefa agendada do Claude) grava robo/achados.json no GitHub.
+   Aqui o dono vê os achados e guarda no histórico o que fizer sentido. */
+const NET = { dados: null, erro: null, carregado: false };
+async function carregarInternet() {
+  try {
+    const r = await fetch(P.raiz + 'robo/achados.json?t=' + Date.now(), { cache: 'no-store' });
+    NET.dados = r.ok ? await r.json() : null; NET.erro = r.ok ? null : (r.status === 404 ? 'vazio' : 'HTTP ' + r.status);
+  } catch (e) { NET.dados = null; NET.erro = 'rede'; }
+  NET.carregado = true;
+}
+const normal = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ');
+function itemParecido(termo) {
+  try { const m = JSON.parse(localStorage.getItem('cot_robo_mapa') || '{}'); if (m[termo] && porId(D.itens, m[termo])) return m[termo]; } catch (e) {}
+  // palavras inteiras em comum ÷ palavras no total (assim "colado" não casa com "cola")
+  const LIXO = new Set(['de', 'da', 'do', 'para', 'com', 'e', 'x']);
+  const pal = s => new Set(normal(s).split(/\s+/).filter(p => p && !LIXO.has(p)));
+  const A = pal(termo);
+  let melhor = null, nota = 0;
+  D.itens.filter(i => i.ativo).forEach(i => {
+    const B = pal(i.nome), comum = [...A].filter(p => B.has(p)).length, k = comum / (new Set([...A, ...B]).size || 1);
+    if (k > nota) { nota = k; melhor = i.id; }
+  });
+  return nota >= 0.4 ? melhor : '';
+}
+const valorOferta = o => o.preco_unidade != null ? +o.preco_unidade : null;
+function jaGuardado(o, itemId) {
+  const l = D.lojas.find(x => normal(x.nome) === normal(o.loja));
+  return !!l && D.precos.some(p => p.item_id === itemId && p.loja_id === l.id && p.fonte === 'site' && p.data === (o.data || '') && +p.preco === valorOferta(o));
+}
+function telaInternet() {
+  if (!NET.carregado) { carregarInternet().then(render); return '<div class="carregando">Buscando o que o robô encontrou…</div>'; }
+  const d = NET.dados;
+  if (!d || !Array.isArray(d.itens)) return `<section class="card"><div class="vazio"><b>O robô ainda não trouxe resultados</b>
+    ${NET.erro === 'rede' ? 'Sem internet agora. Tente de novo.' : 'Ele pesquisa toda semana e os achados aparecem aqui.'}</div></section>`;
+  const comOferta = d.itens.filter(i => (i.ofertas || []).length);
+  return `<section class="card">
+    <h2>🤖 Preços encontrados na internet</h2>
+    <div class="sub">O robô pesquisa toda semana em sites e anúncios (lojas de Manaus, OLX, Mercado Livre, Magalu, Bemol…).
+      <b>Confira antes de guardar</b>: anúncio de internet pode ter outra medida, frete ou ser de fora de Manaus.</div>
+    <div class="tiles"><div class="tile"><small>Última pesquisa</small><b style="font-size:17px">${d.atualizado_em ? haQuanto(d.atualizado_em) : '—'}</b><div class="hint">${d.atualizado_em ? new Date(d.atualizado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''}</div></div>
+      <div class="tile"><small>Itens com ofertas</small><b>${comOferta.length}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.length}</span></b></div>
+      <div class="tile"><small>Ofertas encontradas</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).length, 0)}</b></div></div>
+  </section>
+  ${d.itens.map((it, k) => {
+    const of = (it.ofertas || []).slice().sort((a, b) => (valorOferta(a) ?? 1e12) - (valorOferta(b) ?? 1e12));
+    const mapa = itemParecido(it.termo);
+    return `<section class="card">
+      <h2>${esc(it.termo)} <span class="tag">${esc(it.unidade || '')}</span>
+        ${of.length ? `<button class="btn sm dir" data-act="net-guardar" data-k="${k}">💾 Guardar no histórico</button>` : ''}</h2>
+      ${mapa ? `<div class="hint" style="margin:0 0 8px">Vai para o item: <b>${esc(nomeItem(mapa))}</b></div>` : ''}
+      ${it.nota ? `<div class="sub">${esc(it.nota)}</div>` : ''}
+      ${of.length ? `<div class="tab-wrap"><table class="t"><thead><tr><th>Onde</th><th>Anúncio</th><th class="n">Preço</th><th class="n">Por ${esc(it.unidade || 'un')}</th><th></th></tr></thead><tbody>
+        ${of.map((o, j) => `<tr${j === 0 && valorOferta(o) != null ? ' class="melhor"' : ''}><td><b>${esc(o.loja)}</b><br><span class="tag${o.local === 'Manaus' ? ' ok' : ''}">${o.local === 'Manaus' ? '📍 Manaus' : '🌐 online'}</span></td>
+          <td>${o.url && /^https?:\/\//.test(o.url) ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">${esc(o.titulo || 'abrir')}</a>` : esc(o.titulo || '')}${o.obs ? `<br><small style="color:var(--muted)">${esc(o.obs)}</small>` : ''}</td>
+          <td class="n">${money(o.preco)}<br><small style="color:var(--muted)">${esc(o.oferta_un || '')}</small></td>
+          <td class="n"><b>${valorOferta(o) != null ? money(valorOferta(o)) : '—'}</b></td>
+          <td class="n">${mapa && jaGuardado(o, mapa) ? '<span class="tag ok">guardado</span>' : ''}</td></tr>`).join('')}
+      </tbody></table></div>` : '<div class="vazio" style="padding:12px">Nada confiável encontrado nesta semana.</div>'}
+    </section>`;
+  }).join('')}`;
+}
+function formGuardarNet(k) {
+  const it = NET.dados.itens[k], ofs = (it.ofertas || []).map((o, j) => ({ o, j })).filter(x => valorOferta(x.o) != null);
+  if (!ofs.length) return toast('Nenhuma oferta com preço por ' + (it.unidade || 'unidade') + ' para guardar.');
+  const sel = itemParecido(it.termo);
+  abrirModal(cab('💾 Guardar no histórico') + `
+    <div class="sub">Os preços entram no histórico como <b>Site</b>, com a data da pesquisa. Cada site vira uma "loja" (marcada como internet).</div>
+    <label>Em qual item seu?</label>
+    <select id="ngItem"><option value="">Escolha…</option>${D.itens.filter(i => i.ativo).map(i => `<option value="${i.id}"${i.id === sel ? ' selected' : ''}>${esc(i.nome)} (${esc(i.unidade)})</option>`).join('')}<option value="__novo">＋ Criar o item "${esc(it.termo)}"</option></select>
+    <label style="margin-top:14px">Ofertas</label>
+    <div class="escolha">${ofs.map(({ o, j }) => `<div class="op"><input type="checkbox" class="ng" value="${j}" id="ng_${j}" checked>
+      <label for="ng_${j}" class="nm" style="margin:0;font-weight:600;color:var(--ink)">${esc(o.loja)} — ${money(valorOferta(o))}/${esc(it.unidade || 'un')}<small>${esc(o.titulo || '')}${o.local === 'Manaus' ? ' · 📍 Manaus' : ' · 🌐 online'}</small></label></div>`).join('')}</div>
+    <div class="btn-row"><button class="btn pri" data-act="net-guardar-ok" data-k="${k}" style="flex:1">💾 Guardar marcados</button></div>`);
+}
+async function guardarNet(k) {
+  const it = NET.dados.itens[k];
+  let itemId = $('#ngItem').value;
+  const marcados = [...document.querySelectorAll('.ng:checked')].map(c => it.ofertas[+c.value]);
+  if (!itemId) return toast('Escolha o item.');
+  if (!marcados.length) return toast('Marque pelo menos uma oferta.');
+  if (itemId === '__novo') itemId = (await ok(db.from('cot_itens').insert({ empresa_id: EMP, nome: it.termo.slice(0, 160), unidade: (it.unidade || 'un').slice(0, 20), categoria: null, obs: null }).select()))[0].id;
+  try { const m = JSON.parse(localStorage.getItem('cot_robo_mapa') || '{}'); m[it.termo] = itemId; localStorage.setItem('cot_robo_mapa', JSON.stringify(m)); } catch (e) {}
+  await carregar();
+  let n = 0, pulados = 0;
+  for (const o of marcados) {
+    if (jaGuardado(o, itemId)) { pulados++; continue; }
+    let l = D.lojas.find(x => normal(x.nome) === normal(o.loja));
+    if (!l) { l = (await ok(db.from('cot_lojas').insert({ empresa_id: EMP, nome: String(o.loja).slice(0, 120), telefone: null, bairro: o.local === 'Manaus' ? 'Manaus (internet)' : 'Internet', contato: null, obs: 'Criada pelo robô de pesquisa' }).select()))[0]; D.lojas.push(l); }
+    const data = /^\d{4}-\d{2}-\d{2}$/.test(o.data || '') ? o.data : String(NET.dados.atualizado_em || hojeISO()).slice(0, 10);
+    await ok(db.from('cot_precos').insert({ empresa_id: EMP, item_id: itemId, loja_id: l.id, preco: Math.round(valorOferta(o) * 100) / 100, disponivel: true, data, fonte: 'site', pedido_id: null, obs: String(o.url || o.titulo || '').slice(0, 300) || null }));
+    n++;
+  }
+  fecharModal(); await carregar(); render();
+  toast(`${n} preço(s) guardado(s)${pulados ? `, ${pulados} já estava(m) guardado(s)` : ''}.`);
+}
+
 /* ---------------- telas e eventos ---------------- */
 function render() {
   document.querySelectorAll('#abas button').forEach(b => b.classList.toggle('on', b.dataset.aba === UI.aba));
-  const tela = { mercado: telaMercado, precos: telaPrecos, cotacoes: telaCotacoes, itens: telaItens, lojas: telaLojas }[UI.aba];
+  const tela = { mercado: telaMercado, precos: telaPrecos, cotacoes: telaCotacoes, internet: telaInternet, itens: telaItens, lojas: telaLojas }[UI.aba];
   $('#conteudo').innerHTML = tela();
 }
 
@@ -542,7 +639,9 @@ document.addEventListener('click', async e => {
     switch (b.dataset.act) {
       case 'fechar': return fecharModal();
       case 'aba': UI.aba = b.dataset.aba; return render();
-      case 'recarregar': await carregar(); render(); return toast('Atualizado.');
+      case 'recarregar': await carregar(); if (UI.aba === 'internet') await carregarInternet(); render(); return toast('Atualizado.');
+      case 'net-guardar': return formGuardarNet(+b.dataset.k);
+      case 'net-guardar-ok': return await guardarNet(+b.dataset.k);
       case 'item': return abrirItem(id);
       case 'lancar-item': fecharModal(); UI.aba = 'precos'; UI.lanc.busca = nomeItem(id); render(); return;
       case 'del-preco':
