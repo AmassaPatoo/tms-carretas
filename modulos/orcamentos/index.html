@@ -4108,13 +4108,20 @@ $('#restoreInput').addEventListener('change',async e=>{
    ENVIAR (WhatsApp / compartilhar)
 ========================================================= */
 function mensagemCliente(c,link){
+  /* Só texto e negrito: o WhatsApp do computador estraga emojis em mensagens abertas por link */
   const nome=(state.cliente||'').trim().split(' ')[0];
   const cap=nome?nome.charAt(0).toUpperCase()+nome.slice(1):'';
-  return `Olá${cap?', '+cap:''}! 👋\n`+
-    `Segue o seu orçamento nº ${pad4(state.numero)} da *${cfg.empresa.nome||'KE Obra Fácil'}*.\n\n`+
-    `💰 Total: *${money(c.total)}*\n`+
-    `📅 Válido até ${somaDias(state.data,Math.max(1,parseInt(state.validade,10)||7))}\n`+
-    (link?`\n✅ Para conferir e aprovar com a sua assinatura, toque no link:\n${link}\n`:'')+
+  const servs=KEYS.filter(k=>state.servicos[k].ativo && c.serv[k].total>0).map(k=>{
+    const s=state.servicos[k], r=c.serv[k], tp=(s.tipo&&s.tipo.trim())||SERV[k].titulo;
+    return '- '+tp+(kind(k)!=='lista'&&r.cobr>0?' ('+qF(k,r.cobr,true)+')':'');
+  });
+  if(servs.length>4) servs.splice(3,servs.length-3,'- e mais '+(servs.length-3)+' serviço(s)');
+  return `Olá${cap?', '+cap:''}!\n`+
+    `Segue o seu orçamento nº ${pad4(state.numero)} da *${cfg.empresa.nome||'KE Obra Fácil'}*:\n\n`+
+    (servs.length?servs.join('\n')+'\n\n':'')+
+    `*Total: ${money(c.total)}*\n`+
+    `Válido até ${somaDias(state.data,Math.max(1,parseInt(state.validade,10)||7))}\n`+
+    (link?`\nPara conferir e aprovar com a sua assinatura, toque no link:\n${link}\n`:'')+
     `\nQualquer dúvida, é só chamar!`;
 }
 async function entregarPDF(doc,arquivo,texto,enviar){
