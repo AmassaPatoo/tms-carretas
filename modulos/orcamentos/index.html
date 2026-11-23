@@ -2873,6 +2873,29 @@ details.card[open]>summary{margin-bottom:14px}
 .btn-pdf.sec{background:rgba(255,255,255,.12);box-shadow:none;border:1px solid rgba(255,255,255,.25);padding:0 14px}
 .btn-pdf:active{transform:translateY(1px)}
 
+/* Prévia do PDF ao lado (só em tela larga de computador) */
+#previa{display:none}
+.pv-btn{background:#fff;border:1px solid var(--line);color:var(--navy);border-radius:9px;padding:6px 10px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.pv-btn:hover{border-color:var(--navy)}
+#pvMostrar{display:none}
+@media (min-width:1360px){
+  body.pv-on .layout{display:grid;grid-template-columns:minmax(0,760px) minmax(420px,640px);gap:22px;justify-content:center;align-items:start;padding:0 16px}
+  body.pv-on .layout>main{margin:0;max-width:none;padding-left:0;padding-right:0;width:100%}
+  body.pv-on #previa{display:flex;flex-direction:column;position:sticky;top:var(--pv-top,120px);margin-top:16px;
+    height:calc(100vh - var(--pv-top,120px) - 104px);background:#dfe6ec;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  body.pv-on .bb-in{max-width:1422px}
+  body:not(.pv-on) #pvMostrar{display:inline-flex;align-items:center;gap:5px}
+}
+.pv-head{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line)}
+.pv-head b{color:var(--navy);font-size:14px}
+.pv-head small{color:var(--muted);font-size:12px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-status{width:8px;height:8px;border-radius:50%;background:#2fb36b;flex:none}
+.pv-status.ocupado{background:var(--orange);animation:pvpisca 1s infinite}
+@keyframes pvpisca{50%{opacity:.3}}
+.pv-pags{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.pv-pags canvas{display:block;background:#fff;box-shadow:0 2px 10px rgba(6,38,58,.18);border-radius:2px;max-width:100%}
+.pv-vazio{margin:auto;color:var(--muted);text-align:center;font-size:14px;max-width:280px;line-height:1.5}
+
 /* Painel de orçamentos */
 .overlay{position:fixed;inset:34px 0 0 0;z-index:50;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
 .ov-head{position:sticky;top:0;z-index:2;background:linear-gradient(120deg,var(--deep),var(--navy));color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
@@ -2951,6 +2974,7 @@ details.card[open]>summary{margin-bottom:14px}
   <button class="tb-btn" data-act="novo">＋<span class="lbl"> Novo</span></button>
 </header>
 
+<div class="layout">
 <main>
 
   <!-- EMPRESA -->
@@ -3110,9 +3134,23 @@ details.card[open]>summary{margin-bottom:14px}
 
 </main>
 
+<!-- PRÉVIA DO PDF (computador) -->
+<aside id="previa" aria-label="Prévia do PDF">
+  <div class="pv-head">
+    <span class="pv-status" id="pvStatus"></span>
+    <b>Prévia do PDF</b>
+    <small id="pvInfo">atualiza enquanto você edita</small>
+    <button class="pv-btn" data-act="pv-abrir" title="Abrir o PDF em outra aba, em tamanho grande">↗ Ampliar</button>
+    <button class="pv-btn" data-act="pv-ocultar" title="Esconder a prévia">✕</button>
+  </div>
+  <div class="pv-pags" id="pvPags"><div class="pv-vazio">Preencha o orçamento e a prévia aparece aqui.</div></div>
+</aside>
+</div>
+
 <div class="bottombar">
   <div class="bb-in">
     <div class="bb-total"><small>TOTAL</small><b id="bbTotal">R$ 0,00</b></div>
+    <button class="btn-pdf sec" id="pvMostrar" data-act="pv-mostrar" title="Mostrar a prévia do PDF ao lado">👁 Prévia</button>
     <button class="btn-pdf sec" data-act="pdf" title="Baixar PDF">📄 PDF</button>
     <button class="btn-pdf" data-act="enviar">📤 Enviar</button>
   </div>
@@ -3401,6 +3439,7 @@ function erroSalvar(e){
   toast(/fetch|network/i.test(e.message||'') ? 'Sem internet: as alterações serão salvas quando a conexão voltar.' : 'Erro ao salvar: '+e.message, 5500);
 }
 function save(){
+  previa.agendar();
   clearTimeout(save._t);
   save._t=setTimeout(()=>persistir().catch(erroSalvar),900);
 }
@@ -3668,6 +3707,85 @@ function syncInputs(){
   });
   document.querySelectorAll('[data-c]').forEach(el=>{ el.value=getPath(cfg,el.dataset.c)??''; });
 }
+/* =========================================================
+   PRÉVIA DO PDF AO LADO (computador)
+   Gera o mesmo PDF do botão e desenha as páginas com o pdf.js.
+========================================================= */
+const previa=(()=>{
+  const LARGO=1360, KEY='ke-previa-pdf';
+  let ligada=true, timer=null, rodando=false, denovo=false, pdfjs=null, ultimoBlob=null;
+  try{ ligada=localStorage.getItem(KEY)!=='0'; }catch(e){}
+  const visivel=()=>ligada && innerWidth>=LARGO && state;
+  function aplicar(){
+    document.body.classList.toggle('pv-on',ligada);
+    const tb=document.querySelector('.topbar');
+    if(tb) document.documentElement.style.setProperty('--pv-top',(Math.round(tb.getBoundingClientRect().height)+34+14)+'px');
+  }
+  function carregarLib(){
+    if(pdfjs) return pdfjs;
+    pdfjs=new Promise((ok,falha)=>{
+      const s=document.createElement('script'); s.src='../../vendor/pdfjs/pdf.min.js';
+      s.onload=()=>{ const L=window.pdfjsLib; L.GlobalWorkerOptions.workerSrc='../../vendor/pdfjs/pdf.worker.min.js'; ok(L); };
+      s.onerror=()=>{ pdfjs=null; falha(new Error('pdf.js')); };
+      document.head.appendChild(s);
+    });
+    return pdfjs;
+  }
+  function agendar(espera=700){
+    if(!visivel()) return;
+    clearTimeout(timer); timer=setTimeout(gerar,espera);
+    $('#pvStatus').classList.add('ocupado');
+  }
+  async function gerar(){
+    if(!visivel()) return;
+    if(rodando){ denovo=true; return; }
+    rodando=true;
+    const box=$('#pvPags');
+    try{
+      const r=construirPDF(true);
+      if(!r){ ultimoBlob=null; box.innerHTML='<div class="pv-vazio">Preencha o orçamento e a prévia aparece aqui.</div>'; $('#pvInfo').textContent='atualiza enquanto você edita'; return; }
+      ultimoBlob=r.doc.output('blob');
+      const dados=r.doc.output('arraybuffer');
+      const L=await carregarLib();
+      const pdf=await L.getDocument({data:new Uint8Array(dados)}).promise;
+      const larg=Math.max(300,box.clientWidth-32), dpr=Math.min(2,window.devicePixelRatio||1);
+      const novas=[];
+      for(let i=1;i<=pdf.numPages;i++){
+        const pg=await pdf.getPage(i);
+        const v0=pg.getViewport({scale:1}), esc=larg/v0.width, vp=pg.getViewport({scale:esc*dpr});
+        const cv=document.createElement('canvas'); cv.width=Math.floor(vp.width); cv.height=Math.floor(vp.height);
+        cv.style.width=Math.floor(v0.width*esc)+'px';
+        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        novas.push(cv);
+      }
+      pdf.destroy();
+      const topo=box.scrollTop;
+      box.replaceChildren(...novas); box.scrollTop=topo;
+      $('#pvInfo').textContent=pdf.numPages+(pdf.numPages===1?' página':' páginas')+' · atualizado '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    }catch(e){
+      console.warn('prévia',e);
+      $('#pvInfo').textContent='não foi possível mostrar a prévia agora';
+    }finally{
+      rodando=false; $('#pvStatus').classList.remove('ocupado');
+      if(denovo){ denovo=false; agendar(150); }
+    }
+  }
+  function ligar(v){
+    ligada=v; try{ localStorage.setItem(KEY,v?'1':'0'); }catch(e){}
+    aplicar(); if(v){ agendar(50); if(innerWidth<LARGO) toast('A prévia aparece em telas mais largas (computador). Aumente a janela.'); }
+  }
+  function abrir(){
+    const r=construirPDF(); if(!r) return;
+    const url=URL.createObjectURL(r.doc.output('blob'));
+    const w=window.open(url,'_blank'); if(!w) r.doc.save(r.arquivo);
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }
+  let largAnt=innerWidth;
+  addEventListener('resize',()=>{ aplicar(); if(Math.abs(innerWidth-largAnt)>40){ largAnt=innerWidth; agendar(400); } });
+  aplicar();
+  return {agendar, ligar, abrir, aplicar};
+})();
+
 function renderTudo(){
   KEYS.forEach(k=>{ if(kind(k)!=='lista') renderItens(k); renderMats(k); });
   renderMats('extras');
@@ -3676,6 +3794,7 @@ function renderTudo(){
 
 /* Atualiza números na tela sem recriar os campos (não perde o foco) */
 function recalc(){
+  previa.agendar();
   const c=calcTudo();
   KEYS.forEach(key=>{
     const s=state.servicos[key], r=c.serv[key], un=unidade(key);
@@ -3908,6 +4027,9 @@ document.addEventListener('click',async e=>{
     case 'dup-orc': await duplicarOrcamento(b.closest('.orc').dataset.id); return;
     case 'del-orc': await excluirOrcamento(b.closest('.orc').dataset.id); return;
     case 'backup': await fazerBackup(); return;
+    case 'pv-ocultar': previa.ligar(false); return;
+    case 'pv-mostrar': previa.ligar(true); return;
+    case 'pv-abrir': previa.abrir(); return;
     case 'pdf': { const r=construirPDF(); if(r){ r.doc.save(r.arquivo); toast('PDF baixado!'); } return; }
     case 'enviar': await enviarOrcamento(); return;
     case 'compras': abrirCompras(); return;
@@ -4339,11 +4461,11 @@ function nomeArquivo(prefixo){
   const arq=(state.cliente||'Cliente').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[\\/:*?"<>|]/g,'').trim().replace(/\s+/g,'-').slice(0,60);
   return `${prefixo}-${pad4(state.numero)}-${arq}.pdf`;
 }
-function construirPDF(){
+function construirPDF(silencioso){
   const J=window.jspdf && window.jspdf.jsPDF;
-  if(!J){ toast('O gerador de PDF não carregou.'); return null; }
+  if(!J){ if(!silencioso) toast('O gerador de PDF não carregou.'); return null; }
   const calc=calcTudo();
-  if(calc.bruto<=0 && !state.cliente.trim()){ toast('Preencha o orçamento antes de gerar o PDF.'); return null; }
+  if(calc.bruto<=0 && !state.cliente.trim()){ if(!silencioso) toast('Preencha o orçamento antes de gerar o PDF.'); return null; }
   /* testa layouts do mais folgado ao mais compacto */
   let melhor=null;
   for(let nivel=0;nivel<4;nivel++){
