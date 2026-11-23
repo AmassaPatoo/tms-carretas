@@ -4109,10 +4109,13 @@ $('#restoreInput').addEventListener('change',async e=>{
 ========================================================= */
 function mensagemCliente(c,link){
   const nome=(state.cliente||'').trim().split(' ')[0];
-  return `Olá${nome?' '+nome:''}! Segue o orçamento nº ${pad4(state.numero)} da ${cfg.empresa.nome||'KE Obra Fácil'}.\n`+
-    `Valor total: ${money(c.total)}\nVálido até ${somaDias(state.data,Math.max(1,parseInt(state.validade,10)||7))}.\n`+
-    (link?`\nPara conferir e aprovar com a sua assinatura, é só abrir:\n${link}\n\n`:'')+
-    `Qualquer dúvida, estou à disposição.`;
+  const cap=nome?nome.charAt(0).toUpperCase()+nome.slice(1):'';
+  return `Olá${cap?', '+cap:''}! 👋\n`+
+    `Segue o seu orçamento nº ${pad4(state.numero)} da *${cfg.empresa.nome||'KE Obra Fácil'}*.\n\n`+
+    `💰 Total: *${money(c.total)}*\n`+
+    `📅 Válido até ${somaDias(state.data,Math.max(1,parseInt(state.validade,10)||7))}\n`+
+    (link?`\n✅ Para conferir e aprovar com a sua assinatura, toque no link:\n${link}\n`:'')+
+    `\nQualquer dúvida, é só chamar!`;
 }
 async function entregarPDF(doc,arquivo,texto,enviar){
   if(!enviar){ doc.save(arquivo); toast('PDF baixado!'); return true; }
@@ -4142,7 +4145,7 @@ async function enviarOrcamento(){
    LINK PARA O CLIENTE APROVAR E ASSINAR
 ========================================================= */
 function horaAss(){ return state.assEmIso ? new Date(state.assEmIso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : isoBR(state.assData); }
-function urlLink(){ return linkAtual ? new URL('aprovar.html?t='+linkAtual, location.href).href : ''; }
+function urlLink(){ return linkAtual ? new URL('../../aprovar/?c='+linkAtual, location.href).href : ''; }
 /* o que o cliente vê na página do link (nunca custos e lucro internos) */
 function montarResumo(){
   const c=calcTudo(), servicos=[];
