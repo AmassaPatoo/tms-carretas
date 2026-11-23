@@ -199,7 +199,7 @@
     {
       "termo": "Cola de contato Tekbond 2,8 kg",
       "unidade": "lata",
-      "nota": "Em Manaus nenhum site mostrou o preço da Tekbond 2,8 kg. A Cocil publica o da Cascola 2,8 kg (concorrente direta), que serve de referência local.",
+      "nota": "Em Manaus nenhum site mostrou o preço da Tekbond 2,8 kg. A Cocil publica o da Cascola 2,8 kg (concorrente direta), que serve de referência local. Equivalentes (Kisafix, Cascola) aparecem com a marca no título: use o filtro Marca para comparar só a Tekbond.",
       "ofertas": [
         {
           "loja": "Cocil Home Center",
@@ -211,7 +211,8 @@
           "local": "Manaus",
           "frete_manaus": "",
           "obs": "marca Cascola; 6x sem juros",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "marca": "Cascola"
         },
         {
           "loja": "Amazon",
@@ -320,6 +321,58 @@
           "frete_manaus": "",
           "obs": "preço muito abaixo dos outros — pode estar desatualizado, conferir",
           "data": "2026-11-23"
+        },
+        {
+          "loja": "Mercado Livre – Ampar",
+          "titulo": "Cola De Contato Tekbond 2.8kg",
+          "url": "https://lista.mercadolivre.com.br/cola-de-contato-tekbond-2,8kg",
+          "preco": 91.73,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 91.73,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "visto no Google Shopping pelo dono; vendedor com +4 mil avaliações",
+          "data": "2026-11-23",
+          "marca": "Tekbond"
+        },
+        {
+          "loja": "MP Guerra Pisos",
+          "titulo": "Kisafix Adesivo de Contato Alta Performance 2,8 kg (equivalente, não é Tekbond)",
+          "url": "https://www.google.com/search?tbm=shop&q=Kisafix+Adesivo+de+Contato+Alta+Performance+2%2C8kg",
+          "preco": 101.99,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 101.99,
+          "local": "online",
+          "frete_manaus": "frete grátis, entrega 03/12",
+          "obs": "visto no Google Shopping pelo dono",
+          "data": "2026-11-23",
+          "marca": "Kisafix"
+        },
+        {
+          "loja": "Magazine Luiza",
+          "titulo": "Cola Adesivo de Contato Kisafix 2,8 kg (equivalente, não é Tekbond)",
+          "url": "https://www.magazineluiza.com.br/marcas/kisafix",
+          "preco": 159.79,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 159.79,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no Pix",
+          "data": "2026-11-23",
+          "marca": "Kisafix"
+        },
+        {
+          "loja": "Magazine Luiza",
+          "titulo": "Cola Contato Extra sem Toluol 2,8 kg – Cascola (equivalente, não é Tekbond)",
+          "url": "https://www.magazineluiza.com.br/busca/cola+assoalho",
+          "preco": 170.9,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 170.9,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no Pix",
+          "data": "2026-11-23",
+          "marca": "Cascola"
         }
       ]
     },

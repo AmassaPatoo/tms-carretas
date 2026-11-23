@@ -53,6 +53,13 @@ Faça **no mínimo 3 buscas por item**:
 - `"local": "online"`. Se a página mostrar frete/prazo para Manaus (CEP 69000-000), anote em `frete_manaus`.
   Se mostrar entrega sem dizer o CEP, escreva "entrega R$ X (CEP não informado)".
 - Prefira preço **no Pix** quando aparecer (e diga em `obs`: "preço no Pix; R$ Y no cartão").
+- **Google Shopping** junta muitas lojas pequenas com preço bom (foi onde o dono achou a Tekbond 2,8 kg a R$ 91,73
+  no Mercado Livre/Ampar e a Kisafix a R$ 101,99 com frete grátis). Tente `WebFetch` em
+  `https://www.google.com/search?tbm=shop&q=<item>`; se não abrir, busque o nome exato do anúncio
+  (ex.: `"Cola De Contato Tekbond 2.8kg" Ampar`) e a lista do Mercado Livre `https://lista.mercadolivre.com.br/<item-com-hifens>`.
+- **Marcas equivalentes**: para cada item, pesquise também as concorrentes diretas (ex.: cola de contato →
+  Kisafix, Cascola; manta líquida → Vedacit, Coral). Elas entram com "(equivalente, não é <marca>)" no título
+  e o campo opcional `"marca"`. O dono filtra por marca no app.
 
 ## 3. Como registrar cada oferta
 
@@ -81,12 +88,14 @@ Faça **no mínimo 3 buscas por item**:
       "ofertas": [
         { "loja": "Cocil Home Center", "titulo": "Piso Vinílico 2mm Biancogres Vita Colonna (cx 5,92 m²)",
           "url": "https://...", "preco": 77.00, "oferta_un": "m²", "preco_unidade": 77.00,
-          "local": "Manaus", "frete_manaus": "", "obs": "São Geraldo", "data": "2026-11-30" }
+          "local": "Manaus", "frete_manaus": "", "obs": "São Geraldo", "data": "2026-11-30",
+          "marca": "Biancogres" }
       ]
     }
   ]
 }
 ```
+- `marca` é opcional, mas preencha sempre que souber (o app tem filtro por marca).
 - Mantenha **a mesma ordem e os mesmos `termo`** de `itens.json` (o app usa o termo para ligar ao item do dono).
 - Grave também uma cópia em `robo/historico/AAAA-MM-DD.json` (data de hoje no fuso de Manaus).
 

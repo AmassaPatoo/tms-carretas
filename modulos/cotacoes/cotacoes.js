@@ -528,7 +528,7 @@ function formAddLoja() {
 /* ---------------- 🤖 robô de pesquisa na internet ----------------
    O robô (tarefa agendada do Claude) grava robo/achados.json no GitHub.
    Aqui o dono vê os achados e guarda no histórico o que fizer sentido. */
-const NET = { dados: null, erro: null, carregado: false, filtro: 'todos' };
+const NET = { dados: null, erro: null, carregado: false };
 async function carregarInternet() {
   try {
     const r = await fetch(P.raiz + 'robo/achados.json?t=' + Date.now(), { cache: 'no-store' });
@@ -555,6 +555,64 @@ function jaGuardado(o, itemId) {
   const l = D.lojas.find(x => normal(x.nome) === normal(o.loja));
   return !!l && D.precos.some(p => p.item_id === itemId && p.loja_id === l.id && p.fonte === 'site' && p.data === (o.data || '') && +p.preco === valorOferta(o));
 }
+/* ---- filtros da aba Internet (barra lateral) ---- */
+const MARCAS = ['Tekbond', 'Kisafix', 'Cascola', 'Quartzolit', 'Vedacit', 'Vedapren', 'Coral', 'Suvinil', 'Eucatex', 'Eucafloor', 'Iquine',
+  'Nova Tintas', 'Leinertex', 'Durafloor', 'Tarkett', 'Biancogres', 'Casa Grassi', 'Ruffino', 'Pix Revestimentos', 'Tubrax', 'Graddus',
+  'Kalla Decor', 'Santa Luzia', 'Formix', 'Placo', 'Knauf', 'Mapei', 'Euro Decor', 'Dryko', 'Hiperpren', 'NFR', 'Scandian', 'Kapazi',
+  'Protec', 'UniPega', 'Flexfloor', 'Moldufama', 'Armstrong', 'Hunter Douglas', 'Eurogramas'];
+NET.f = { q: '', itens: new Set(), locais: new Set(), sites: new Set(), marcas: new Set(), min: '', max: '', frete: false, semConferir: false, ordem: 'preco', aberto: false };
+const siteDe = o => String(o.loja || '').split(/\s+[–-]\s+/)[0].trim() || 'Outro';
+function marcaDe(o) {
+  if (o.marca) return o.marca;
+  // ignora o aviso "(equivalente, não é X)" e fica com a marca que aparece primeiro no título
+  const t = normal(String(o.titulo || '').replace(/\(equivalente[^)]*\)/gi, '') + ' ' + o.loja);
+  let m = null, pos = 1e9;
+  MARCAS.forEach(x => { const i = t.indexOf(normal(x).trim()); if (i >= 0 && i < pos) { pos = i; m = x; } });
+  return m === 'Vedapren' ? 'Vedacit' : (m || 'Outras');
+}
+const temFrete = o => !!o.frete_manaus || /frete gr[aá]tis/i.test(o.obs || '');
+function passaFiltro(o, termo) {
+  const F = NET.f, v = valorOferta(o);
+  if (F.itens.size && !F.itens.has(termo)) return false;
+  if (F.locais.size && !F.locais.has(o.local === 'Manaus' ? 'Manaus' : 'online')) return false;
+  if (F.sites.size && !F.sites.has(siteDe(o))) return false;
+  if (F.marcas.size && !F.marcas.has(marcaDe(o))) return false;
+  if (F.frete && !temFrete(o)) return false;
+  if (F.semConferir && /conferir/i.test(o.obs || '')) return false;
+  const mn = toNum(F.min), mx = toNum(F.max);
+  if (!isNaN(mn) && (v == null || v < mn)) return false;
+  if (!isNaN(mx) && (v == null || v > mx)) return false;
+  if (F.q.trim()) { const q = normal(F.q); if (!normal(o.titulo + ' ' + o.loja + ' ' + termo).includes(q.trim())) return false; }
+  return true;
+}
+function nFiltros() { const F = NET.f; return F.itens.size + F.locais.size + F.sites.size + F.marcas.size + (F.min ? 1 : 0) + (F.max ? 1 : 0) + (F.frete ? 1 : 0) + (F.semConferir ? 1 : 0) + (F.q.trim() ? 1 : 0); }
+function painelFiltros(d) {
+  const F = NET.f, todas = d.itens.flatMap(i => (i.ofertas || []).map(o => ({ o, t: i.termo })));
+  const conta = fn => { const m = new Map(); todas.forEach(x => { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), 'pt-BR')); };
+  const grupo = (titulo, chave, lista, rot = x => x) => `<div class="nf-g"><div class="nf-t">${titulo}</div>
+    ${lista.map(([v, n]) => `<label class="nf-op"><input type="checkbox" data-nf="${chave}" value="${esc(v)}"${F[chave].has(v) ? ' checked' : ''}><span>${esc(rot(v))}</span><small>${n}</small></label>`).join('')}</div>`;
+  const n = nFiltros();
+  return `<aside class="net-filtros${F.aberto ? ' aberto' : ''}">
+    <button class="nf-abrir" data-act="nf-toggle">⚙️ Filtros${n ? ` <span class="tag lar">${n}</span>` : ''} <span>${F.aberto ? '▲' : '▼'}</span></button>
+    <div class="nf-corpo">
+      <div class="nf-g"><input id="nfBusca" placeholder="🔎 Procurar (marca, loja…)" value="${esc(F.q)}"></div>
+      <div class="nf-g"><div class="nf-t">Ordenar</div>
+        <select id="nfOrdem"><option value="preco"${F.ordem === 'preco' ? ' selected' : ''}>Menor preço primeiro</option><option value="loja"${F.ordem === 'loja' ? ' selected' : ''}>Por loja (A–Z)</option></select></div>
+      ${grupo('Onde', 'locais', conta(x => x.o.local === 'Manaus' ? 'Manaus' : 'online'), v => v === 'Manaus' ? '📍 Manaus' : '🌐 Fora (internet)')}
+      ${grupo('Item', 'itens', d.itens.map(i => [i.termo, (i.ofertas || []).length]))}
+      <div class="nf-g"><div class="nf-t">Preço por unidade (R$)</div>
+        <div class="nf-preco"><input id="nfMin" inputmode="decimal" placeholder="mín." value="${esc(F.min)}"><span>até</span><input id="nfMax" inputmode="decimal" placeholder="máx." value="${esc(F.max)}"></div>
+        <div class="hint">Use junto com um item só (cada item tem a sua unidade).</div></div>
+      ${grupo('Marca', 'marcas', conta(x => marcaDe(x.o)).sort((a, b) => (a[0] === 'Outras') - (b[0] === 'Outras')))}
+      ${grupo('Loja / site', 'sites', conta(x => siteDe(x.o)))}
+      <div class="nf-g"><div class="nf-t">Outros</div>
+        <label class="nf-op"><input type="checkbox" id="nfFrete"${F.frete ? ' checked' : ''}><span>🚚 Com frete informado / grátis</span></label>
+        <label class="nf-op"><input type="checkbox" id="nfConf"${F.semConferir ? ' checked' : ''}><span>Esconder preços "conferir"</span></label></div>
+      ${n ? '<button class="btn sm" data-act="nf-limpar" style="width:100%">✕ Limpar filtros</button>' : ''}
+    </div>
+  </aside>`;
+}
+
 function telaInternet() {
   if (!NET.carregado) { carregarInternet().then(render); return '<div class="carregando">Buscando o que o robô encontrou…</div>'; }
   const d = NET.dados;
@@ -569,12 +627,15 @@ function telaInternet() {
       <div class="tile"><small>Itens com ofertas</small><b>${comOferta.length}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.length}</span></b></div>
       <div class="tile"><small>Ofertas 📍 Manaus / 🌐 fora</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local === 'Manaus').length, 0)}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local !== 'Manaus').length, 0)}</span></b></div></div>
   </section>
-  <div class="barra-filtros" style="margin:-2px 0 0">
-    ${[['todos', 'Todos'], ['Manaus', '📍 Só Manaus'], ['online', '🌐 Só fora']].map(([v, t]) => `<button class="btn sm${NET.filtro === v ? ' pri' : ''}" data-act="net-filtro" data-v="${v}">${t}</button>`).join('')}
-  </div>
+  <div class="net-layout">
+  ${painelFiltros(d)}
+  <div class="net-res">
+  ${(() => { const vis = d.itens.filter(it => (it.ofertas || []).some(o => passaFiltro(o, it.termo)) || (!nFiltros() )); return vis.length ? '' : '<section class="card"><div class="vazio"><b>Nenhuma oferta com esses filtros</b>Tire algum filtro na barra ao lado.</div></section>'; })()}
   ${d.itens.map((it, k) => {
-    const ord = a => a.slice().sort((x, y) => (valorOferta(x) ?? 1e12) - (valorOferta(y) ?? 1e12));
-    const todas = it.ofertas || [];
+    const ord = a => a.slice().sort(NET.f.ordem === 'loja' ? (x, y) => String(x.loja).localeCompare(String(y.loja), 'pt-BR') : (x, y) => (valorOferta(x) ?? 1e12) - (valorOferta(y) ?? 1e12));
+    const todasSemFiltro = it.ofertas || [];
+    const todas = todasSemFiltro.filter(o => passaFiltro(o, it.termo));
+    if (nFiltros() && !todas.length) return '';
     const man = ord(todas.filter(o => o.local === 'Manaus')), fora = ord(todas.filter(o => o.local !== 'Manaus'));
     const suspeito = o => /conferir/i.test(o.obs || '');
     const menor = l => l.find(o => valorOferta(o) != null && !suspeito(o)) || null;
@@ -593,7 +654,7 @@ function telaInternet() {
       comp = Math.abs(dif) < 1 ? '<span class="tag">mesmo preço</span>'
         : dif > 0 ? `<span class="tag lar">Manaus ${fmtN(dif)}% mais caro</span>` : `<span class="tag ok">Manaus ${fmtN(-dif)}% mais barato</span>`;
     }
-    const mostrarM = NET.filtro !== 'online', mostrarF = NET.filtro !== 'Manaus';
+    const mostrarM = !NET.f.locais.size || NET.f.locais.has('Manaus'), mostrarF = !NET.f.locais.size || NET.f.locais.has('online');
     return `<section class="card">
       <h2>${esc(it.termo)} <span class="tag">${esc(it.unidade || '')}</span>
         ${todas.length ? `<button class="btn sm dir" data-act="net-guardar" data-k="${k}">💾 Guardar no histórico</button>` : ''}</h2>
@@ -609,7 +670,8 @@ function telaInternet() {
         ${mostrarF ? grupo('🌐 Fora (internet)', fora, 'Nada encontrado fora.') : ''}
       </tbody></table></div>` : '<div class="vazio" style="padding:12px">Nada confiável encontrado nesta semana.</div>'}
     </section>`;
-  }).join('')}`;
+  }).join('')}
+  </div></div>`;
 }
 function formGuardarNet(k) {
   const it = NET.dados.itens[k], ofs = (it.ofertas || []).map((o, j) => ({ o, j })).filter(x => valorOferta(x.o) != null);
@@ -647,6 +709,7 @@ async function guardarNet(k) {
 }
 
 /* ---------------- telas e eventos ---------------- */
+function renderMantendoRolagem() { const y = scrollY, ps = document.querySelector('.nf-corpo'), py = ps ? ps.scrollTop : 0; render(); scrollTo(0, y); const n = document.querySelector('.nf-corpo'); if (n) n.scrollTop = py; }
 function render() {
   document.querySelectorAll('#abas button').forEach(b => b.classList.toggle('on', b.dataset.aba === UI.aba));
   const tela = { mercado: telaMercado, precos: telaPrecos, cotacoes: telaCotacoes, internet: telaInternet, itens: telaItens, lojas: telaLojas }[UI.aba];
@@ -665,7 +728,8 @@ document.addEventListener('click', async e => {
       case 'aba': UI.aba = b.dataset.aba; return render();
       case 'recarregar': await carregar(); if (UI.aba === 'internet') await carregarInternet(); render(); return toast('Atualizado.');
       case 'net-guardar': return formGuardarNet(+b.dataset.k);
-      case 'net-filtro': NET.filtro = b.dataset.v; return render();
+      case 'nf-toggle': NET.f.aberto = !NET.f.aberto; return render();
+      case 'nf-limpar': Object.assign(NET.f, { q: '', itens: new Set(), locais: new Set(), sites: new Set(), marcas: new Set(), min: '', max: '', frete: false, semConferir: false }); return render();
       case 'net-guardar-ok': return await guardarNet(+b.dataset.k);
       case 'item': return abrirItem(id);
       case 'lancar-item': fecharModal(); UI.aba = 'precos'; UI.lanc.busca = nomeItem(id); render(); return;
@@ -729,6 +793,7 @@ document.addEventListener('click', async e => {
 
 document.addEventListener('input', e => {
   const t = e.target;
+  if (t.id === 'nfBusca') { NET.f.q = t.value; clearTimeout(NET._t); NET._t = setTimeout(() => { const pos = t.selectionStart; renderMantendoRolagem(); const n = $('#nfBusca'); if (n) { n.focus(); n.setSelectionRange(pos, pos); } }, 250); return; }
   if (t.id === 'fBusca') { UI.busca = t.value; const pos = t.selectionStart; render(); const n = $('#fBusca'); n.focus(); n.setSelectionRange(pos, pos); }
   if (t.id === 'lBusca') {
     UI.lanc.busca = t.value; const q = t.value.trim().toLowerCase();
@@ -738,6 +803,11 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.dataset.nf) { const S = NET.f[t.dataset.nf]; t.checked ? S.add(t.value) : S.delete(t.value); return renderMantendoRolagem(); }
+  if (t.id === 'nfOrdem') { NET.f.ordem = t.value; return renderMantendoRolagem(); }
+  if (t.id === 'nfFrete') { NET.f.frete = t.checked; return renderMantendoRolagem(); }
+  if (t.id === 'nfConf') { NET.f.semConferir = t.checked; return renderMantendoRolagem(); }
+  if (t.id === 'nfMin' || t.id === 'nfMax') { NET.f[t.id === 'nfMin' ? 'min' : 'max'] = t.value; return renderMantendoRolagem(); }
   if (t.id === 'fCat') { UI.categoria = t.value; render(); }
   if (t.id === 'fPeriodo') { UI.periodo = +t.value; render(); }
   if (t.id === 'lData') UI.lanc.data = t.value;
