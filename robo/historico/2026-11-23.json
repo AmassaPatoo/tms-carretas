@@ -1,11 +1,11 @@
 {
-  "atualizado_em": "2026-11-23T13:45:00-04:00",
+  "atualizado_em": "2026-11-23T15:10:00-04:00",
   "fonte": "Pesquisa do robô (Claude) na internet",
   "itens": [
     {
       "termo": "Piso vinílico colado 2 mm",
       "unidade": "m²",
-      "nota": "Na OLX de Manaus apareceu um anúncio de aplicação de piso vinílico (material + mão de obra) por R$ 200, sem dizer a área: vale ficar de olho na concorrência.",
+      "nota": "Em Manaus, a Cocil publica preço do piso vinílico 2 mm Biancogres no site. Na OLX de Manaus também apareceu aplicação de piso vinílico (material + mão de obra) por R$ 200, sem dizer a área: vale ficar de olho na concorrência.",
       "ofertas": [
         {
           "loja": "MadeiraMadeira",
@@ -16,7 +16,8 @@
           "preco_unidade": 58.0,
           "local": "online",
           "obs": "20% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira",
@@ -27,7 +28,8 @@
           "preco_unidade": 64.98,
           "local": "online",
           "obs": "20% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Mercado Livre – Madeira Madeira",
@@ -38,7 +40,8 @@
           "preco_unidade": 73.4,
           "local": "online",
           "obs": "linha Sofisticato 2 mm",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Telhanorte",
@@ -49,6 +52,91 @@
           "preco_unidade": 89.9,
           "local": "online",
           "obs": "frete grátis só SP",
+          "data": "2026-11-23",
+          "frete_manaus": ""
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Piso Vinílico 2mm Biancogres Vita Colonna (cx 5,92 m²)",
+          "url": "https://cocil.com.br/unidade/m2/page/3/",
+          "preco": 77.0,
+          "oferta_un": "m²",
+          "preco_unidade": 77.0,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "São Geraldo; confirmar se o preço do site está atual",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Piso Vinílico 2mm Biancogres Vita Vernazza (cx 5,92 m²)",
+          "url": "https://cocil.com.br/fabricante/bianco-gres/",
+          "preco": 79.9,
+          "oferta_un": "m²",
+          "preco_unidade": 79.9,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "São Geraldo",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Piso Vinílico 2mm Biancogres Vita Trevi (cx 5,92 m²)",
+          "url": "https://cocil.com.br/produto/piso-vinilico-2mm-biancogres-19x130-vita-trevi-592m-24pcs/",
+          "preco": 88.0,
+          "oferta_un": "m²",
+          "preco_unidade": 88.0,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "página antiga: confirmar preço",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "OLX – Manaus (São José Operário)",
+          "titulo": "Promoção de piso vinílico",
+          "url": "https://www.olx.com.br/materiais-de-construcao/pisos-e-revestimentos/pisos-vinilicos/estado-am/regiao-de-manaus/manaus",
+          "preco": 39.0,
+          "oferta_un": "anúncio (medida não informada)",
+          "preco_unidade": null,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "particular; conferir medida e se é colado",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Piso Vinílico em Régua Ruffino Sofisticato 2mm – caixa 3,9 m²",
+          "url": "https://www.amazon.com.br/Piso-Vin%C3%ADlico-R%C3%A9gua-9m%C2%B2-Carambola/dp/B0DBJ6FFFY",
+          "preco": 285.87,
+          "oferta_un": "caixa 3,9 m²",
+          "preco_unidade": 73.3,
+          "local": "online",
+          "frete_manaus": "entrega R$ 79,99 (CEP não informado)",
+          "obs": "",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Piso Vinílico em Régua Cities Scandian 2mm – caixa 4,13 m²",
+          "url": "https://www.amazon.com.br/Piso-Vin%C3%ADlico-R%C3%A9gua-Cities-Scandian/dp/B07994CK7W",
+          "preco": 360.38,
+          "oferta_un": "caixa 4,13 m²",
+          "preco_unidade": 87.26,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "MadeiraMadeira",
+          "titulo": "Piso Vinílico Colado Régua Cities 2mm Casa Grassi Laguna (cx 4,49 m²)",
+          "url": "https://www.madeiramadeira.com.br/-870063.html",
+          "preco": 61.19,
+          "oferta_un": "m² (caixa R$ 274,74)",
+          "preco_unidade": 61.19,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "15% OFF",
           "data": "2026-11-23"
         }
       ]
@@ -56,7 +144,7 @@
     {
       "termo": "Piso vinílico clicado (SPC/rígido)",
       "unidade": "m²",
-      "nota": "",
+      "nota": "Sem preço publicado em Manaus nesta semana (nos sites, 'Manaus' é nome de cor da linha Durafloor Nativa, não a cidade).",
       "ofertas": [
         {
           "loja": "MadeiraMadeira",
@@ -67,7 +155,8 @@
           "preco_unidade": 53.93,
           "local": "online",
           "obs": "15% OFF – preço baixo, conferir",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Magazine Luiza",
@@ -78,7 +167,8 @@
           "preco_unidade": 86.9,
           "local": "online",
           "obs": "preço no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira",
@@ -89,7 +179,8 @@
           "preco_unidade": 164.98,
           "local": "online",
           "obs": "com manta acústica",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Telhanorte",
@@ -100,14 +191,15 @@
           "preco_unidade": 229.9,
           "local": "online",
           "obs": "linha premium",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         }
       ]
     },
     {
       "termo": "Cola para piso vinílico (balde 4 kg)",
       "unidade": "balde",
-      "nota": "",
+      "nota": "Em Manaus, a Cocil tem a cola Mapei Ultrabond Eco 4 LVT (4 kg e 14 kg), mas o site não mostra o preço: peça pela aba Pedir cotação.",
       "ofertas": [
         {
           "loja": "Telhanorte",
@@ -117,8 +209,9 @@
           "oferta_un": "balde 4 kg",
           "preco_unidade": 159.9,
           "local": "online",
-          "obs": "no cartão; 6% OFF no Pix",
-          "data": "2026-11-23"
+          "obs": "R$ 150,31 no Pix",
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira – Inove Sua Obra",
@@ -129,7 +222,8 @@
           "preco_unidade": 198.08,
           "local": "online",
           "obs": "",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Mercado Livre – Quartzolit",
@@ -140,7 +234,8 @@
           "preco_unidade": 202.8,
           "local": "online",
           "obs": "13% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira",
@@ -151,7 +246,8 @@
           "preco_unidade": 214.98,
           "local": "online",
           "obs": "28% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Magazine Luiza",
@@ -162,7 +258,8 @@
           "preco_unidade": 219.85,
           "local": "online",
           "obs": "preço no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Mercado Livre – ABC-Gemon",
@@ -173,7 +270,8 @@
           "preco_unidade": 229.0,
           "local": "online",
           "obs": "",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira – Estilo Home Center",
@@ -184,6 +282,43 @@
           "preco_unidade": 239.32,
           "local": "online",
           "obs": "",
+          "data": "2026-11-23",
+          "frete_manaus": ""
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Cola Adesivo para Piso Vinílico Balde 4 kg Profissional",
+          "url": "https://www.amazon.com.br/cola-acrilico/s?k=cola+acrilico",
+          "preco": 132.9,
+          "oferta_un": "balde 4 kg",
+          "preco_unidade": 132.9,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no Pix; marca não informada",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Eucatex Maxx Pro Ultra Adesivo p/ Piso Vinílico LVT 4 kg",
+          "url": "https://www.amazon.com.br/Eucatex-Maxx-Ultra-Adesivo-Vinilico/dp/B0CWN8XCH2",
+          "preco": 161.4,
+          "oferta_un": "balde 4 kg",
+          "preco_unidade": 161.4,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no Pix",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Magazine Luiza",
+          "titulo": "Cola Acrílica Quartzolit 4 kg para Piso Vinílico",
+          "url": "https://www.magazineluiza.com.br/busca/cola+4kg",
+          "preco": 165.9,
+          "oferta_un": "balde 4 kg",
+          "preco_unidade": 165.9,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "25% OFF",
           "data": "2026-11-23"
         }
       ]
@@ -191,7 +326,7 @@
     {
       "termo": "Rodapé de poliestireno 7 cm",
       "unidade": "barra",
-      "nota": "Barras de 2,40 m. Kits foram divididos pelo número de barras.",
+      "nota": "Barras de 2,40 m (kits divididos pelo número de barras). Em Manaus, a Cocil vende rodapés Santa Luzia e Meu Rodapé, mas sem preço no site.",
       "ofertas": [
         {
           "loja": "Magazine Luiza",
@@ -202,7 +337,8 @@
           "preco_unidade": 28.26,
           "local": "online",
           "obs": "preço no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira",
@@ -213,7 +349,8 @@
           "preco_unidade": 29.98,
           "local": "online",
           "obs": "20% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Magazine Luiza",
@@ -224,7 +361,8 @@
           "preco_unidade": 39.81,
           "local": "online",
           "obs": "preço no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Ponto Frio – Formix",
@@ -235,7 +373,8 @@
           "preco_unidade": 40.45,
           "local": "online",
           "obs": "",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Telhanorte",
@@ -246,6 +385,19 @@
           "preco_unidade": 87.9,
           "local": "online",
           "obs": "marca premium",
+          "data": "2026-11-23",
+          "frete_manaus": ""
+        },
+        {
+          "loja": "Dry Office",
+          "titulo": "Rodapé Poliestireno Branco Liso 7cm – barra 2,40 m",
+          "url": "https://www.dryoffice.com.br/rodape/poliestireno/",
+          "preco": 38.99,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 38.99,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "3% de desconto à vista",
           "data": "2026-11-23"
         }
       ]
@@ -253,7 +405,7 @@
     {
       "termo": "Ripa de MDF para ripado (2,70 m)",
       "unidade": "peça",
-      "nota": "Painéis prontos e kits adesivos variam demais para comparar por peça; ficaram de fora.",
+      "nota": "Painéis prontos e kits adesivos variam demais para comparar por peça; ficaram de fora. Sem preço publicado em Manaus nesta semana.",
       "ofertas": [
         {
           "loja": "Magazine Luiza",
@@ -264,14 +416,15 @@
           "preco_unidade": 29.67,
           "local": "online",
           "obs": "preço no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         }
       ]
     },
     {
       "termo": "Placa de drywall ST 1,20 x 1,80",
       "unidade": "placa",
-      "nota": "Poucas lojas mostram o preço da placa 1,20 x 1,80 na internet. Achei uma referência de preço de São Paulo e uma placa maior.",
+      "nota": "Em Manaus, a Nono do Gesso (Rua Matheus de Souza Castro) é especializada em drywall, mas não publica preço: vale pedir cotação. Referência de serviço em Manaus (Habitissimo, estimativa antiga): parede de drywall 5,00 x 2,70 m por cerca de R$ 1.450.",
       "ofertas": [
         {
           "loja": "LarPontual (referência varejo SP)",
@@ -282,7 +435,8 @@
           "preco_unidade": 42.0,
           "local": "online",
           "obs": "referência, não é loja",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Mercado Livre – Você Constrói",
@@ -293,6 +447,31 @@
           "preco_unidade": null,
           "local": "online",
           "obs": "tamanho maior (2,88 m²)",
+          "data": "2026-11-23",
+          "frete_manaus": ""
+        },
+        {
+          "loja": "OLX – Manaus (Presidente Vargas)",
+          "titulo": "Placas de gesso drywall USADAS 2,00 x 1,40 (45 unidades)",
+          "url": "https://am.olx.com.br/regiao-de-manaus/materiais-de-construcao/pisos-e-revestimentos/placa-de-gesso-drywall-r-25-00-cada-1464437644",
+          "preco": 25.0,
+          "oferta_un": "placa usada 2,00 x 1,40",
+          "preco_unidade": null,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "usado; outra medida",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Espaço Smart",
+          "titulo": "Placa de Gesso Drywall ST 12,5 x 1200 x 1800 mm",
+          "url": "https://www.espacosmart.com.br/placa-de-gesso-drywall-ru-12-5-x-1200-x-1800mm/p",
+          "preco": 42.25,
+          "oferta_un": "placa 1,20 x 1,80",
+          "preco_unidade": 42.25,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no Pix",
           "data": "2026-11-23"
         }
       ]
@@ -311,7 +490,8 @@
           "preco_unidade": 66.57,
           "local": "online",
           "obs": "marca econômica",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira",
@@ -322,7 +502,8 @@
           "preco_unidade": 103.57,
           "local": "online",
           "obs": "",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira",
@@ -333,7 +514,8 @@
           "preco_unidade": 122.73,
           "local": "online",
           "obs": "23% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "MadeiraMadeira",
@@ -344,6 +526,79 @@
           "preco_unidade": 139.12,
           "local": "online",
           "obs": "",
+          "data": "2026-11-23",
+          "frete_manaus": ""
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Massa Corrida PVA Iquine 25 kg",
+          "url": "https://cocil.com.br/produto/massa-corrida-pva-iquine-25kg/",
+          "preco": 62.9,
+          "oferta_un": "balde 25 kg",
+          "preco_unidade": 62.9,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "São Geraldo; confirmar se o preço está atual",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "OLX – Manaus",
+          "titulo": "Massa corrida Iquine",
+          "url": "https://www.olx.com.br/anuncios/massa-corridas",
+          "preco": 70.0,
+          "oferta_un": "anúncio (peso não informado)",
+          "preco_unidade": null,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "particular",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Mercado Livre",
+          "titulo": "Massa Corrida Interna – Barrica 25 kg",
+          "url": "https://lista.mercadolivre.com.br/massa-corrida-direto-da-fabrica-%2424%2C99-barrica-%3D25kg",
+          "preco": 78.9,
+          "oferta_un": "barrica 25 kg",
+          "preco_unidade": 78.9,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "frete grátis (conferir para o AM)",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Massa Corrida Nova Tintas PVA Branca 25 kg",
+          "url": "https://www.amazon.com.br/massa-corrida-3-6/s?k=massa+corrida+3,6",
+          "preco": 144.74,
+          "oferta_un": "balde 25 kg",
+          "preco_unidade": 144.74,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Suvinil Massa Corrida 25 kg",
+          "url": "https://www.amazon.com.br/Ferramentas-e-Materiais-de-Constru%C3%A7%C3%A3o-Suvinil/s?rh=n:16957182011,p_4:Suvinil",
+          "preco": 154.0,
+          "oferta_un": "balde 25 kg",
+          "preco_unidade": 154.0,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Massa Corrida PVA Eucatex Lata 25 kg",
+          "url": "https://www.amazon.com.br/massa-corrida-25kg/s?k=massa+corrida+25kg",
+          "preco": 160.73,
+          "oferta_un": "lata 25 kg",
+          "preco_unidade": 160.73,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no Pix",
           "data": "2026-11-23"
         }
       ]
@@ -362,7 +617,8 @@
           "preco_unidade": null,
           "local": "Manaus",
           "obs": "conferir medida",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "OLX – Manaus (São Lázaro)",
@@ -373,7 +629,8 @@
           "preco_unidade": null,
           "local": "Manaus",
           "obs": "conferir medida",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Extra – WebContinental",
@@ -384,14 +641,15 @@
           "preco_unidade": 390.0,
           "local": "online",
           "obs": "importado (Itália)",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         }
       ]
     },
     {
       "termo": "Grama sintética decorativa 25 mm",
       "unidade": "m²",
-      "nota": "",
+      "nota": "Sem preço de grama sintética 25 mm publicado em Manaus. Referência de serviço em Manaus (Habitissimo): colocar 20 m² de grama sintética fibrilada por cerca de R$ 1.090.",
       "ofertas": [
         {
           "loja": "Mercado Livre – Becshop",
@@ -402,7 +660,8 @@
           "preco_unidade": 84.88,
           "local": "online",
           "obs": "32% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Mercado Livre – Becshop",
@@ -413,7 +672,8 @@
           "preco_unidade": 88.2,
           "local": "online",
           "obs": "29% OFF",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Magazine Luiza",
@@ -424,14 +684,15 @@
           "preco_unidade": 94.53,
           "local": "online",
           "obs": "preço no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         }
       ]
     },
     {
       "termo": "Forro mineral 625 x 625",
       "unidade": "m²",
-      "nota": "Quase nenhuma loja mostra o preço do forro mineral na internet. Seguem as referências da tabela SINAPI (média nacional de 05/2026), úteis para conferir o seu preço.",
+      "nota": "Quase nenhuma loja mostra o preço do forro mineral na internet. Seguem as referências da tabela SINAPI (média nacional de 05/2026), úteis para conferir o seu preço. Sem preço publicado em Manaus nesta semana.",
       "ofertas": [
         {
           "loja": "SINAPI (referência nacional)",
@@ -442,7 +703,8 @@
           "preco_unidade": 78.57,
           "local": "online",
           "obs": "referência, não é loja",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "SINAPI (referência nacional)",
@@ -453,7 +715,8 @@
           "preco_unidade": 126.28,
           "local": "online",
           "obs": "referência, não é loja",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "SINAPI (referência nacional)",
@@ -464,20 +727,21 @@
           "preco_unidade": null,
           "local": "online",
           "obs": "serviço completo, não só material",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         }
       ]
     },
     {
       "termo": "Manta vinílica hospitalar",
       "unidade": "m²",
-      "nota": "Não encontrei anúncio de manta hospitalar (homogênea/heterogênea) com preço. As mantas com preço na internet são residenciais (0,7 mm), outro produto. Melhor cotar direto com fornecedores pela aba Pedir cotação.",
+      "nota": "Não encontrei anúncio de manta hospitalar (homogênea/heterogênea) com preço. As mantas com preço na internet são residenciais (0,7 mm), outro produto. Melhor cotar direto com fornecedores pela aba Pedir cotação. Sem preço publicado em Manaus nesta semana.",
       "ofertas": []
     },
     {
       "termo": "Manta líquida impermeabilizante 18 kg",
       "unidade": "balde",
-      "nota": "",
+      "nota": "Mesma Quartzolit 18 kg: R$ 319,00 na Cocil (Manaus) e a partir de R$ 212,06 na internet, mas a internet ainda soma o frete para Manaus (balde de quase 19 kg).",
       "ofertas": [
         {
           "loja": "Magazine Luiza",
@@ -488,7 +752,8 @@
           "preco_unidade": 212.06,
           "local": "online",
           "obs": "preço no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Telhanorte",
@@ -499,7 +764,8 @@
           "preco_unidade": 216.11,
           "local": "online",
           "obs": "no Pix; R$ 229,90 no cartão",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Loja do Mecânico",
@@ -510,7 +776,8 @@
           "preco_unidade": 254.9,
           "local": "online",
           "obs": "cimentícia; no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Telhanorte",
@@ -521,7 +788,8 @@
           "preco_unidade": 332.91,
           "local": "online",
           "obs": "no Pix",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Magazine Luiza",
@@ -532,7 +800,8 @@
           "preco_unidade": 342.15,
           "local": "online",
           "obs": "",
-          "data": "2026-11-23"
+          "data": "2026-11-23",
+          "frete_manaus": ""
         },
         {
           "loja": "Telhanorte",
@@ -543,6 +812,55 @@
           "preco_unidade": 349.9,
           "local": "online",
           "obs": "asfáltica",
+          "data": "2026-11-23",
+          "frete_manaus": ""
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Manta Líquida Branca Quartzolit 18 kg",
+          "url": "https://www.cocil.com.br/acabamentos/impermeabilizantes/manta-liquida-branca-quartzolit-18kg",
+          "preco": 319.0,
+          "oferta_un": "balde 18 kg",
+          "preco_unidade": 319.0,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "6x sem juros",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Manta Líquida Vedapren Branco Vedacit 18 kg",
+          "url": "https://www.cocil.com.br/maquinas-e-equipamentos/acessorios-p-construcao/manta-liquida-vedapren-branco-vedalit-18kg",
+          "preco": 385.0,
+          "oferta_un": "balde 18 kg",
+          "preco_unidade": 385.0,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Quartzolit Manta Líquida Branca 18 kg",
+          "url": "https://www.amazon.com.br/manta-liquida-18kg/s?k=manta+liquida+18kg",
+          "preco": 253.65,
+          "oferta_un": "balde 18 kg",
+          "preco_unidade": 253.65,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "a partir de (4 ofertas)",
+          "data": "2026-11-23"
+        },
+        {
+          "loja": "Amazon",
+          "titulo": "Euro Decor Manta Líquida 18 kg",
+          "url": "https://www.amazon.com.br/Manta-L%C3%ADquida-Impermeabilizante-Resist%C3%AAncia-Impermeabiliza%C3%A7%C3%A3o/dp/B0G48WNTSZ",
+          "preco": 269.54,
+          "oferta_un": "balde 18 kg",
+          "preco_unidade": 269.54,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "10% off no Pix",
           "data": "2026-11-23"
         }
       ]

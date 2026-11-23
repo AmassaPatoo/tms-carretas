@@ -528,7 +528,7 @@ function formAddLoja() {
 /* ---------------- 🤖 robô de pesquisa na internet ----------------
    O robô (tarefa agendada do Claude) grava robo/achados.json no GitHub.
    Aqui o dono vê os achados e guarda no histórico o que fizer sentido. */
-const NET = { dados: null, erro: null, carregado: false };
+const NET = { dados: null, erro: null, carregado: false, filtro: 'todos' };
 async function carregarInternet() {
   try {
     const r = await fetch(P.raiz + 'robo/achados.json?t=' + Date.now(), { cache: 'no-store' });
@@ -563,26 +563,49 @@ function telaInternet() {
   const comOferta = d.itens.filter(i => (i.ofertas || []).length);
   return `<section class="card">
     <h2>🤖 Preços encontrados na internet</h2>
-    <div class="sub">O robô pesquisa toda semana em sites e anúncios (lojas de Manaus, OLX, Mercado Livre, Magalu, Bemol…).
-      <b>Confira antes de guardar</b>: anúncio de internet pode ter outra medida, frete ou ser de fora de Manaus.</div>
+    <div class="sub">O robô pesquisa toda semana em <b>📍 Manaus</b> (lojas da cidade, Bemol, OLX Manaus…) e <b>🌐 fora</b>
+      (Mercado Livre, Amazon, Magalu, Shopee, MadeiraMadeira…). <b>Confira antes de guardar</b>: o preço de fora normalmente não inclui o frete até Manaus.</div>
     <div class="tiles"><div class="tile"><small>Última pesquisa</small><b style="font-size:17px">${d.atualizado_em ? haQuanto(d.atualizado_em) : '—'}</b><div class="hint">${d.atualizado_em ? new Date(d.atualizado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''}</div></div>
       <div class="tile"><small>Itens com ofertas</small><b>${comOferta.length}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.length}</span></b></div>
-      <div class="tile"><small>Ofertas encontradas</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).length, 0)}</b></div></div>
+      <div class="tile"><small>Ofertas 📍 Manaus / 🌐 fora</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local === 'Manaus').length, 0)}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local !== 'Manaus').length, 0)}</span></b></div></div>
   </section>
+  <div class="barra-filtros" style="margin:-2px 0 0">
+    ${[['todos', 'Todos'], ['Manaus', '📍 Só Manaus'], ['online', '🌐 Só fora']].map(([v, t]) => `<button class="btn sm${NET.filtro === v ? ' pri' : ''}" data-act="net-filtro" data-v="${v}">${t}</button>`).join('')}
+  </div>
   ${d.itens.map((it, k) => {
-    const of = (it.ofertas || []).slice().sort((a, b) => (valorOferta(a) ?? 1e12) - (valorOferta(b) ?? 1e12));
+    const ord = a => a.slice().sort((x, y) => (valorOferta(x) ?? 1e12) - (valorOferta(y) ?? 1e12));
+    const todas = it.ofertas || [];
+    const man = ord(todas.filter(o => o.local === 'Manaus')), fora = ord(todas.filter(o => o.local !== 'Manaus'));
+    const menor = l => l.find(o => valorOferta(o) != null) || null;
+    const mM = menor(man), mF = menor(fora);
     const mapa = itemParecido(it.termo);
+    const linha = (o, destaque) => `<tr${destaque ? ' class="melhor"' : ''}><td><b>${esc(o.loja)}</b></td>
+      <td>${o.url && /^https?:\/\//.test(o.url) ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">${esc(o.titulo || 'abrir')}</a>` : esc(o.titulo || '')}${o.obs ? `<br><small style="color:var(--muted)">${esc(o.obs)}</small>` : ''}${o.frete_manaus ? `<br><small style="color:var(--orange-ink)">🚚 ${esc(o.frete_manaus)}</small>` : ''}</td>
+      <td class="n">${money(o.preco)}<br><small style="color:var(--muted)">${esc(o.oferta_un || '')}</small></td>
+      <td class="n"><b>${valorOferta(o) != null ? money(valorOferta(o)) : '—'}</b></td>
+      <td class="n">${mapa && jaGuardado(o, mapa) ? '<span class="tag ok">guardado</span>' : ''}</td></tr>`;
+    const grupo = (titulo, lista, vazio) => `<tr class="grupo"><td colspan="5">${titulo} <small>(${lista.length})</small></td></tr>` +
+      (lista.length ? lista.map((o, j) => linha(o, j === 0 && valorOferta(o) != null)).join('') : `<tr><td colspan="5" class="falta">${vazio}</td></tr>`);
+    let comp = '';
+    if (mM && mF) {
+      const dif = (valorOferta(mM) / valorOferta(mF) - 1) * 100;
+      comp = Math.abs(dif) < 1 ? '<span class="tag">mesmo preço</span>'
+        : dif > 0 ? `<span class="tag lar">Manaus ${fmtN(dif)}% mais caro</span>` : `<span class="tag ok">Manaus ${fmtN(-dif)}% mais barato</span>`;
+    }
+    const mostrarM = NET.filtro !== 'online', mostrarF = NET.filtro !== 'Manaus';
     return `<section class="card">
       <h2>${esc(it.termo)} <span class="tag">${esc(it.unidade || '')}</span>
-        ${of.length ? `<button class="btn sm dir" data-act="net-guardar" data-k="${k}">💾 Guardar no histórico</button>` : ''}</h2>
-      ${mapa ? `<div class="hint" style="margin:0 0 8px">Vai para o item: <b>${esc(nomeItem(mapa))}</b></div>` : ''}
+        ${todas.length ? `<button class="btn sm dir" data-act="net-guardar" data-k="${k}">💾 Guardar no histórico</button>` : ''}</h2>
+      <div class="comp">
+        <div class="comp-c"><small>📍 Menor em Manaus</small><b>${mM ? money(valorOferta(mM)) : '—'}</b><span>${mM ? esc(mM.loja) : 'sem preço publicado'}</span></div>
+        <div class="comp-c"><small>🌐 Menor fora</small><b>${mF ? money(valorOferta(mF)) : '—'}</b><span>${mF ? esc(mF.loja) + (mF.frete_manaus ? ' · 🚚 ' + esc(mF.frete_manaus) : ' · + frete') : 'sem oferta'}</span></div>
+        ${comp ? `<div class="comp-c comp-dif">${comp}</div>` : ''}
+      </div>
+      ${mapa ? `<div class="hint" style="margin:8px 0">Vai para o item: <b>${esc(nomeItem(mapa))}</b></div>` : ''}
       ${it.nota ? `<div class="sub">${esc(it.nota)}</div>` : ''}
-      ${of.length ? `<div class="tab-wrap"><table class="t"><thead><tr><th>Onde</th><th>Anúncio</th><th class="n">Preço</th><th class="n">Por ${esc(it.unidade || 'un')}</th><th></th></tr></thead><tbody>
-        ${of.map((o, j) => `<tr${j === 0 && valorOferta(o) != null ? ' class="melhor"' : ''}><td><b>${esc(o.loja)}</b><br><span class="tag${o.local === 'Manaus' ? ' ok' : ''}">${o.local === 'Manaus' ? '📍 Manaus' : '🌐 online'}</span></td>
-          <td>${o.url && /^https?:\/\//.test(o.url) ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">${esc(o.titulo || 'abrir')}</a>` : esc(o.titulo || '')}${o.obs ? `<br><small style="color:var(--muted)">${esc(o.obs)}</small>` : ''}</td>
-          <td class="n">${money(o.preco)}<br><small style="color:var(--muted)">${esc(o.oferta_un || '')}</small></td>
-          <td class="n"><b>${valorOferta(o) != null ? money(valorOferta(o)) : '—'}</b></td>
-          <td class="n">${mapa && jaGuardado(o, mapa) ? '<span class="tag ok">guardado</span>' : ''}</td></tr>`).join('')}
+      ${todas.length ? `<div class="tab-wrap"><table class="t"><thead><tr><th>Onde</th><th>Anúncio</th><th class="n">Preço</th><th class="n">Por ${esc(it.unidade || 'un')}</th><th></th></tr></thead><tbody>
+        ${mostrarM ? grupo('📍 Manaus', man, 'Nenhum preço publicado em Manaus nesta semana. Use a aba Pedir cotação.') : ''}
+        ${mostrarF ? grupo('🌐 Fora (internet)', fora, 'Nada encontrado fora.') : ''}
       </tbody></table></div>` : '<div class="vazio" style="padding:12px">Nada confiável encontrado nesta semana.</div>'}
     </section>`;
   }).join('')}`;
@@ -597,7 +620,7 @@ function formGuardarNet(k) {
     <select id="ngItem"><option value="">Escolha…</option>${D.itens.filter(i => i.ativo).map(i => `<option value="${i.id}"${i.id === sel ? ' selected' : ''}>${esc(i.nome)} (${esc(i.unidade)})</option>`).join('')}<option value="__novo">＋ Criar o item "${esc(it.termo)}"</option></select>
     <label style="margin-top:14px">Ofertas</label>
     <div class="escolha">${ofs.map(({ o, j }) => `<div class="op"><input type="checkbox" class="ng" value="${j}" id="ng_${j}" checked>
-      <label for="ng_${j}" class="nm" style="margin:0;font-weight:600;color:var(--ink)">${esc(o.loja)} — ${money(valorOferta(o))}/${esc(it.unidade || 'un')}<small>${esc(o.titulo || '')}${o.local === 'Manaus' ? ' · 📍 Manaus' : ' · 🌐 online'}</small></label></div>`).join('')}</div>
+      <label for="ng_${j}" class="nm" style="margin:0;font-weight:600;color:var(--ink)">${esc(o.loja)} — ${money(valorOferta(o))}/${esc(it.unidade || 'un')}<small>${esc(o.titulo || '')}${o.local === 'Manaus' ? ' · 📍 Manaus' : ' · 🌐 fora' + (o.frete_manaus ? ' · 🚚 ' + esc(o.frete_manaus) : '')}</small></label></div>`).join('')}</div>
     <div class="btn-row"><button class="btn pri" data-act="net-guardar-ok" data-k="${k}" style="flex:1">💾 Guardar marcados</button></div>`);
 }
 async function guardarNet(k) {
@@ -641,6 +664,7 @@ document.addEventListener('click', async e => {
       case 'aba': UI.aba = b.dataset.aba; return render();
       case 'recarregar': await carregar(); if (UI.aba === 'internet') await carregarInternet(); render(); return toast('Atualizado.');
       case 'net-guardar': return formGuardarNet(+b.dataset.k);
+      case 'net-filtro': NET.filtro = b.dataset.v; return render();
       case 'net-guardar-ok': return await guardarNet(+b.dataset.k);
       case 'item': return abrirItem(id);
       case 'lancar-item': fecharModal(); UI.aba = 'precos'; UI.lanc.busca = nomeItem(id); render(); return;
