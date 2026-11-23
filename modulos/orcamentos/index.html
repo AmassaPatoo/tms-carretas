@@ -3206,7 +3206,20 @@ const SERV = {
     hintMed:'Some partes do cômodo com + e desconte recortes com −.'},
   reparos: {titulo:'Pequenos reparos', ico:'🔧', kind:'lista', col:'SERVIÇO',
     tipos:['Pequenos reparos','Manutenção geral'],
-    ph:'Descrição do reparo (ex.: Trocar tomada)', addLabel:'Adicionar reparo', itensLabel:'Reparos'}
+    ph:'Descrição do reparo (ex.: Trocar tomada)', addLabel:'Adicionar reparo', itensLabel:'Reparos'},
+  hidraulica: {titulo:'Hidráulica', ico:'🚰', kind:'lista', col:'SERVIÇO',
+    tipos:['Encanamento','Instalação hidráulica','Manutenção hidráulica','Caça-vazamento','Desentupimento'],
+    ph:'Serviço (ex.: Trocar registro do chuveiro)', addLabel:'Adicionar serviço', itensLabel:'Serviços de hidráulica'},
+  gesso: {titulo:'Gesso acartonado', ico:'📐', kind:'area', rot:'Mão de obra', col:'PAREDE / LOCAL',
+    tipos:['Parede de drywall','Forro de drywall','Divisória de drywall','Sanca de gesso acartonado','Nicho / móvel de drywall'],
+    ph:'Local (ex.: Divisória do escritório)', addLabel:'Adicionar local', itensLabel:'Paredes / forros', dims:['Largura (m)','Altura / comprimento (m)'],
+    hintMed:'Parede: largura × altura. Forro: largura × comprimento do teto. Desconte portas e vãos com −.',
+    emb:['placa','placas'], rendLabel:'m² por placa', rendPh:'Ex.: 2,16 (1,20 × 1,80)', perda:'10'},
+  massa: {titulo:'Emassamento', ico:'🖌', kind:'area', rot:'Mão de obra', col:'PAREDE / LOCAL',
+    tipos:['Emassamento com massa corrida','Emassamento com massa acrílica','Emassamento e lixamento','Emassamento de teto','Emassamento de drywall'],
+    ph:'Parede / local (ex.: Paredes da sala)', addLabel:'Adicionar parede', itensLabel:'Paredes / tetos', dims:['Largura (m)','Altura (m)'],
+    hintMed:'Largura × altura de cada parede (ou do teto). Desconte portas e janelas com −.',
+    emb:['lata','latas'], rendLabel:'m² por lata (rendimento)', rendPh:'Ex.: 30', perda:'10'}
 };
 const KEYS = Object.keys(SERV);
 const kind = key => SERV[key].kind;
