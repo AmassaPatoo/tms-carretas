@@ -1,69 +1,108 @@
-# Robô de pesquisa de preços (Manaus)
+# Robô de pesquisa de preços — KE Obra Fácil (Manaus/AM)
 
-Procedimento que o agente segue toda semana. Ele roda na nuvem do Claude, **não** acessa o
-Supabase: só pesquisa na internet e grava o resultado neste repositório. O dono vê os achados
-no módulo **Cotações → 🤖 Internet** e escolhe o que guardar no histórico de preços.
+Você é o robô semanal. Ele roda na nuvem do Claude, **não** acessa o Supabase: só pesquisa na internet
+e grava o resultado neste repositório. O dono vê os achados no módulo **Cotações → 🤖 Internet**
+(comparação **📍 Manaus × 🌐 fora**) e escolhe o que guardar no histórico de preços.
 
-## Passo a passo
+O padrão de qualidade é o da pesquisa de 23/11/2026 (`robo/historico/2026-11-23.json`): ~65 ofertas,
+todas com link e preço visível, Manaus e fora separados, conversões corretas e notas úteis.
+**Abra esse arquivo antes de começar** e use como modelo.
 
-1. Clone/atualize o repositório `AmassaPatoo/tms-carretas` (branch `main`).
-2. Leia `robo/itens.json`. Para **cada item**, pesquise em **dois grupos** (os dois são obrigatórios):
+---
 
-   **A) 📍 Manaus** — o que dá para comprar na cidade:
-   - buscas como `<termo> Manaus`, `<termo> preço Manaus`, `<termo> loja Manaus`, `<termo> OLX Manaus`, `<termo> Bemol`;
-   - lojas de Manaus com site, catálogo, Instagram/Facebook ou WhatsApp com preço; Bemol; OLX e Facebook Marketplace
-     (região de Manaus); anúncios do Mercado Livre de vendedores **localizados em Manaus**.
-   - **Lojas de Manaus que publicam preço no site** (comece por elas):
-     Cocil Home Center (cocil.com.br e www.cocil.com.br — São Geraldo/Coroado), Beny Lar e Construção (beny.com.br),
-     Lobato Casa e Construção (lojalobato.com.br), Casinova Home Center (casinova.com.br),
-     Loja Constroi (lojaconstroi.com.br), O Construtor (oconstrutor.com.br), Nono do Gesso (nonodogesso.com.br, drywall).
-     Use buscas com `site:` (ex.: `site:cocil.com.br manta líquida`). Página com cara de antiga → avise em `obs` ("confirmar preço").
-   - Marque `"local": "Manaus"` (com o bairro em `obs` quando aparecer). Usado/seminovo → diga "usado" em `obs`.
+## 0. Preparação
+1. Clone/atualize `AmassaPatoo/tms-carretas` (branch `main`).
+2. Leia `robo/itens.json` (o que pesquisar, unidade e dica de cada item) e o `achados.json` anterior
+   (para saber onde achou preço da última vez — **comece por essas mesmas páginas**, os preços mudam mas as lojas continuam).
+3. Faça as buscas de itens diferentes **em paralelo** (várias chamadas de WebSearch na mesma vez) para ganhar tempo.
 
-   **B) 🌐 Fora (internet / nacional)** — para ter noção do preço de fora:
-   - **Mercado Livre**, **Amazon**, Magazine Luiza, Shopee, MadeiraMadeira, Leroy Merlin, Telhanorte, Casas Bahia.
-   - Buscas como `<termo> Mercado Livre`, `<termo> preço`. Para a **Amazon**, a busca comum quase não traz resultados:
-     use a busca restrita ao domínio amazon.com.br (ex.: WebSearch com allowed_domains=["amazon.com.br"]).
-   - Marque `"local": "online"`. Se a página mostrar **frete ou prazo para Manaus** (CEP 69000-000), anote em `frete_manaus`
-     (ex.: "frete R$ 45, 12 dias" ou "não entrega no AM"); se não mostrar, deixe vazio.
+## 1. 📍 Manaus (obrigatório para todo item)
 
-   - Abra a página (WebFetch) quando o trecho da busca não mostrar o preço com clareza.
-   - Meta: até **5 ofertas de Manaus** e até **6 de fora** por item (o que existir de verdade).
-   - Se não achar nada de Manaus para um item, diga isso em `nota` ("sem preço publicado em Manaus").
-3. Para cada oferta **com preço visível**, anote:
-   - `loja` (nome da loja ou do site; no marketplace, `"Mercado Livre – <vendedor>"`, `"Amazon – <vendedor>"`),
-   - `titulo` (nome do anúncio, curto), `url`,
-   - `preco` (o preço anunciado, número), `oferta_un` (o que esse preço compra: "caixa 2,5 m²", "balde 4 kg"…),
-   - `preco_unidade`: o preço convertido para a `unidade` do item **só quando a conta é clara**
-     (ex.: caixa de 2,5 m² a R$ 200 → 80,00 por m²). Se não der para converter com segurança, use `null`,
-   - `local`: `"Manaus"` ou `"online"` (ver acima),
-   - `frete_manaus`: texto curto ou vazio,
-   - `obs`: preço no Pix, promoção, marca, bairro etc. (curto).
-4. **Nunca invente preço.** Sem preço visível → não entra. Preço de outro produto → não entra.
-   Se um item não tiver nada confiável, deixe `ofertas: []` e explique em `nota`.
-5. Grave `robo/achados.json` neste formato (e uma cópia em `robo/historico/AAAA-MM-DD.json`):
+Faça **no mínimo 3 buscas por item** neste grupo, usando `mode: "extended"` nas buscas de Manaus
+(elas acham páginas de lojas locais que a busca comum não acha):
+
+| Onde | Como buscar |
+|---|---|
+| **Cocil Home Center** (São Geraldo / Coroado) — publica preço no site | WebSearch com `allowed_domains: ["cocil.com.br"]` e o nome do item (ex.: `manta líquida 18kg`). Existem dois sites (`www.cocil.com.br` atual e `cocil.com.br` antigo): prefira o `www`; se vier do antigo, escreva "confirmar preço" em `obs`. |
+| **Beny, Lobato, Casinova, Loja Constroi** | WebSearch com `allowed_domains: ["beny.com.br","lojalobato.com.br","casinova.com.br","lojaconstroi.com.br"]` |
+| **O Construtor, Nono do Gesso (drywall)** | `allowed_domains: ["oconstrutor.com.br","nonodogesso.com.br"]` |
+| **OLX Manaus** | `<item> OLX Manaus` (extended). Anúncio de particular: `obs` = "particular"; usado: "usado". |
+| **Busca aberta** | `<item> Manaus preço`, `<item> loja Manaus`, `<item> Bemol` (extended) |
+
+Regras de Manaus:
+- `"local": "Manaus"` **só** se a loja/anúncio for da cidade. Cuidado: "Manaus" também é **nome de cor** de piso
+  (Durafloor Nativa Manaus, Biancogres Manaus) — isso **não** é loja de Manaus.
+- Se a loja de Manaus vende o item mas **não mostra preço**, não invente: escreva na `nota`
+  (ex.: "A Cocil tem a cola X, mas sem preço no site: peça pela aba Pedir cotação").
+- Se só achar uma **marca equivalente** em Manaus (ex.: Cascola no lugar de Tekbond), pode entrar,
+  com o título dizendo "(equivalente, não é <marca>)".
+- Se não achar nada: `nota` = "Sem preço publicado em Manaus nesta semana."
+- Referências de **serviço** em Manaus (ex.: Habitissimo, anúncios de instalação na OLX) não entram como oferta,
+  mas valem ouro na `nota` (o dono usa para comparar com os preços dele).
+
+## 2. 🌐 Fora (obrigatório para todo item)
+
+Faça **no mínimo 3 buscas por item**:
+
+| Onde | Como buscar |
+|---|---|
+| **Amazon** | A busca comum quase nunca traz a Amazon. Use WebSearch com `allowed_domains: ["amazon.com.br"]`. |
+| **Mercado Livre** | `<item> Mercado Livre` ou `allowed_domains: ["mercadolivre.com.br"]` |
+| **Magalu, MadeiraMadeira, Telhanorte, Leroy Merlin, Casas Bahia/Extra/Ponto Frio, Shopee** | `<item> preço` e, se precisar, `allowed_domains` de cada um |
+
+- `"local": "online"`. Se a página mostrar frete/prazo para Manaus (CEP 69000-000), anote em `frete_manaus`.
+  Se mostrar entrega sem dizer o CEP, escreva "entrega R$ X (CEP não informado)".
+- Prefira preço **no Pix** quando aparecer (e diga em `obs`: "preço no Pix; R$ Y no cartão").
+
+## 3. Como registrar cada oferta
+
+- **Só entra com preço visível** no trecho da busca ou na página (abra com WebFetch quando o trecho cortar o preço).
+- Mesmo produto do item (medida, peso, tipo). Produto diferente → fora. Medida diferente → pode entrar com `preco_unidade: null`
+  e `obs` explicando (ex.: "tamanho maior (2,88 m²)").
+- `preco_unidade` = preço convertido para a unidade do item **só quando a conta é clara**:
+  - caixa de 4,39 m² a R$ 254,62 → 58,00 por m²; kit 10 barras a R$ 282,64 → 28,26 por barra;
+  - placa 625×625 mm = 0,390625 m²; o site já mostra "R$/m²" → use esse valor.
+  - Na dúvida → `null`.
+- Preço **muito abaixo** dos outros (menos da metade) → entra, mas `obs` = "preço muito abaixo — conferir".
+- Página antiga/desatualizada → `obs` = "página antiga: confirmar preço".
+- Meta: até **5 de Manaus** e até **6–8 de fora** por item, priorizando as mais baratas e as marcas mais comuns.
+- **Nunca invente preço, loja ou link.**
+
+## 4. Formato de `robo/achados.json`
 
 ```json
 {
-  "atualizado_em": "2026-11-23T10:00:00-04:00",
+  "atualizado_em": "2026-11-30T05:40:00-04:00",
   "itens": [
     {
       "termo": "Piso vinílico colado 2 mm",
       "unidade": "m²",
-      "nota": "",
+      "nota": "texto curto com o que vale saber (Manaus sem preço, referência de serviço, frete pesado...)",
       "ofertas": [
-        { "loja": "Magazine Luiza", "titulo": "Piso vinílico ...", "url": "https://...",
-          "preco": 57.59, "oferta_un": "m²", "preco_unidade": 57.59, "local": "online",
-          "frete_manaus": "", "obs": "preço no Pix", "data": "2026-11-23" }
+        { "loja": "Cocil Home Center", "titulo": "Piso Vinílico 2mm Biancogres Vita Colonna (cx 5,92 m²)",
+          "url": "https://...", "preco": 77.00, "oferta_un": "m²", "preco_unidade": 77.00,
+          "local": "Manaus", "frete_manaus": "", "obs": "São Geraldo", "data": "2026-11-30" }
       ]
     }
   ]
 }
 ```
+- Mantenha **a mesma ordem e os mesmos `termo`** de `itens.json` (o app usa o termo para ligar ao item do dono).
+- Grave também uma cópia em `robo/historico/AAAA-MM-DD.json` (data de hoje no fuso de Manaus).
 
-6. Valide o JSON: `python3 -c "import json;json.load(open('robo/achados.json'))"`.
-7. Faça commit **só** dos arquivos de `robo/` com a mensagem
-   `Robô: preços da internet de AAAA-MM-DD` e dê push na `main`.
-   (Não altere nenhum outro arquivo do sistema.)
-8. Termine com um resumo curto: por item, o menor preço em Manaus e o menor de fora (com a loja) e a diferença em %,
-   e os itens sem resultado.
+## 5. Conferência (obrigatória)
+
+Rode:
+```
+python3 robo/validar.py
+```
+Ele confere o formato, aponta ofertas sem link/preço, itens sem pesquisa de Manaus ou de fora, e compara com a semana anterior.
+**Corrija tudo que ele marcar como ERRO** e rode de novo. Avisos (AVISO) podem ficar, mas leia cada um.
+
+## 6. Publicar
+Commit **só** dos arquivos de `robo/` com a mensagem `Robô: preços da internet de AAAA-MM-DD`
+(autor `Claude <noreply@anthropic.com>`) e push na `main`. Não altere nenhum outro arquivo do sistema.
+
+## 7. Resumo final (em português, curto)
+Use a saída do `validar.py`: por item, menor em Manaus × menor fora (loja e diferença %), o que subiu ou caiu
+em relação à semana anterior, e os itens sem resultado em Manaus.

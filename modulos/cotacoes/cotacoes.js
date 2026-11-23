@@ -576,7 +576,8 @@ function telaInternet() {
     const ord = a => a.slice().sort((x, y) => (valorOferta(x) ?? 1e12) - (valorOferta(y) ?? 1e12));
     const todas = it.ofertas || [];
     const man = ord(todas.filter(o => o.local === 'Manaus')), fora = ord(todas.filter(o => o.local !== 'Manaus'));
-    const menor = l => l.find(o => valorOferta(o) != null) || null;
+    const suspeito = o => /conferir/i.test(o.obs || '');
+    const menor = l => l.find(o => valorOferta(o) != null && !suspeito(o)) || null;
     const mM = menor(man), mF = menor(fora);
     const mapa = itemParecido(it.termo);
     const linha = (o, destaque) => `<tr${destaque ? ' class="melhor"' : ''}><td><b>${esc(o.loja)}</b></td>
@@ -585,7 +586,7 @@ function telaInternet() {
       <td class="n"><b>${valorOferta(o) != null ? money(valorOferta(o)) : '—'}</b></td>
       <td class="n">${mapa && jaGuardado(o, mapa) ? '<span class="tag ok">guardado</span>' : ''}</td></tr>`;
     const grupo = (titulo, lista, vazio) => `<tr class="grupo"><td colspan="5">${titulo} <small>(${lista.length})</small></td></tr>` +
-      (lista.length ? lista.map((o, j) => linha(o, j === 0 && valorOferta(o) != null)).join('') : `<tr><td colspan="5" class="falta">${vazio}</td></tr>`);
+      (lista.length ? lista.map(o => linha(o, o === menor(lista))).join('') : `<tr><td colspan="5" class="falta">${vazio}</td></tr>`);
     let comp = '';
     if (mM && mF) {
       const dif = (valorOferta(mM) / valorOferta(mF) - 1) * 100;
