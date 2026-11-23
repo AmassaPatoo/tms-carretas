@@ -2832,7 +2832,8 @@ details.card[open]>summary{margin-bottom:14px}
 .mat{display:grid;grid-template-columns:1fr 66px 58px 112px 92px 40px;gap:6px;align-items:center;margin-bottom:7px}
 .mat input{height:42px}
 .mat .mq,.mat .mu{text-align:center;padding:0 6px}
-.mt{font-weight:700;color:var(--navy);text-align:right;font-size:13.5px;white-space:nowrap}
+.mt{font-weight:700;color:var(--navy);text-align:right;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mt.vazio{color:var(--muted);font-weight:500;font-size:12.5px}
 .mat .x{height:42px}
 .empty{font-size:13px;color:var(--muted);padding:2px 2px 10px}
 
@@ -3712,7 +3713,9 @@ function recalc(){
     });
   });
   document.querySelectorAll('.mat').forEach(el=>{
-    const m=findMat(el); if(m) el.querySelector('.mt').textContent = toNum(m.valor)>0 ? money(matTotal(m)) : 'sem preço (só quantidade)';
+    const m=findMat(el); if(!m) return; const t=el.querySelector('.mt'), tem=toNum(m.valor)>0;
+    t.textContent = tem ? money(matTotal(m)) : 'sem valor'; t.classList.toggle('vazio',!tem);
+    t.title = tem ? '' : 'Sem valor: no PDF aparece só a quantidade';
   });
   document.querySelectorAll('.schip').forEach(b=>{ const on=state.servicos[b.dataset.s].ativo; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on); });
   $('#servVazio').hidden = KEYS.some(k=>state.servicos[k].ativo);
