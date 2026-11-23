@@ -1,23 +1,86 @@
-<!doctype html>
-<html lang="pt-BR"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f2234"><meta name="description" content="TMS Carretas: viagens, custos, XML e acerto financeiro.">
-<title>TMS Carretas | Gestão de Viagens</title>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="description" content="Plataforma KE: todos os sistemas da empresa em um só lugar.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plataforma KE">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="cte.css">
-<link rel="stylesheet" href="motorista.css">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script defer src="config.js"></script><script defer src="app.js"></script>
-</head><body>
-<div id="toast" role="status" aria-live="polite"></div>
-<section id="login" class="login-screen"><div class="login-card"><div class="logo">🚛 TMS <span>CARRETAS</span></div><h1>Controle de viagens e custos</h1><p>Entre com sua conta autorizada para acessar o sistema.</p>
-<form id="login-form"><label>E-mail<input name="email" type="email" required autocomplete="username"></label><label>Senha<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Entrar</button></form>
-<div id="login-error" class="error"></div><small>O gestor cria os usuários no Supabase Authentication e autoriza o perfil no banco.</small></div></section>
-<div id="app" hidden><header class="topbar"><div class="brand">🚛 <span>TMS CARRETAS</span><small>Gestão operacional</small></div><div class="header-actions"><span id="user-badge"></span><button class="ghost" id="refresh-btn">↻ Atualizar</button><button class="ghost" id="logout-btn">Sair</button></div></header>
-<div class="shell"><nav class="sidebar" aria-label="Menu principal"><button data-page="dashboard" class="active">▦ Painel</button><button data-page="viagens">🛣 Viagens</button><button data-page="despesas">🧾 Gastos / Motorista</button><button data-page="fechamento">▤ Fechamento / DRE</button><button data-page="cadastros" class="manager-only">🚚 Cadastros</button><button data-page="usuarios" class="manager-only">👤 Usuários</button><div class="nav-foot">V1.0 • Supabase / PWA<br>Sem consulta online à SEFAZ</div></nav>
-<main id="main" class="content" tabindex="-1"></main></div>
-<nav class="mobile-nav"><button data-page="dashboard">Painel</button><button data-page="viagens">Viagens</button><button data-page="despesas">Gastos</button><button data-page="fechamento">DRE</button><button class="manager-only" data-page="cadastros">Cadastros</button></nav>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Plataforma KE</title>
+<link rel="stylesheet" href="core/inicio.css">
+<script defer src="vendor/supabase.js"></script>
+<script defer src="config.js"></script>
+<script defer src="core/plataforma.js"></script>
+<script defer src="core/inicio.js"></script>
+</head>
+<body>
+
+<!-- ============ ENTRADA ============ -->
+<section id="tela-entrada" class="entrada" hidden>
+  <div class="entrada-card">
+    <div class="marca-grande"><span class="k">K</span><span class="e">E</span></div>
+    <h1 id="nomePlataforma">Plataforma KE</h1>
+
+    <form id="form-login" class="form">
+      <p class="sub">Entre para acessar os sistemas da sua empresa.</p>
+      <label>E-mail<input name="email" type="email" required autocomplete="username"></label>
+      <label>Senha<input name="senha" type="password" required autocomplete="current-password"></label>
+      <button class="btn pri" type="submit">Entrar</button>
+      <div class="links"><button type="button" class="link" data-ir="cadastro">Criar conta</button><button type="button" class="link" data-ir="esqueci">Esqueci minha senha</button></div>
+    </form>
+
+    <form id="form-cadastro" class="form" hidden>
+      <p class="sub">Crie sua conta. Depois, o responsável pela empresa libera o seu acesso.</p>
+      <label>Seu nome<input name="nome" required autocomplete="name"></label>
+      <label>E-mail<input name="email" type="email" required autocomplete="username"></label>
+      <label>Senha <em>(mínimo 6 caracteres)</em><input name="senha" type="password" minlength="6" required autocomplete="new-password"></label>
+      <button class="btn pri" type="submit">Criar conta</button>
+      <div class="links"><button type="button" class="link" data-ir="login">Já tenho conta</button></div>
+    </form>
+
+    <form id="form-esqueci" class="form" hidden>
+      <p class="sub">Vamos enviar um link para você criar uma nova senha.</p>
+      <label>E-mail<input name="email" type="email" required autocomplete="username"></label>
+      <button class="btn pri" type="submit">Enviar link</button>
+      <div class="links"><button type="button" class="link" data-ir="login">Voltar</button></div>
+    </form>
+
+    <form id="form-nova-senha" class="form" hidden>
+      <p class="sub">Digite a sua nova senha.</p>
+      <label>Nova senha<input name="senha" type="password" minlength="6" required autocomplete="new-password"></label>
+      <button class="btn pri" type="submit">Salvar nova senha</button>
+    </form>
+
+    <div id="entrada-msg" class="msg" role="status"></div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="tela-app" hidden>
+  <header class="topo">
+    <div class="marca"><span class="k">K</span><span class="e">E</span></div>
+    <div class="topo-tt">
+      <strong id="topoNome">Plataforma KE</strong>
+      <select id="selEmpresa" aria-label="Empresa"></select>
+    </div>
+    <button class="topo-btn" id="btnPerfil" title="Minha conta">👤</button>
+  </header>
+
+  <nav class="abas" id="abas">
+    <button data-aba="inicio" class="on">🏠 Início</button>
+    <button data-aba="clientes">👥 Clientes</button>
+    <button data-aba="equipe" hidden>🧑‍🤝‍🧑 Equipe</button>
+    <button data-aba="admin" hidden>🛠️ Administração</button>
+  </nav>
+
+  <main id="conteudo" class="conteudo"></main>
 </div>
-<dialog id="modal"><form method="dialog" id="modal-close-form"><button class="close" aria-label="Fechar">✕</button></form><div id="modal-content"></div></dialog>
-</body></html>
+
+<dialog id="modal"><div id="modal-corpo"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

@@ -1,1 +1,18 @@
-{"name":"TMS Carretas - Gestão de Transportes","short_name":"TMS Carretas","start_url":"./","scope":"./","display":"standalone","background_color":"#f1f5f9","theme_color":"#10283e","description":"Controle de viagens, despesas, abastecimentos e DRE."}
+{
+  "name": "Plataforma KE",
+  "short_name": "Plataforma KE",
+  "description": "Todos os sistemas da empresa em um só lugar: orçamentos, carretas, clientes.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06263a",
+  "theme_color": "#0C3446",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
