@@ -21,6 +21,7 @@ manifest.webmanifest, sw.js, icons/   aplicativo instalável
 modulos/orcamentos/        sistema de orçamentos
 modulos/carreta/           sistema de carretas (TMS)
 modulos/cotacoes/          pesquisa de preços de material nas lojas
+modulos/romaneios/         romaneio de entrega e ordem de serviço (pedido do fornecedor → documento da empresa)
 aprovar/                   página pública: cliente aprova o orçamento
 cotar/                     página pública: loja responde a cotação
 supabase/migrations/       comandos do banco (rodar no SQL Editor, em ordem)
@@ -35,6 +36,7 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
    "Minha Transportadora" com os dados atuais e passa os usuários para ela. Roda numa transação: se der erro, nada muda.
 3. `003_orcamento_link_aprovacao.sql`: link para o cliente aprovar e assinar o orçamento sem login.
 4. `004_link_curto.sql`: links de aprovação com 16 caracteres.
+6. `006_romaneios.sql`: módulo Romaneios (entrega / ordem de serviço com o CNPJ e os preços da empresa). Depois, ligue "Romaneios" em Administração.
 5. `005_cotacoes.sql`: módulo Cotações (itens, lojas, preços e pedidos de cotação respondidos por link).
    Depois, em **Administração**, ligue "Cotações" na empresa.
 

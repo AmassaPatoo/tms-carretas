@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KE Romaneios">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon.svg" type="image/svg+xml">
+<title>Romaneios · Plataforma KE</title>
+<link rel="stylesheet" href="../cotacoes/cotacoes.css">
+<link rel="stylesheet" href="romaneios.css">
+<script src="../../vendor/supabase.js"></script>
+<script src="../../config.js"></script>
+<script src="../../core/plataforma.js"></script>
+<script src="../../vendor/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">🚚</div>
+    <div><strong>Romaneios</strong><small id="subtitulo">Entrega e ordem de serviço</small></div>
+  </div>
+  <button class="tb-btn" data-act="lista">📂<span class="lbl"> Documentos</span></button>
+  <button class="tb-btn" data-act="novo">＋<span class="lbl"> Novo</span></button>
+</header>
+
+<main id="conteudo"><div class="carregando">Carregando…</div></main>
+
+<div class="rb-bar" id="barra" hidden>
+  <div class="rb-in">
+    <div class="rb-total"><small>TOTAL DO DOCUMENTO</small><b id="bTotal">R$ 0,00</b><span id="bLucro"></span></div>
+    <button class="btn" data-act="pdf">📄 PDF</button>
+    <button class="btn pri" data-act="enviar">📤 Enviar</button>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="modal-box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="romaneios.js"></script>
+</body>
+</html>
