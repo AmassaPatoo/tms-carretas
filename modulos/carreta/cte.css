@@ -31,3 +31,5 @@
 .cte-multi-item {display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #d5e0ea;border-radius:9px;padding:8px 10px}
 .cte-multi-item.dup {opacity:.6}
 .cte-multi-item small {color:#4e6478}
+
+.cte-drop-page {margin:6px 0 14px;padding:22px}
