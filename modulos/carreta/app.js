@@ -177,10 +177,11 @@ function cteForm(tripId=''){
  const pdf=form.elements.pdf.files[0],xml=form.elements.xml.files[0];const docImg=pdf&&/^image\/(jpeg|png|webp)$/.test(pdf.type);if(!pdf||pdf.size>15*1024*1024||pdf.size<1||!(docImg||(/\.pdf$/i.test(pdf.name)&&(!pdf.type||pdf.type==='application/pdf'))))throw Error('Anexe o DACTE em PDF ou foto (JPG/PNG/WEBP) de até 15 MB.');
  if(xml&&(xml.size>5*1024*1024||xml.size<1||!(/\.xml$/i.test(xml.name))))throw Error('XML deve ter até 5 MB.');
  // Upload precede o registro: caso falhe a gravação, os arquivos novos são removidos.
- const put=async(file,type)=>{const path=`${f.viagem_id}/${crypto.randomUUID()}.${type}`;const ct={pdf:'application/pdf',xml:'application/xml',jpg:'image/jpeg',png:'image/png',webp:'image/webp'}[type];const {error:e}=await state.db.storage.from('tms-cte').upload(path,file,{upsert:false,contentType:ct});if(e)throw e;uploaded.push(path);return path};
- const pdf_path=await put(pdf,docImg?({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[pdf.type]:'pdf'),xml_path=xml?await put(xml,'xml'):null;
+ const put=async(file,type)=>{const path=`${f.viagem_id}/${crypto.randomUUID()}.${type}`;const {error:e}=await state.db.storage.from('tms-cte').upload(path,file,{upsert:false,contentType:type==='pdf'?'application/pdf':'application/xml'});if(e)throw e;uploaded.push(path);return path};
+ // Foto vira PDF (o cadastro do CT-e no banco aceita documento em PDF).
+ const pdf_path=await put(docImg?await fotoParaPdf(pdf):pdf,'pdf'),xml_path=xml?await put(xml,'xml'):null;
  const dados={};for(const [section,_,fields] of cteFields)for(const [field,,type] of fields)dados[field]=f[field]||'';
- if(form.dataset.leitura)dados.leitura=form.dataset.leitura;dados.documento_tipo=docImg?'foto':'pdf';
+ if(form.dataset.leitura)dados.leitura=form.dataset.leitura;if(form.dataset.pagina)dados.pagina=form.dataset.pagina;dados.documento_tipo=docImg?'foto':'pdf';
  const payload={viagem_id:f.viagem_id,numero:String(f.numero).trim(),chave_acesso:key,valor_frete_bruto:bruto,valor_impostos:tax,pdf_path,xml_path,dados};
  await rpc('tms_registrar_cte',{p_registro:payload});uploaded=[];closeModal();await refresh();if(state.page==='fechamento')fechamento();else await detail(f.viagem_id);toast('CT-e cadastrado com documento e receita vinculada.');
  }catch(ex){if(uploaded.length){const {error:cleanupError}=await state.db.storage.from('tms-cte').remove(uploaded);if(cleanupError)console.warn('Falha ao remover upload temporário',cleanupError)}error(ex)}finally{submit.disabled=false}};
@@ -206,18 +207,65 @@ function cteLeitorBind(){
   try{
    const r=await CteLeitor.lerArquivo(file,{progresso:(p,t)=>status('⏳ '+esc(t||('Lendo… '+p+'%')))});
    if(r.arquivo==='xml')setFile('xml',file);else setFile('pdf',file);
-   const c=r.campos,ok=[],labels={chave_acesso:'Chave',numero:'Número',valor_frete_bruto:'Frete',valor_impostos:'Impostos (ICMS)'};cteFields.forEach(([,,fs])=>fs.forEach(([k,l])=>labels[k]=l));
+   lastRead={r,file};
+   if(r.documentos&&r.documentos.length>1)return listarDocs(r);
+   aplicar(r,r.campos,r.paginas);
+  }catch(ex){status('⚠ '+esc(ex.message||String(ex)),'warn');if(!/xml/i.test(file.type)&&!/\.xml$/i.test(file.name)&&/^(image\/|application\/pdf)/.test(file.type))setFile('pdf',file)}
+ };
+ let lastRead=null;
+ const labels={chave_acesso:'Chave',numero:'Número',valor_frete_bruto:'Frete',valor_impostos:'Impostos (ICMS)'};cteFields.forEach(([,,fs])=>fs.forEach(([k,l])=>labels[k]=l));
+ const OBRIG=['chave_acesso','numero','valor_frete_bruto','origem_municipio','origem_uf','destino_municipio','destino_uf'];
+ const cadastrado=ch=>ch&&state.ctes.some(x=>x.chave_acesso===ch);
+ const rota=c=>`${c.origem_municipio||'?'}/${c.origem_uf||'?'} → ${c.destino_municipio||'?'}/${c.destino_uf||'?'}`;
+ // Vários CT-es no mesmo PDF (um por página): escolher um ou cadastrar todos de uma vez.
+ const listarDocs=r=>{
+  const docs=r.documentos,novos=docs.filter(d=>!cadastrado(d.campos.chave_acesso)),prontos=novos.filter(d=>OBRIG.every(k=>d.campos[k]));
+  status(`<b>Este PDF tem ${docs.length} CT-es.</b> Escolha um para conferir ou cadastre todos nesta viagem.
+   <div class="cte-multi">${docs.map((d,i)=>{const c=d.campos,dup=cadastrado(c.chave_acesso),falta=OBRIG.filter(k=>!c[k]);return `<div class="cte-multi-item${dup?' dup':''}"><div><b>CT-e ${esc(c.numero||'?')}</b> · pág. ${esc(d.paginas.join(', '))} · ${esc(rota(c))}<br><small>Frete ${brl(n(c.valor_frete_bruto))} · ICMS ${brl(n(c.icms))} · ${esc(c.destinatario||'')} ${dup?'· <b>já cadastrado</b>':falta.length?'· falta: '+esc(falta.map(k=>labels[k]).join(', ')):''}</small></div><button type="button" class="outline" data-doc="${i}">Conferir este</button></div>`}).join('')}</div>
+   ${prontos.length?`<div class="form-actions"><button type="button" class="primary" id="cte-todos">Cadastrar ${prontos.length} CT-e(s) nesta viagem</button></div>`:''}
+   <div class="mini">Todos usam o mesmo PDF como documento (cada um guarda a sua página). Impostos do DRE = ICMS de cada CT-e. Cadastrados ou incompletos ficam de fora.</div>`,'ok');
+  st.querySelectorAll('[data-doc]').forEach(b=>b.onclick=()=>{const d=docs[Number(b.dataset.doc)];aplicar(r,d.campos,d.paginas,true)});
+  const all=st.querySelector('#cte-todos');if(all)all.onclick=()=>cadastrarTodos(r,prontos,all);
+ };
+ const aplicar=(r,c,paginas,limpar)=>{
+   if(limpar)form.querySelectorAll('.lido:not([type=file]),.conferido:not([type=file])').forEach(el=>{el.value=el.name==='valor_impostos'?'0':'';el.classList.remove('lido','conferido')});
+   const ok=[];
    for(const [k,v] of Object.entries(c))if(fill(k,v))ok.push(labels[k]||k);
-   const chave=c.chave_acesso,dup=chave&&state.ctes.some(x=>x.chave_acesso===chave);
-   form.dataset.leitura=`Lido de ${r.fonte} em ${new Date().toLocaleString('pt-BR')}`;
-   const falta=['chave_acesso','numero','valor_frete_bruto','origem_municipio','origem_uf','destino_municipio','destino_uf'].filter(k=>!form.elements[k]?.value).map(k=>labels[k]||k);
-   status(`<b>${esc(r.fonte)}: ${ok.length} campo(s) identificado(s)</b>${chave?` · chave ${CteLeitor.dvOk(chave)?'<span class="ok">✓ dígito verificador conferido</span>':''}`:''}
+   form.dataset.pagina=paginas&&paginas.length?paginas.join(','):'';
+   const chave=c.chave_acesso,dup=cadastrado(chave);
+   form.dataset.leitura=`Lido de ${r.fonte}${paginas&&r.documentos?.length>1?' (página '+paginas.join(', ')+')':''} em ${new Date().toLocaleString('pt-BR')}`;
+   const falta=OBRIG.filter(k=>!form.elements[k]?.value).map(k=>labels[k]||k);
+   status(`${r.documentos?.length>1?'<button type="button" class="outline" id="cte-voltar-lista">← Outros CT-es deste PDF</button> ':''}<b>${esc(r.fonte)}: ${ok.length} campo(s) identificado(s)</b>${chave?` · chave ${CteLeitor.dvOk(chave)?'<span class="ok">✓ dígito verificador conferido</span>':''}`:''}
     ${dup?'<div class="erro">⚠ Esta chave de acesso já está cadastrada.</div>':''}
     ${falta.length?`<div class="falta">Faltam: ${esc(falta.join(', '))}</div>`:''}
     ${r.avisos?.length?`<ul>${r.avisos.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>`:''}
     <div class="mini">Campos em amarelo vieram do documento${r.confianca==='baixa'?' (leitura de foto: confira com atenção)':''}. Ao editar, a marca some.</div>`,dup?'warn':'ok');
+   const v=st.querySelector('#cte-voltar-lista');if(v)v.onclick=()=>listarDocs(r);
    form.querySelector('.lido:not([type=file])')?.scrollIntoView({block:'nearest'});
-  }catch(ex){status('⚠ '+esc(ex.message||String(ex)),'warn');if(!/xml/i.test(file.type)&&!/\.xml$/i.test(file.name)&&/^(image\/|application\/pdf)/.test(file.type))setFile('pdf',file)}
+ };
+ const cadastrarTodos=async(r,docs,btn)=>{
+  const viagem=form.elements.viagem_id?.value,file=lastRead?.file;if(!viagem||!file)return toast('Escolha a viagem e o arquivo.');
+  if(!confirm(`Cadastrar ${docs.length} CT-e(s) na viagem selecionada, com os dados lidos do PDF?\nConfira depois em “Visualizar CT-e”.`))return;
+  btn.disabled=true;let path=null,okN=0;const erros=[];
+  try{
+   path=`${viagem}/${crypto.randomUUID()}.pdf`;
+   const {error:e}=await state.db.storage.from('tms-cte').upload(path,file,{upsert:false,contentType:'application/pdf'});if(e)throw e;
+   for(const d of docs){
+    const c=d.campos;try{
+     if(cadastrado(c.chave_acesso))continue;
+     const bruto=n(c.valor_frete_bruto),tax=Math.min(n(c.valor_impostos||c.icms),bruto);
+     const dados={};for(const [,,fields] of cteFields)for(const [k] of fields)dados[k]=c[k]!=null?String(c[k]):'';
+     if(dados.modal==='')dados.modal='Rodoviário';
+     dados.leitura=`Lido de ${r.fonte} (página ${d.paginas.join(', ')}) em ${new Date().toLocaleString('pt-BR')} · cadastro em lote`;dados.pagina=d.paginas.join(',');dados.documento_tipo='pdf';
+     await rpc('tms_registrar_cte',{p_registro:{viagem_id:viagem,numero:String(c.numero),chave_acesso:c.chave_acesso,valor_frete_bruto:bruto,valor_impostos:tax,pdf_path:path,xml_path:null,dados}});
+     okN++;state.ctes.push({chave_acesso:c.chave_acesso});
+     status(`⏳ Cadastrando… ${okN}/${docs.length}`);
+    }catch(ex){erros.push(`CT-e ${c.numero}: ${ex.message||ex}`)}
+   }
+   if(!okN&&path){await state.db.storage.from('tms-cte').remove([path]);}
+   await refresh();closeModal();if(state.page==='fechamento')fechamento();else await detail(viagem);
+   toast(`${okN} CT-e(s) cadastrado(s) com receita vinculada ao DRE.${erros.length?' Não cadastrados: '+erros.join(' · '):''}`);
+  }catch(ex){error(ex);btn.disabled=false}
  };
  inp.onchange=e=>handle(e.target.files[0]);
  drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
@@ -225,7 +273,15 @@ function cteLeitorBind(){
  drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');handle(e.dataTransfer.files[0])});
 }
 function cteView(id){const c=state.ctes.find(x=>x.id===id);if(!c)return toast('CT-e não encontrado.');let d=c.dados||{};let sections=cteFields.map(([_,title,fields])=>`<section class="cte-view-group"><h3>${esc(title)}</h3><div class="cte-view-grid">${fields.map(([k,label])=>`<div><small>${esc(label)}</small><p>${esc(d[k]||'—')}</p></div>`).join('')}</div></section>`).join('');
- showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">${d.leitura?esc(d.leitura)+' · conferido pelo gestor':'Cadastro manual'} — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">${/\.(jpe?g|png|webp)$/i.test(c.pdf_path||'')?'Abrir foto do CT-e':'Abrir PDF do CT-e'}</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button></div></div></div>`);
+ showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">${d.leitura?esc(d.leitura)+' · conferido pelo gestor':'Cadastro manual'} — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">${d.documento_tipo==='foto'?'Abrir foto do CT-e (PDF)':'Abrir PDF do CT-e'+(d.pagina?' (página '+esc(d.pagina)+')':'')}</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button></div></div></div>`);
+}
+let jspdfCarregado=null;
+function carregarJsPdf(){if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);return jspdfCarregado||=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='../../vendor/jspdf.umd.min.js';sc.onload=()=>res(window.jspdf.jsPDF);sc.onerror=()=>{jspdfCarregado=null;rej(Error('Não foi possível preparar o PDF da foto.'))};document.head.appendChild(sc)})}
+async function fotoParaPdf(file){
+ const J=await carregarJsPdf(),bmp=await createImageBitmap(file),k=Math.min(1,2400/Math.max(bmp.width,bmp.height)),w=Math.round(bmp.width*k),h=Math.round(bmp.height*k);
+ const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close?.();
+ const doc=new J({unit:'px',format:[w,h],orientation:w>h?'landscape':'portrait',hotfixes:['px_scaling']});doc.addImage(c.toDataURL('image/jpeg',.88),'JPEG',0,0,w,h);
+ return new File([doc.output('blob')],(file.name||'cte').replace(/\.[^.]+$/,'')+'.pdf',{type:'application/pdf'});
 }
 async function cteOpenFile(path){if(!path)return;const {data,error:e}=await state.db.storage.from('tms-cte').createSignedUrl(path,120);if(e)throw e;window.open(data.signedUrl,'_blank','noopener,noreferrer')}
 

@@ -26,3 +26,8 @@
 .cte-ler-prev img,.cte-ler-prev iframe {width:100%;max-height:420px;height:420px;object-fit:contain;border:1px solid #d5e0ea;border-radius:10px;background:#fff}
 #cte-form .lido {background:#fff8d6;border-color:#e3b93b;box-shadow:0 0 0 2px #f6dc7a55}
 #cte-form .conferido {background:#f1fbf4;border-color:#8fd0a7}
+
+.cte-multi {display:grid;gap:6px;margin:8px 0;max-height:300px;overflow:auto}
+.cte-multi-item {display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid #d5e0ea;border-radius:9px;padding:8px 10px}
+.cte-multi-item.dup {opacity:.6}
+.cte-multi-item small {color:#4e6478}

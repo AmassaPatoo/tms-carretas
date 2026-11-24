@@ -167,7 +167,10 @@ function lerTexto(txt, extraChaves = [], celulas = null) {
   }
   if (celulas && celulas.length) {
     const pc = lerCelulas(celulas);
+    // Campos que dependem do desenho da página: com posição disponível, só valem se achados por coluna.
+    ['natureza', 'expedidor', 'recebedor', 'peso', 'icms', 'base_icms', 'aliquota_icms', 'valor_carga', 'valor_impostos', 'situacao_tributaria', 'produto'].forEach(k => { if (!(k in pc)) delete c[k]; });
     Object.assign(c, pc);
+    if (pc.valor_frete_bruto) { const i = avisos.findIndex(a => /Valor total/.test(a)); if (i >= 0) avisos.splice(i, 1); }
     if (pc.origem_municipio && pc.destino_municipio) { const i = avisos.findIndex(a => /Origem\/destino/.test(a)); if (i >= 0) avisos.splice(i, 1); }
   }
   // Sanidade: rótulo nunca é valor; UF precisa existir.
@@ -202,41 +205,95 @@ function montarCelulas(itens) {
   cel.forEach(c => { c.s = limpa(c.s); });
   return cel;
 }
-// Valores "do rótulo": resto da própria célula ou, se vazio, as células logo abaixo na mesma coluna.
-function blocoDoRotulo(cel, re, linhasMax = 6, parar = RE_LABEL) {
-  const i = cel.findIndex(c => re.test(c.s)); if (i < 0) return null;
-  const L = cel[i], m = re.exec(L.s), resto = limpa(L.s.slice(m.index + m[0].length).replace(/^\s*(DO SERVI[ÇC]O|DA PRESTA[ÇC][ÃA]O)/i, ''));
-  const fora = [];
-  if (resto) fora.push(resto);
-  const xa = L.x0 - 25, xb = Math.max(L.x1, L.x0 + 140);
-  const proxLinhas = cel.filter(c => c.row > L.row && c.row <= L.row + linhasMax && c.x0 < xb && c.x1 > xa).sort((a, b) => a.row - b.row || a.x0 - b.x0);
-  for (const c of proxLinhas) { if (parar.test(c.s.slice(0, 22)) && !RE_CNPJ.test(c.s) && !/^(CNPJ|CPF|ENDERE|MUNIC|CEP|FONE|INSCRI|UF\b|PA[IÍ]S)/i.test(c.s)) break; fora.push(c.s); }
-  return fora;
-}
-const RE_PARTE = /^(REMETENTE|DESTINAT[ÁA]RIO|EXPEDIDOR|RECEBEDOR|TOMADOR|PRODUTO PREDOMINANTE|COMPONENTES|INFORMA[ÇC][ÕO]ES|DOCUMENTOS|OBSERVA|IN[ÍI]CIO DA|T[ÉE]RMINO DA)/i;
-function parteDasCelulas(cel, re) {
-  const b = blocoDoRotulo(cel, re, 7, RE_PARTE); if (!b) return null;
-  let nome = '', doc = '';
-  for (const s of b) {
-    const d = RE_CNPJ.exec(s); if (d && !doc) doc = fmtDoc(so(d[1]));
-    const t = limpa(s.replace(/^(NOME|RAZ[ÃA]O SOCIAL)\s*[:/]?/i, ''));
-    if (!nome && t.length > 2 && !/^\d/.test(t) && !/^(CNPJ|CPF|ENDERE|MUNIC|CEP|FONE|INSCRI|UF\b|PA[IÍ]S|IE\b)/i.test(t)) nome = t.slice(0, 120);
+const RE_PARTE = /^(REMETENTE|REM\s*:|DESTINAT[ÁA]RIO|DEST\s*:|EXPEDIDOR|RECEBEDOR|TOMADOR\s*:|TOMADOR DO SERVI[ÇC]O\s*:|PRODUTO PREDOMINANTE|COMPONENTES|INFORMA[ÇC][ÕO]ES|DOCUMENTOS|OBSERVA|IN[ÍI]CIO DA|T[ÉE]RMINO DA)/i;
+// Posição horizontal estimada de um trecho dentro da célula (proporcional aos caracteres).
+const xDe = (c, i) => c.x0 + (c.x1 - c.x0) * i / Math.max(1, c.s.length);
+// Valor logo ABAIXO de um cabeçalho, na mesma coluna (DACTE em tabela: rótulo em cima, valor embaixo).
+function abaixoDe(cel, re, { linhas = 3, filtro = null, folga = 6 } = {}) {
+  for (const H of cel) {
+    const m = re.exec(H.s); if (!m) continue;
+    // valor na mesma célula, logo depois do rótulo ("PESO BRUTO (KG) 27.500,00")
+    const resto = limpa(H.s.slice(m.index + m[0].length).replace(/^\s*\(?KG\)?/i, ''));
+    if (resto && !RE_LABEL.test(resto.slice(0, 16)) && (!filtro || filtro.test(resto))) return resto;
+    const ha = xDe(H, m.index) - folga, hb = Math.max(xDe(H, m.index + m[0].length), ha + 30) + folga;
+    const cand = cel.filter(c => c.row > H.row && c.row <= H.row + linhas && Math.min(c.x1, hb) - Math.max(c.x0, ha) > 0);
+    const hc = (ha + hb) / 2, dist = c => Math.abs((c.x0 + c.x1) / 2 - hc);
+    cand.sort((a, b) => a.row - b.row || dist(a) - dist(b));
+    for (const c of cand) {
+      // célula larga que cobre várias colunas: pega só o trecho que fica sob o cabeçalho
+      let t = c.s;
+      if (c.x1 - c.x0 > (hb - ha) * 2.2 && c.x0 < ha - 10) {
+        const ws = [...t.matchAll(/\S+/g)].filter(w => { const xa = xDe(c, w.index), xb = xDe(c, w.index + w[0].length); return Math.min(xb, hb) - Math.max(xa, ha) > 0; });
+        t = ws.map(w => w[0]).join(' ');
+      }
+      t = limpa(t); if (!t) continue;
+      if (filtro && !filtro.test(t)) continue;
+      if (!filtro && RE_LABEL.test(t.slice(0, 16)) && t === t.toUpperCase() && /^(DOCUMENTOS|INFORMA|COMPONENTES|OBSERVA|VALOR|BASE|PESO)/i.test(t)) continue;
+      return t;
+    }
   }
-  return { nome, doc };
+  return '';
+}
+const RE_VAL = /\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:[.,]\d{1,4})?/;
+const valAbaixo = (cel, re, o = {}) => { const t = abaixoDe(cel, re, { folga: 30, ...o, filtro: /\d/ }); const m = /(\d{1,3}(?:\.\d{3})*,\d{1,4}|\d+(?:[.,]\d{1,4})?)/.exec(t); return m ? num(m[1].includes(',') ? m[1] : m[1]) : ''; };
+const cidUf = t => {
+  let m = /^([A-Z]{2})\s*[-\/]\s*([A-Za-zÀ-ú' .]{2,40})$/.exec(t); if (m && UF_LIST.includes(m[1].toUpperCase())) return { uf: m[1].toUpperCase(), mun: limpa(m[2]) };
+  m = /([A-Za-zÀ-ú][A-Za-zÀ-ú' .]{1,40}?)\s*[-\/]\s*([A-Z]{2})\b/.exec(t); if (m && UF_LIST.includes(m[2].toUpperCase())) return { mun: limpa(m[1]), uf: m[2].toUpperCase() };
+  return null;
+};
+// Participantes: coluna = do rótulo até o próximo rótulo da mesma linha; CNPJ conta pela posição estimada.
+const PARTES = [['remetente', /^(REMETENTE\b|REM\s*:)/i], ['destinatario', /^(DESTINAT[ÁA]RIO\b|DEST\s*:)/i], ['expedidor', /^(EXPEDIDOR\b)/i], ['recebedor', /^(RECEBEDOR\b)/i], ['tomador', /^(TOMADOR\s*:|TOMADOR DO SERVI[ÇC]O\s*:)/i]];
+const RE_ROT_PARTE = /^(REMETENTE|REM\s*:|DESTINAT[ÁA]RIO|DEST\s*:|EXPEDIDOR|RECEBEDOR|TOMADOR\s*:|TOMADOR DO SERVI[ÇC]O\s*:|PRODUTO PREDOMINANTE|COMPONENTES|INFORMA[ÇC][ÕO]ES|DOCUMENTOS)/i;
+function partes(cel) {
+  const out = {}, maxX = Math.max(...cel.map(c => c.x1));
+  for (const [k, re] of PARTES) {
+    const L = cel.find(c => re.test(c.s)); if (!L) continue;
+    const mesmaLinha = cel.filter(c => c.row === L.row && c.x0 > L.x0 + 5).sort((a, b) => a.x0 - b.x0);
+    const xa = L.x0 - 8, xb = (mesmaLinha.find(c => RE_ROT_PARTE.test(c.s))?.x0 ?? maxX + 1) - 4;
+    const m = re.exec(L.s); let nome = limpa(L.s.slice(m[0].length).split(/\s{2,}/)[0]);
+    let doc = '';
+    const fimRow = (cel.find(c => c.row > L.row && RE_ROT_PARTE.test(c.s))?.row ?? L.row + 8);
+    const bloco = cel.filter(c => c.row > L.row && c.row < Math.min(fimRow, L.row + 8)).sort((a, b) => a.row - b.row || a.x0 - b.x0);
+    for (const c of bloco) {
+      for (const d of c.s.matchAll(new RegExp(RE_CNPJ.source, 'g'))) { const x = xDe(c, d.index); if (x >= xa && x < xb && !doc) doc = fmtDoc(so(d[1])); }
+      if (!nome && c.x0 >= xa && c.x0 < xb) { const t = limpa(c.s.replace(/^(NOME|RAZ[ÃA]O SOCIAL)\s*[:/]?/i, '')); if (t.length > 2 && !/^\d/.test(t) && !/^(CNPJ|CPF|ENDERE|MUNIC|CIDADE|CEP|FONE|INSCRI|UF\b|PA[IÍ]S|IE\b)/i.test(t)) nome = t.slice(0, 120); }
+    }
+    if (nome || doc) out[k] = { nome, doc };
+  }
+  return out;
 }
 function lerCelulas(cel) {
   const c = {};
-  for (const [k, re] of [['remetente', /\bREMETENTE\b/i], ['destinatario', /\bDESTINAT[ÁA]RIO\b/i], ['expedidor', /\bEXPEDIDOR\b/i], ['recebedor', /\bRECEBEDOR\b/i], ['tomador', /\bTOMADOR( DO SERVI[ÇC]O)?\b/i]]) {
-    const p = parteDasCelulas(cel, re); if (!p) continue;
-    if (p.nome) c[k] = p.nome; if (p.doc && /^(remetente|destinatario|tomador)$/.test(k)) c[k + '_doc'] = p.doc;
-  }
-  const cid = re => { const b = blocoDoRotulo(cel, re, 3, RE_PARTE); if (!b) return null; for (const s of b) { const m = /([A-ZÀ-Ú][A-ZÀ-Ú' .]{1,40}?)\s*[-\/]\s*([A-Z]{2})\b/i.exec(s); if (m && UF_LIST.includes(m[2].toUpperCase())) return { mun: limpa(m[1]).toUpperCase(), uf: m[2].toUpperCase() }; } return null; };
-  const ini = cid(/IN[ÍI]CIO DA PRESTA[ÇC][ÃA]O|ORIGEM DA PRESTA[ÇC][ÃA]O/i), fim = cid(/T[ÉE]RMINO DA PRESTA[ÇC][ÃA]O|DESTINO DA PRESTA[ÇC][ÃA]O/i);
+  const P = partes(cel);
+  for (const k of ['remetente', 'destinatario', 'expedidor', 'recebedor', 'tomador']) if (P[k]) { if (P[k].nome) c[k] = P[k].nome; if (P[k].doc && /^(remetente|destinatario|tomador)$/.test(k)) c[k + '_doc'] = P[k].doc; }
+  // Tomador por código (REM/DEST/EXPED/RECEB) quando não há bloco próprio
+  const tcod = abaixoDe(cel, /TOMADOR DO SERVI[ÇC]O/i, { linhas: 2 }).toUpperCase();
+  const mapa = { REM: 'remetente', REMETENTE: 'remetente', DEST: 'destinatario', 'DESTINATÁRIO': 'destinatario', DESTINATARIO: 'destinatario', EXPED: 'expedidor', EXPEDIDOR: 'expedidor', RECEB: 'recebedor', RECEBEDOR: 'recebedor' };
+  if (mapa[tcod] && !c.tomador && P[mapa[tcod]]) { c.tomador = P[mapa[tcod]].nome; if (P[mapa[tcod]].doc) c.tomador_doc = P[mapa[tcod]].doc; }
+  const ini = cidUf(abaixoDe(cel, /IN[ÍI]CIO DA PRESTA[ÇC][ÃA]O|ORIGEM DA PRESTA[ÇC][ÃA]O/i)), fim = cidUf(abaixoDe(cel, /T[ÉE]RMINO DA PRESTA[ÇC][ÃA]O|DESTINO DA PRESTA[ÇC][ÃA]O/i));
   if (ini) { c.origem_municipio = ini.mun; c.origem_uf = ini.uf; }
   if (fim) { c.destino_municipio = fim.mun; c.destino_uf = fim.uf; }
-  const pp = blocoDoRotulo(cel, /PRODUTO PREDOMINANTE/i, 2); if (pp && pp[0] && !RE_LABEL.test(pp[0].slice(0, 14))) c.produto = pp[0].slice(0, 120);
-  const st = blocoDoRotulo(cel, /SITUA[ÇC][ÃA]O TRIBUT[ÁA]RIA/i, 2); if (st && st[0]) c.situacao_tributaria = limpa(st[0].split(/(?=BASE DE|AL[ÍI]Q|VALOR DO)/i)[0]).slice(0, 60);
-  const vc = blocoDoRotulo(cel, /VALOR TOTAL DA (CARGA|MERCADORIA)/i, 2); if (vc) for (const x of vc) { const m = RE_MOEDA.exec(x); if (m) { c.valor_carga = num(m[1]); break; } }
+  const cf = abaixoDe(cel, /CFOP/i, { filtro: /^\d{4}/ }); if (cf) { c.cfop = cf.slice(0, 4); const nat = limpa(cf.slice(4).replace(/^[\s\-–]+/, '')); if (nat) c.natureza = nat; }
+  const pr = abaixoDe(cel, /PROTOCOLO DE AUTORIZA/i, { filtro: /\d{15}/, folga: 60 }); if (pr) c.protocolo = /\d{15}/.exec(pr)[0];
+  const em = abaixoDe(cel, /DATA E HORA DE EMISS|DATA DE EMISS|EMISS[ÃA]O/i, { filtro: /\d{2}\/\d{2}\/\d{4}/ });
+  if (em) { const m = /(\d{2})\/(\d{2})\/(\d{4})(?:\D{1,4}(\d{2}):(\d{2}))?/.exec(em); c.emissao = `${m[3]}-${m[2]}-${m[1]}T${m[4] || '00'}:${m[5] || '00'}`; }
+  const md = abaixoDe(cel, /^MODAL$/i, { linhas: 2 }); if (md) { const t = md.toUpperCase(); c.modal = /MULTI/.test(t) ? 'Multimodal' : /RODO/.test(t) ? 'Rodoviário' : /A[ÉE]REO/.test(t) ? 'Aéreo' : /AQUA/.test(t) ? 'Aquaviário' : /FERRO/.test(t) ? 'Ferroviário' : c.modal; }
+  const ts = abaixoDe(cel, /TIPO D[OE] SERVI[ÇC]O/i, { linhas: 2 }); if (ts && /^[A-Za-zÀ-ú ]{4,30}$/.test(ts)) c.tipo_servico = ts[0].toUpperCase() + ts.slice(1).toLowerCase();
+  const pp = abaixoDe(cel, /PRODUTO PREDOMINANTE/i, { linhas: 2 }); if (pp && !RE_LABEL.test(pp.slice(0, 14))) c.produto = pp.slice(0, 120);
+  const vc = valAbaixo(cel, /VALOR (TOTAL )?DA (CARGA|MERCADORIA)|VALOR MERCADORIA/i, { linhas: 2, folga: 110 }); if (vc) c.valor_carga = vc;
+  const peso = valAbaixo(cel, /PESO (REAL|BRUTO)/i, { linhas: 2 }) || valAbaixo(cel, /PESO TAXADO|PESO\b/i, { linhas: 2 }); if (peso) c.peso = peso;
+  const vol = valAbaixo(cel, /^VOLUMES?$|QTDE?\.? VOLUMES/i, { linhas: 2 }); if (vol) { c.quantidade = vol; c.unidade = 'VOLUMES'; }
+  const tot = valAbaixo(cel, /VALOR TOTAL D[OA] (SERVI[ÇC]O|PRESTA[ÇC][ÃA]O)/i) || valAbaixo(cel, /VALOR [ÀA] RECEBER/i); if (tot) c.valor_frete_bruto = tot;
+  const st = abaixoDe(cel, /SITUA[ÇC][ÃA]O TRIBUT[ÁA]RIA/i, { linhas: 2 }); if (st) c.situacao_tributaria = limpa(st.split(/(?=BASE DE|AL[ÍI]Q|VALOR DO)/i)[0]).slice(0, 60);
+  const bc = valAbaixo(cel, /BASE DE C[ÁA]LCULO/i, { linhas: 2 }); if (bc) c.base_icms = bc;
+  const al = valAbaixo(cel, /AL[ÍI]QUOTA|AL[ÍI]Q\.?(\s*ICMS)?/i, { linhas: 2 }); if (al && Number(al) <= 30) c.aliquota_icms = al;
+  const ic = valAbaixo(cel, /VALOR (DO )?ICMS/i, { linhas: 2 }); if (ic) { c.icms = ic; c.valor_impostos = ic; }
+  // Componentes: "NOME  VALOR" na mesma linha
+  const comp = re => { const C = cel.find(x => re.test(x.s)); if (!C) return ''; const m = new RegExp(re.source + '\\s*([\\d.,]+)$', 'i').exec(C.s); if (m) return num(m[m.length - 1]); const v = cel.filter(x => x.row === C.row && x.x0 > C.x1).sort((a, b) => a.x0 - b.x0)[0]; return v && /^[\d.,]+$/.test(v.s) ? num(v.s.includes(',') ? v.s : v.s) : ''; };
+  const ped = comp(/^PED[ÁA]GIO/i); if (ped) c.pedagio = ped;
+  // Emitente: célula do topo na coluna do CNPJ do emitente (antes de endereço/fone)
+  const cn = cel.find(x => /CNPJ/i.test(x.s) && x.row < 12);
+  if (cn) { const acima = cel.filter(x => x.row < cn.row && Math.min(x.x1, cn.x1 + 40) - Math.max(x.x0, cn.x0 - 40) > 0).sort((a, b) => a.row - b.row); const e = acima.find(x => x.s.length > 4 && /[A-Za-z]{3}/.test(x.s) && !/^(RUA|R\.|AV|AVENIDA|ROD|FONE|CEP|TEL)/i.test(x.s) && !/\bCEP\b|\d{4,}/.test(x.s) && !/DACTE|DOCUMENTO AUXILIAR/i.test(x.s)); if (e) c.emitente = e.s.slice(0, 120); }
   return c;
 }
 
@@ -253,21 +310,18 @@ function carregarPdfjs() {
   });
   return pdfjs;
 }
-async function textoDoPdf(buf) {
-  const L = await carregarPdfjs(), pdf = await L.getDocument({ data: buf }).promise, saida = [], itens = [];
-  for (let p = 1; p <= Math.min(pdf.numPages, 4); p++) {
-    const pg = await pdf.getPage(p), tc = await pg.getTextContent(), grupos = [], alt = pg.getViewport({ scale: 1 }).height;
-    tc.items.forEach(it => { if (it.str && it.str.trim()) { const hh = Math.abs(it.transform[3]) || it.height || 8; itens.push({ x0: it.transform[4], x1: it.transform[4] + (it.width || it.str.length * hh * .5), y: (p - 1) * 5000 + alt - it.transform[5], h: hh, s: it.str }); } });
-    tc.items.forEach(it => {
-      const s = it.str; if (!s || !s.trim()) return;
-      const x = it.transform[4], y = it.transform[5];
-      let g = grupos.find(g => Math.abs(g.y - y) < 2.5); if (!g) { g = { y, partes: [] }; grupos.push(g); }
-      g.partes.push({ x, s });
-    });
-    grupos.sort((a, b) => b.y - a.y).forEach(g => { g.partes.sort((a, b) => a.x - b.x); saida.push(g.partes.map(q => q.s.trim()).join('   ')); });
+// Cada página separada (um PDF pode trazer vários CT-es, um por página).
+async function paginasDoPdf(buf) {
+  const L = await carregarPdfjs(), pdf = await L.getDocument({ data: buf }).promise, out = [];
+  for (let p = 1; p <= Math.min(pdf.numPages, 60); p++) {
+    const pg = await pdf.getPage(p), tc = await pg.getTextContent(), alt = pg.getViewport({ scale: 1 }).height, itens = [];
+    tc.items.forEach(it => { if (it.str && it.str.trim()) { const hh = Math.abs(it.transform[3]) || it.height || 8; itens.push({ x0: it.transform[4], x1: it.transform[4] + (it.width || it.str.length * hh * .5), y: alt - it.transform[5], h: hh, s: it.str }); } });
+    const cel = montarCelulas(itens);
+    const linhas = []; cel.forEach(c => { (linhas[c.row] ||= []).push(c.s); });
+    out.push({ pagina: p, texto: linhas.map(l => (l || []).join('   ')).join('\n'), celulas: cel });
   }
   pdf.destroy();
-  return { texto: saida.join('\n'), celulas: montarCelulas(itens) };
+  return out;
 }
 
 /* ---------- foto ---------- */
@@ -314,9 +368,19 @@ async function lerArquivo(file, { progresso } = {}) {
   const nome = file.name || '', tipo = file.type || '';
   if (/xml/i.test(tipo) || /\.xml$/i.test(nome)) { if (file.size > 5 * 1024 * 1024) throw Error('XML acima de 5 MB.'); return { ...lerXml(await file.text()), arquivo: 'xml' }; }
   if (/pdf/i.test(tipo) || /\.pdf$/i.test(nome)) {
-    const { texto: txt, celulas } = await textoDoPdf(new Uint8Array(await file.arrayBuffer()));
-    if (txt.replace(/\s/g, '').length < 80) throw Error('Este PDF não tem texto (é uma imagem escaneada). Envie uma foto do DACTE para a leitura por imagem.');
-    const r = lerTexto(txt, [], celulas); return { ...r, fonte: 'PDF do DACTE', confianca: 'média', texto: txt, arquivo: 'pdf' };
+    const pags = await paginasDoPdf(new Uint8Array(await file.arrayBuffer()));
+    if (pags.reduce((a, p) => a + p.texto.replace(/\s/g, '').length, 0) < 80) throw Error('Este PDF não tem texto (é uma imagem escaneada). Envie uma foto do DACTE para a leitura por imagem.');
+    // Agrupa páginas por CT-e (página sem chave própria = continuação da anterior).
+    const grupos = [];
+    for (const pg of pags) {
+      const ch = chavesNoTexto(pg.texto).find(k => k.slice(20, 22) === '57' || k.slice(20, 22) === '67');
+      const g = grupos[grupos.length - 1];
+      if (!ch && g) { g.paginas.push(pg.pagina); g.texto += '\n' + pg.texto; g.celulas = g.celulas.concat(pg.celulas.map(c => ({ ...c, row: c.row + 10000 * g.paginas.length }))); continue; }
+      if (ch && g && g.chave === ch) { g.paginas.push(pg.pagina); continue; }
+      grupos.push({ chave: ch || '', paginas: [pg.pagina], texto: pg.texto, celulas: pg.celulas });
+    }
+    const documentos = grupos.map(g => ({ ...lerTexto(g.texto, [], g.celulas), paginas: g.paginas, texto: g.texto }));
+    return { ...documentos[0], documentos, fonte: 'PDF do DACTE', confianca: 'média', arquivo: 'pdf' };
   }
   if (/^image\//i.test(tipo)) {
     const bar = await chaveDoCodigoDeBarras(file);
