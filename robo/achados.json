@@ -1,5 +1,5 @@
 {
-  "atualizado_em": "2026-11-24T09:47:38-04:00",
+  "atualizado_em": "2026-11-24T09:56:48-04:00",
   "itens": [
     {
       "termo": "Piso vinílico colado 2 mm",
@@ -396,7 +396,7 @@
     {
       "termo": "Rodapé de poliestireno 7 cm",
       "unidade": "barra",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa: a Cocil (Manaus) tem o Rodapé Santa Luzia 446 7 cm x 2,40 m (Pau Marfim), mas o site não abriu para ler o preço (peça pela aba Pedir cotação); Beny e Bemol não têm poliestireno 7 cm. Fora: barras de 2,40 m (kits divididos pelo nº de barras); barras de 1 m/2 m entram com preco_unidade null. Formix 3D em Black Friday (30% off).",
+      "nota": "Em Manaus, a Cocil (site www) mostra rodapé 7 cm x 2,40 m: Arquitech liso R$ 46,00 e Santa Luzia Moderna 446/456 branco R$ 67,00–68,70 (preços vistos na lista da categoria; a Cocil chama de 'polietileno'). Beny e Bemol não têm poliestireno 7 cm. Fora: barras de 2,40 m (kits divididos pelo nº de barras); barras de 1 m/2 m entram com preco_unidade null. Formix 3D em Black Friday (30% off).",
       "ofertas": [
         {
           "loja": "Formix 3D (loja oficial)",
@@ -494,6 +494,45 @@
           "data": "2026-11-24",
           "marca": "RM Decor",
           "promocao": "OFERTA -12% (Black Friday Leroy Merlin)"
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Rodapé Moderna 446 7 cm x 2,40 m Branco Santa Luzia",
+          "url": "https://www.cocil.com.br/pisos-e-revestimentos/rodape-polietileno/rodape-446-moderna-07cm-x-2-40m-branco-santa-luzia",
+          "preco": 67.0,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 67.0,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "preço visto na lista de Rodapés do site www (a Cocil classifica como 'rodapé polietileno'; a linha Moderna da Santa Luzia é de poliestireno)",
+          "data": "2026-11-24",
+          "marca": "Santa Luzia"
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Rodapé Moderna 456 7 cm x 2,40 m Branco Santa Luzia",
+          "url": "https://www.cocil.com.br/pisos-e-revestimentos/rodape-polietileno/rodape-456-moderna-07cm-x-2-40m-branco-santa-luzia",
+          "preco": 68.7,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 68.7,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "preço visto na lista de Rodapés do site www",
+          "data": "2026-11-24",
+          "marca": "Santa Luzia"
+        },
+        {
+          "loja": "Cocil Home Center",
+          "titulo": "Rodapé Liso 7 cm x 13 mm x 2,40 m Arquitech 50007 Branco",
+          "url": "https://www.cocil.com.br/pisos-e-revestimentos/rodape-polietileno/rodape-liso-07cm-x-13mm-x-2-40m-arquitech-50007-branco",
+          "preco": 46.0,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 46.0,
+          "local": "Manaus",
+          "frete_manaus": "",
+          "obs": "preço visto na lista de Rodapés do site www; material não confirmado na página (categoria 'rodapé polietileno')",
+          "data": "2026-11-24",
+          "marca": "Arquitech"
         }
       ]
     },
