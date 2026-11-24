@@ -53,3 +53,11 @@
 .trip-conf-item.aviso {border-color:#d9a21b;background:#fff9ea}.trip-conf-item.aviso small {color:#80591b}
 .trip-conf-item.erro {border-color:#c94040;background:#fff4f4}.trip-conf-item.erro small {color:#a12b2b}
 #trip-rota {background:#f4f7fa;color:#24405a;font-weight:650}
+.sz {display:inline-block;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:700;margin:2px 4px 2px 0;white-space:nowrap}
+.sz.ok {background:#dcf5e8;color:#16683f}.sz.ruim {background:#fde0e0;color:#a11f1f}.sz.aviso {background:#fff1cc;color:#835c0c}.sz.cinza {background:#eceff3;color:#5f6f80}
+.sz-linha {width:100%;margin-top:4px;display:flex;flex-wrap:wrap;align-items:center}
+.sz-rot {font-size:11px;font-weight:700;color:#41566b;margin:0 4px 0 6px}.sz-rot:first-child {margin-left:0}
+.trip-conf-item {flex-wrap:wrap}
+.sz-topo {font-size:12.5px;color:#1f5a3f;margin:2px 0 8px;display:flex;align-items:center;gap:8px}
+.sz-topo.cinza {color:#5f6f80}
+.sz-topo .link {border:0;background:none;color:#0d6ea8;text-decoration:underline;padding:0;font-size:12.5px}

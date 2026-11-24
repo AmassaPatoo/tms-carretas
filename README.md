@@ -145,3 +145,25 @@ no histórico de preços. Para mudar a lista de itens do robô, edite `robo/iten
 - `config.js` só tem a chave **pública** (publishable/anon), que pode ficar no app. **Nunca** coloque a chave `service_role` / `sb_secret_`.
 - Toda proteção está no banco: cada tabela tem regras de acesso por empresa e por papel. Mesmo alguém
   que mexa no código do navegador não consegue ver nem alterar dados de outra empresa.
+
+## Verificação na SEFAZ (NF-e, CT-e e selo da SEFAZ-AM)
+
+A função `supabase/functions/sefaz` consulta, com o **certificado A1** da empresa:
+- se a NF-e e o CT-e estão **autorizados** (ou cancelados/denegados) na SEFAZ que os autorizou;
+- na **SEFAZ-AM** (API GAF), se a NF-e está **selada/desembaraçada** e quais notas de um CT-e ainda estão sem selo.
+
+Ao abrir a viagem, a consulta é automática: nota ou CT-e **cancelado/denegado bloqueia**; nota sem selo só avisa.
+Em "Visualizar CT-e" há o botão **Verificar na SEFAZ agora**. Sem a função instalada, o app avisa e segue funcionando.
+
+**Instalar (uma vez):**
+1. Supabase → **Edge Functions** → **Deploy a new function** → **Via Editor**. Nome: `sefaz`.
+   Cole o conteúdo de `supabase/functions/sefaz/index.ts` e clique em **Deploy**.
+2. Supabase → **Edge Functions** → **Secrets** → adicione:
+   - `SEFAZ_CERT_PFX`: o certificado .pfx em base64. No Windows (PowerShell):
+     `[Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\caminho\certificado.pfx")) | Set-Clipboard`
+     e cole o valor.
+   - `SEFAZ_CERT_SENHA`: a senha do certificado.
+   - opcional `SEFAZ_AM_PERFIL`: perfis da SEFAZ-AM em ordem de tentativa (padrão `1,2`:
+     1 = emitente do documento, 2 = CNPJ autorizado no XML, 3 = terminal credenciado).
+
+O certificado fica só nos segredos do Supabase; o app nunca o recebe.

@@ -48,6 +48,32 @@ function dashboard(){let abertas=state.trips.filter(v=>v.status==='Em Aberto');l
 function tripTable(arr){if(!arr.length)return '<div class="empty">Nenhuma viagem cadastrada.</div>';
  return `<div class="tablewrap"><table><thead><tr><th>Carreta</th><th>Motorista</th><th>Rota</th><th>Saída</th><th>Status</th><th></th></tr></thead><tbody>${arr.map(v=>`<tr><td><b>${esc(vehicle(v.veiculo_id)?.placa||'—')}</b></td><td>${esc(driver(v.funcionario_id)?.nome||'—')}</td><td class="wrap">${esc(v.origens)} → ${esc(v.destinos)}</td><td>${fdate(v.data_saida)}</td><td>${statusTag(v.status)}</td><td><button class="outline" data-action="trip" data-id="${v.id}">Detalhes</button>${gestor()?` <button class="danger outline" data-action="trip-del" data-id="${v.id}" title="Excluir viagem">Excluir</button>`:''}</td></tr>`).join('')}</tbody></table></div>`}
 function viagens(){main.innerHTML=title('Viagens','Abertura, acompanhamento e fechamento de percursos.',gestor()?'<button class="primary" id="new-trip">+ Abrir viagem</button>':'')+tripTable(state.trips)}
+// ===== SEFAZ (função "sefaz" no Supabase, com o certificado A1 da empresa) =====
+async function sefazConsultar(nfe,cte){
+ try{const {data,error:e}=await state.db.functions.invoke('sefaz',{body:{empresa:state.empresaId,nfe,cte}});
+  if(e){let b=null;try{b=await e.context?.json?.()}catch{}
+   if(b?.erro)return {configurado:!!b.configurado,codigo:b.codigo||'erro',erro:b.erro};
+   const m=(e.name||'')+' '+(e.message||'');
+   if(/FunctionsFetchError|FunctionsRelayError|404|not found|Failed to send/i.test(m))return {configurado:false,codigo:'sem_funcao',erro:'A verificação na SEFAZ ainda não foi instalada no Supabase.'};
+   return {configurado:false,codigo:'erro',erro:e.message||String(e)}}
+  return data||{configurado:false,erro:'Sem resposta da SEFAZ.'}}
+ catch(ex){return {configurado:false,codigo:'erro',erro:ex.message||String(ex)}}
+}
+const SEFAZ_RUIM=['cancelada','denegada'];
+const szb=(cls,t,tip='')=>`<span class="sz ${cls}" ${tip?`title="${esc(tip)}"`:''}>${esc(t)}</span>`;
+const szData=d=>{if(!d)return '';const x=new Date(String(d).length<=10?d+'T12:00':d);return isNaN(x)?String(d):x.toLocaleDateString('pt-BR')};
+function szAut(a){if(!a)return '';if(a.erro)return szb('cinza','SEFAZ: sem resposta',a.erro);
+ return {autorizada:szb('ok','Autorizada',a.protocolo?'Protocolo '+a.protocolo:''),cancelada:szb('ruim','CANCELADA',a.motivo),denegada:szb('ruim','DENEGADA',a.motivo),nao_encontrada:szb('aviso','Não encontrada na SEFAZ',a.motivo)}[a.situacao]||szb('aviso',a.motivo||('Situação '+a.cStat))}
+function szSeloNf(x){if(!x)return '';if(x.erro)return szb('cinza','SEFAZ-AM: sem resposta',x.erro);
+ if(x.selado)return szb('ok','Selada'+(x.data_selo?' em '+szData(x.data_selo):''),x.selo?'Selo '+x.selo:'');return szb('aviso',x.situacao||'Não selada',x.canal?'Canal '+x.canal:'')}
+function szSeloCte(x){if(!x)return '';if(x.erro)return szb('cinza','SEFAZ-AM: sem resposta',x.erro);const ns=x.nfe_nao_seladas||[];
+ if(ns.length)return szb('aviso',`${ns.length} NF sem selo`,ns.map(n=>`NF ${CteLeitor.abrirChave(n.chave||'0'.repeat(44)).numero}: ${n.situacao||''} ${n.pendencia||''}`).join('\n'));
+ return Number(x.situacao_id)===4?szb('ok','Desembaraçado'):szb('aviso',x.situacao||'Pendente',x.canal?'Canal '+x.canal:'')}
+function szLinha(r,cteCh,nfs){if(!r?.configurado)return '';const c=r.cte?.[cteCh];
+ return `<div class="sz-linha">${c?`<span class="sz-rot">CT-e</span>${szAut(c.autorizacao)}${szSeloCte(c.selo_am)}`:''}${(nfs||[]).map(k=>{const v=r.nfe?.[k];return v?`<span class="sz-rot">NF ${esc(CteLeitor.abrirChave(k).numero)}</span>${szAut(v.autorizacao)}${szSeloNf(v.selo_am)}`:''}).join('')}</div>`}
+function szProblemas(r,cteCh,nfs){const out=[];if(!r?.configurado)return out;const a=r.cte?.[cteCh]?.autorizacao;
+ if(a&&SEFAZ_RUIM.includes(a.situacao))out.push(`CT-e ${CteLeitor.abrirChave(cteCh).numero} ${a.situacao} na SEFAZ`);
+ (nfs||[]).forEach(k=>{const b=r.nfe?.[k]?.autorizacao;if(b&&SEFAZ_RUIM.includes(b.situacao))out.push(`NF ${CteLeitor.abrirChave(k).numero} ${b.situacao} na SEFAZ`)});return out}
 function openTripForm(){
  const vehicles=state.vehicles.filter(x=>x.status==='Disponível'), drivers=state.drivers.filter(x=>!state.trips.some(v=>v.status==='Em Aberto'&&v.funcionario_id===x.id));
  if(!vehicles.length)return toast('Nenhuma carreta disponível. Finalize a viagem em aberto ou cadastre uma carreta.');
@@ -67,6 +93,10 @@ function openTripForm(){
  <div class="full form-actions"><button class="primary" id="trip-criar" disabled>Abrir viagem</button></div></form>`);
  const select=$('#trip-form [name=veiculo_id]');if(vehicles.length===1)select.value=vehicles[0].id;
  const NF=[],CT=[]; // NF: {file,notas,fonte,arquivo,erro} · CT: {file,r,erro}
+ const SEF={estado:'',assin:'',r:null,timer:null};
+ const verificar=(nfe,cte,forcar)=>{const assin=JSON.stringify([nfe,cte]);if(!forcar&&assin===SEF.assin)return;SEF.assin=assin;clearTimeout(SEF.timer);
+  if(!nfe.length&&!cte.length){SEF.estado='';SEF.r=null;return}
+  SEF.estado='lendo';SEF.timer=setTimeout(async()=>{const r=await sefazConsultar(nfe,cte);if(SEF.assin!==assin)return;SEF.r=r;SEF.estado=r.configurado?'ok':'off';conferir()},500)};
  const OBRIG=['chave_acesso','numero','valor_frete_bruto','origem_municipio','origem_uf','destino_municipio','destino_uf'];
  const nomes={chave_acesso:'chave',numero:'número',valor_frete_bruto:'frete',origem_municipio:'origem',origem_uf:'UF de origem',destino_municipio:'destino',destino_uf:'UF de destino'};
  const ctes=()=>CT.flatMap((x,fi)=>x.r?(x.r.documentos||[x.r]).map(d=>({fi,campos:d.campos,paginas:d.paginas||[],fonte:x.r.fonte,arquivo:x.r.arquivo})):[]);
@@ -84,16 +114,21 @@ function openTripForm(){
    else if(!ns.length){st=nfs.size?'O CT-e não mostra a nota: confira se é a nota anexada':'Falta a nota fiscal';cls=nfs.size?'aviso':'erro'}
    else if(!tem.length){st='Falta a NF '+ns.map(k=>CteLeitor.abrirChave(k).numero).join(', ');cls='erro'}
    else st='NF '+tem.map(k=>CteLeitor.abrirChave(k).numero).join(', ')+' anexada ✓';
-   d.ok=cls!=='erro';d.nfs=tem.length?tem:(ns.length?[]:[...nfs]);if(cls==='erro')prob.push(`CT-e ${c.numero||'?'}: ${st}`);
-   html+=`<div class="trip-conf-item ${cls}"><div><b>CT-e ${esc(c.numero||'?')}</b>${d.paginas.length&&d.arquivo==='pdf'?` · pág. ${esc(d.paginas.join(', '))}`:''} · ${esc(c.origem_municipio?cidade(c.origem_municipio,c.origem_uf):'?')} → ${esc(c.destino_municipio?cidade(c.destino_municipio,c.destino_uf):'?')} · frete ${brl(n(c.valor_frete_bruto))}</div><small>${esc(st)}</small></div>`});
+   d.nfs=tem.length?tem:(ns.length?[]:[...nfs]);
+   const pz=SEF.estado==='ok'?szProblemas(SEF.r,c.chave_acesso,d.nfs):[];if(pz.length&&cls!=='erro'){cls='erro';st=pz.join(' · ')}
+   d.ok=cls!=='erro';if(cls==='erro')prob.push(`CT-e ${c.numero||'?'}: ${st}`);
+   html+=`<div class="trip-conf-item ${cls}"><div><b>CT-e ${esc(c.numero||'?')}</b>${d.paginas.length&&d.arquivo==='pdf'?` · pág. ${esc(d.paginas.join(', '))}`:''} · ${esc(c.origem_municipio?cidade(c.origem_municipio,c.origem_uf):'?')} → ${esc(c.destino_municipio?cidade(c.destino_municipio,c.destino_uf):'?')} · frete ${brl(n(c.valor_frete_bruto))}</div><small>${esc(st)}</small>${SEF.estado==='ok'?szLinha(SEF.r,c.chave_acesso,d.nfs):''}</div>`});
   const todasNotasLidas=lista.length&&lista.every(d=>notasDo(d.campos).length);
   if(todasNotasLidas)[...nfs].filter(k=>!usadas.has(k)).forEach(k=>{prob.push(`NF ${CteLeitor.abrirChave(k).numero} sem CT-e`);html+=`<div class="trip-conf-item erro"><div><b>NF ${esc(CteLeitor.abrirChave(k).numero)}</b></div><small>Nenhum CT-e anexado é desta nota.</small></div>`});
   if(!NF.some(x=>x.notas?.length))prob.unshift('Anexe a nota fiscal');
   if(!lista.length)prob.unshift('Anexe o CT-e da nota');
+  verificar([...nfs],lista.map(d=>d.campos.chave_acesso).filter(Boolean));
+  if(SEF.estado==='lendo')prob.push('Aguarde a verificação na SEFAZ');
+  const szTopo=SEF.estado==='lendo'?'<div class="sz-topo">⏳ Verificando na SEFAZ…</div>':SEF.estado==='ok'?`<div class="sz-topo">✓ Verificado na SEFAZ às ${new Date(SEF.r.consultado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} <button type="button" class="link" id="sz-de-novo">Verificar de novo</button></div>`:SEF.estado==='off'?`<div class="sz-topo cinza">SEFAZ não verificada: ${esc(SEF.r?.erro||'')} A viagem pode ser aberta mesmo assim.</div>`:'';
   const ok=lista.filter(d=>d.ok);
   const orig=[...new Set(ok.map(d=>cidade(d.campos.origem_municipio,d.campos.origem_uf)))],dest=[...new Set(ok.map(d=>cidade(d.campos.destino_municipio,d.campos.destino_uf)))];
   $('#trip-rota').value=ok.length?`${orig.join(', ')} → ${dest.join(', ')}`:'';
-  $('#trip-conf').innerHTML=(lista.length||NF.length?`<div class="trip-conf">${html}</div>`:'')+(prob.length?`<div class="falta">Para abrir a viagem: ${esc(prob.join(' · '))}</div>`:`<div class="ok-box">Tudo certo: ${ok.length} CT-e(s) com nota fiscal. A viagem abre com eles já cadastrados no DRE.</div>`);
+  $('#trip-conf').innerHTML=szTopo+(lista.length||NF.length?`<div class="trip-conf">${html}</div>`:'')+(prob.length?`<div class="falta">Para abrir a viagem: ${esc(prob.join(' · '))}</div>`:`<div class="ok-box">Tudo certo: ${ok.length} CT-e(s) com nota fiscal. A viagem abre com eles já cadastrados no DRE.</div>`);
   const btn=$('#trip-criar');btn.disabled=!!prob.length;btn.textContent=ok.length&&!prob.length?`Abrir viagem com ${ok.length} CT-e(s)`:'Abrir viagem';
   return {ok,prob,orig,dest};
  };
@@ -116,7 +151,7 @@ function openTripForm(){
   inp.onchange=()=>{ler(id,[...inp.files]);inp.value=''};
   dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
   dz.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('over');ler(id,[...e.dataTransfer.files])});}
- $('#trip-form').addEventListener('click',e=>{const t=e.target.closest('[data-tira]');if(!t)return;const id=t.dataset.tira,arr=id==='trip-nf'?NF:CT;arr.splice(Number(t.dataset.i),1);desenhar(id,arr,id==='trip-nf'?rotNF:rotCT)});
+ $('#trip-form').addEventListener('click',e=>{if(e.target.id==='sz-de-novo'){const a=JSON.parse(SEF.assin||'[[],[]]');verificar(a[0],a[1],true);conferir();return}const t=e.target.closest('[data-tira]');if(!t)return;const id=t.dataset.tira,arr=id==='trip-nf'?NF:CT;arr.splice(Number(t.dataset.i),1);desenhar(id,arr,id==='trip-nf'?rotNF:rotCT)});
  $('#trip-form').onsubmit=async e=>{e.preventDefault();const {ok,prob,orig,dest}=conferir();if(prob.length)return toast(prob[0]);
   const f=formData(e.currentTarget),btn=$('#trip-criar');btn.disabled=true;btn.textContent='Abrindo a viagem…';
   let viagem=null;const enviados=[];
@@ -133,6 +168,7 @@ function openTripForm(){
     const dados={};for(const [,,fields] of cteFields)for(const [k] of fields)dados[k]=c[k]!=null?String(c[k]):'';if(dados.modal==='')dados.modal='Rodoviário';
     dados.leitura=`Lido de ${d.fonte}${d.paginas.length>1||CT[d.fi].r.documentos?.length>1?' (página '+d.paginas.join(', ')+')':''} em ${new Date().toLocaleString('pt-BR')} · abertura da viagem`;
     dados.pagina=d.arquivo==='pdf'?d.paginas.join(','):'';dados.documento_tipo=d.arquivo==='foto'?'foto':'pdf';
+    if(SEF.estado==='ok')dados.sefaz={consultado_em:SEF.r.consultado_em,cte:SEF.r.cte?.[c.chave_acesso]||null,nfe:Object.fromEntries(d.nfs.map(k=>[k,SEF.r.nfe?.[k]||null]))};
     dados.nf=d.nfs.map(k=>({chave:k,numero:nfInfo.get(k)?.numero||CteLeitor.abrirChave(k).numero,valor:nfInfo.get(k)?.valor||'',emitente:nfInfo.get(k)?.emitente||'',arquivo:nfPath.get(k)||null}));
     await rpc('tms_registrar_cte',{p_registro:{viagem_id:viagem,numero:String(c.numero),chave_acesso:c.chave_acesso,valor_frete_bruto:bruto,valor_impostos:tax,pdf_path:ctPath.get(CT[d.fi]),xml_path:null,dados}});
    }
@@ -261,6 +297,17 @@ async function cteExcluir(ids){
  if(falhas.length){const m=falhas.join('\n');if(/car_excluir|function|schema cache/i.test(m))toast('Falta rodar a atualização 007_excluir_cte.sql no Supabase.');else toast('Não excluído: '+m)}
  else toast(ok>1?ok+' CT-es excluídos, com as receitas no DRE.':'CT-e excluído, com a receita no DRE.');
 }
+async function cteSefaz(id,btn){
+ const c=state.ctes.find(x=>x.id===id);if(!c)return;const d=c.dados||{};
+ const nfs=[...new Set([...(Array.isArray(d.nf)?d.nf.map(x=>x.chave):[]),...String(d.notas||'').split(/\s+/)].filter(k=>/^\d{44}$/.test(k)&&k.slice(20,22)==='55'))];
+ if(btn){btn.disabled=true;btn.textContent='Verificando na SEFAZ…'}
+ const r=await sefazConsultar(nfs,[c.chave_acesso]);
+ if(!r.configurado){if(btn){btn.disabled=false;btn.textContent='Verificar na SEFAZ agora'}return toast('SEFAZ não verificada: '+(r.erro||''))}
+ const sefaz={consultado_em:r.consultado_em,cte:r.cte?.[c.chave_acesso]||null,nfe:Object.fromEntries(nfs.map(k=>[k,r.nfe?.[k]||null]))};
+ const {error:e}=await state.db.from(TAB.tms_ctes).update({dados:{...d,sefaz}}).eq('id',id);if(e)toast('Consultado, mas não salvou: '+e.message);
+ c.dados={...d,sefaz};await refresh();cteView(id);
+ const pz=szProblemas(r,c.chave_acesso,nfs);toast(pz.length?'⚠ '+pz.join(' · '):'Verificado na SEFAZ.');
+}
 async function viagemExcluir(id){
  const v=state.trips.find(x=>x.id===id);if(!v)return toast('Viagem não encontrada.');
  const nome=`${vehicle(v.veiculo_id)?.placa||'Carreta'} — ${v.origens} → ${v.destinos}`,qtd=state.ctes.filter(c=>c.viagem_id===id).length;
@@ -388,7 +435,7 @@ function cteLeitorBind(){
  return handle;
 }
 function cteView(id){const c=state.ctes.find(x=>x.id===id);if(!c)return toast('CT-e não encontrado.');let d=c.dados||{};let sections=cteFields.map(([_,title,fields])=>`<section class="cte-view-group"><h3>${esc(title)}</h3><div class="cte-view-grid">${fields.map(([k,label])=>`<div><small>${esc(label)}</small><p>${esc(d[k]||'—')}</p></div>`).join('')}</div></section>`).join('');
- showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">${d.leitura?esc(d.leitura)+' · conferido pelo gestor':'Cadastro manual'} — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}${Array.isArray(d.nf)&&d.nf.length?`<div class="cte-view-group"><h3>Nota(s) fiscal(is) da carga</h3><div class="list">${d.nf.map(x=>`<div class="item row"><div><b>NF ${esc(x.numero)}</b>${x.valor?' · '+brl(n(x.valor)):''}${x.emitente?' · '+esc(x.emitente):''}<br><small>Chave: <code>${esc(x.chave)}</code></small></div>${x.arquivo?`<button class="outline" data-action="cte-file" data-path="${esc(x.arquivo)}">Abrir nota</button>`:''}</div>`).join('')}</div></div>`:''}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">${d.documento_tipo==='foto'?'Abrir foto do CT-e (PDF)':'Abrir PDF do CT-e'+(d.pagina?' (página '+esc(d.pagina)+')':'')}</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button>${cteApagavel(c)?`<button class="danger outline" data-action="cte-del" data-id="${esc(c.id)}">Excluir CT-e</button>`:''}</div></div></div>`);
+ showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">${d.leitura?esc(d.leitura)+' · conferido pelo gestor':'Cadastro manual'} — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}<div class="cte-view-group"><h3>Situação na SEFAZ</h3>${d.sefaz?`${szLinha({configurado:true,cte:{[c.chave_acesso]:d.sefaz.cte},nfe:d.sefaz.nfe||{}},c.chave_acesso,Object.keys(d.sefaz.nfe||{}))}<p class="mini">Consultado em ${esc(new Date(d.sefaz.consultado_em).toLocaleString('pt-BR'))}</p>`:'<p class="mini">Ainda não verificado.</p>'}${gestor()?`<button class="outline" data-action="cte-sefaz" data-id="${esc(c.id)}">Verificar na SEFAZ agora</button>`:''}</div>${Array.isArray(d.nf)&&d.nf.length?`<div class="cte-view-group"><h3>Nota(s) fiscal(is) da carga</h3><div class="list">${d.nf.map(x=>`<div class="item row"><div><b>NF ${esc(x.numero)}</b>${x.valor?' · '+brl(n(x.valor)):''}${x.emitente?' · '+esc(x.emitente):''}<br><small>Chave: <code>${esc(x.chave)}</code></small></div>${x.arquivo?`<button class="outline" data-action="cte-file" data-path="${esc(x.arquivo)}">Abrir nota</button>`:''}</div>`).join('')}</div></div>`:''}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">${d.documento_tipo==='foto'?'Abrir foto do CT-e (PDF)':'Abrir PDF do CT-e'+(d.pagina?' (página '+esc(d.pagina)+')':'')}</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button>${cteApagavel(c)?`<button class="danger outline" data-action="cte-del" data-id="${esc(c.id)}">Excluir CT-e</button>`:''}</div></div></div>`);
 }
 let jspdfCarregado=null;
 function carregarJsPdf(){if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);return jspdfCarregado||=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='../../vendor/jspdf.umd.min.js';sc.onload=()=>res(window.jspdf.jsPDF);sc.onerror=()=>{jspdfCarregado=null;rej(Error('Não foi possível preparar o PDF da foto.'))};document.head.appendChild(sc)})}
@@ -513,7 +560,7 @@ async function initialize(){try{if(/[?&](?:password|email)=/i.test(location.sear
  document.addEventListener('dragover',e=>{const d=e.target.closest?.('[data-cte-drop]');if(d){e.preventDefault();d.classList.add('over')}});
  document.addEventListener('dragleave',e=>{const d=e.target.closest?.('[data-cte-drop]');if(d)d.classList.remove('over')});
  document.addEventListener('drop',e=>{const d=e.target.closest?.('[data-cte-drop]');if(!d)return;e.preventDefault();d.classList.remove('over');const f=e.dataTransfer?.files?.[0];if(f)cteForm(d.dataset.trip||'',f)});
- document.addEventListener('click',async e=>{const nav=e.target.closest('[data-page]');if(nav){goto(nav.dataset.page);return}if(e.target.id==='new-trip'){openTripForm();return}const tab=e.target.closest('[data-tab]');if(tab){state.tab=tab.dataset.tab;renderTab();return}const act=e.target.closest('[data-action]');if(!act)return;try{let a=act.dataset.action;if(a==='navigate')goto(act.dataset.target);if(a==='trip')await detail(act.dataset.id);if(a==='quick'){if(gestor()){state.tab=act.dataset.type;await detail(act.dataset.id);addForm(act.dataset.type)}else driverRecordForm(act.dataset.type,act.dataset.id)}if(a==='add')addForm(act.dataset.type);if(a==='xml')importXmlForm();if(a==='review')reviewForm(act.dataset.id);if(a==='file')await openFile(act.dataset.path);if(a==='profile')await profileForm(act.dataset.id);if(a==='new-cte')cteForm(act.dataset.trip||'');if(a==='view-cte')cteView(act.dataset.id);if(a==='cte-file')await cteOpenFile(act.dataset.path);if(a==='trip-del')await viagemExcluir(act.dataset.id);if(a==='cte-del')await cteExcluir([act.dataset.id]);if(a==='cte-del-sel')await cteExcluir([...document.querySelectorAll('[data-cte-sel]:checked')].map(x=>x.dataset.cteSel));if(a==='cte-copy'){await navigator.clipboard.writeText(act.dataset.key);toast('Chave de acesso copiada.')}if(a==='motorista-trip')await motoristaTrip(act.dataset.id);if(a==='motorista-add')driverRecordForm(act.dataset.type,act.dataset.id);if(a==='motorista-cte')motoristaCteView(act.dataset.id); }catch(ex){error(ex)}});
+ document.addEventListener('click',async e=>{const nav=e.target.closest('[data-page]');if(nav){goto(nav.dataset.page);return}if(e.target.id==='new-trip'){openTripForm();return}const tab=e.target.closest('[data-tab]');if(tab){state.tab=tab.dataset.tab;renderTab();return}const act=e.target.closest('[data-action]');if(!act)return;try{let a=act.dataset.action;if(a==='navigate')goto(act.dataset.target);if(a==='trip')await detail(act.dataset.id);if(a==='quick'){if(gestor()){state.tab=act.dataset.type;await detail(act.dataset.id);addForm(act.dataset.type)}else driverRecordForm(act.dataset.type,act.dataset.id)}if(a==='add')addForm(act.dataset.type);if(a==='xml')importXmlForm();if(a==='review')reviewForm(act.dataset.id);if(a==='file')await openFile(act.dataset.path);if(a==='profile')await profileForm(act.dataset.id);if(a==='new-cte')cteForm(act.dataset.trip||'');if(a==='view-cte')cteView(act.dataset.id);if(a==='cte-file')await cteOpenFile(act.dataset.path);if(a==='cte-sefaz')await cteSefaz(act.dataset.id,act);if(a==='trip-del')await viagemExcluir(act.dataset.id);if(a==='cte-del')await cteExcluir([act.dataset.id]);if(a==='cte-del-sel')await cteExcluir([...document.querySelectorAll('[data-cte-sel]:checked')].map(x=>x.dataset.cteSel));if(a==='cte-copy'){await navigator.clipboard.writeText(act.dataset.key);toast('Chave de acesso copiada.')}if(a==='motorista-trip')await motoristaTrip(act.dataset.id);if(a==='motorista-add')driverRecordForm(act.dataset.type,act.dataset.id);if(a==='motorista-cte')motoristaCteView(act.dataset.id); }catch(ex){error(ex)}});
  await setupSession();
  }catch(ex){$('#login-error').textContent=ex.message;console.error(ex)}}
 initialize();
