@@ -49,7 +49,20 @@ function tripTable(arr){if(!arr.length)return '<div class="empty">Nenhuma viagem
  return `<div class="tablewrap"><table><thead><tr><th>Carreta</th><th>Motorista</th><th>Rota</th><th>Saída</th><th>Status</th><th></th></tr></thead><tbody>${arr.map(v=>`<tr><td><b>${esc(vehicle(v.veiculo_id)?.placa||'—')}</b></td><td>${esc(driver(v.funcionario_id)?.nome||'—')}</td><td class="wrap">${esc(v.origens)} → ${esc(v.destinos)}</td><td>${fdate(v.data_saida)}</td><td>${statusTag(v.status)}</td><td><button class="outline" data-action="trip" data-id="${v.id}">Detalhes</button>${gestor()?` <button class="danger outline" data-action="trip-del" data-id="${v.id}" title="Excluir viagem">Excluir</button>`:''}</td></tr>`).join('')}</tbody></table></div>`}
 function viagens(){main.innerHTML=title('Viagens','Abertura, acompanhamento e fechamento de percursos.',gestor()?'<button class="primary" id="new-trip">+ Abrir viagem</button>':'')+tripTable(state.trips)}
 // ===== SEFAZ (função "sefaz" no Supabase, com o certificado A1 da empresa) =====
-async function sefazConsultar(nfe,cte){
+// A SEFAZ bloqueia por ~1 hora quem consulta a mesma chave muitas vezes (cStat 656, "Consumo Indevido"):
+// cada chave é consultada no máximo a cada 15 min (2 min ao pedir "Verificar de novo").
+const SZ_CACHE=new Map();
+async function sefazConsultar(nfe,cte,forcar=false){
+ const agora=Date.now(),fresco=k=>{const c=SZ_CACHE.get(k);return c&&agora-c.t<(forcar?2:15)*60000};
+ const nQ=nfe.filter(k=>!fresco(k)),cQ=cte.filter(k=>!fresco(k));
+ if(nQ.length||cQ.length){const r=await sefazChamar(nQ,cQ);if(!r.configurado)return r;
+  for(const [k,v] of Object.entries(r.nfe||{}))SZ_CACHE.set(k,{t:agora,em:r.consultado_em,v});
+  for(const [k,v] of Object.entries(r.cte||{}))SZ_CACHE.set(k,{t:agora,em:r.consultado_em,v})}
+ const de=ks=>Object.fromEntries(ks.filter(k=>SZ_CACHE.has(k)).map(k=>[k,SZ_CACHE.get(k).v]));
+ const ems=[...nfe,...cte].map(k=>SZ_CACHE.get(k)?.em).filter(Boolean).sort();
+ return {configurado:true,consultado_em:ems[0]||new Date().toISOString(),nfe:de(nfe),cte:de(cte)};
+}
+async function sefazChamar(nfe,cte){
  try{const {data,error:e}=await state.db.functions.invoke('sefaz',{body:{empresa:state.empresaId,nfe,cte}});
   if(e){let b=null;try{b=await e.context?.json?.()}catch{}
    if(b?.erro)return {configurado:!!b.configurado,codigo:b.codigo||'erro',erro:b.erro};
@@ -63,6 +76,7 @@ const SEFAZ_RUIM=['cancelada','denegada'];
 const szb=(cls,t,tip='')=>`<span class="sz ${cls}" ${tip?`title="${esc(tip)}"`:''}>${esc(t)}</span>`;
 const szData=d=>{if(!d)return '';const x=new Date(String(d).length<=10?d+'T12:00':d);return isNaN(x)?String(d):x.toLocaleDateString('pt-BR')};
 function szAut(a){if(!a)return '';if(a.erro)return szb('cinza','SEFAZ: sem resposta',a.erro);
+ if(a.cStat==='656')return szb('cinza','SEFAZ: aguarde (consultas repetidas)','A SEFAZ bloqueia por cerca de 1 hora quando a mesma nota é consultada muitas vezes. A nota não tem problema: verifique de novo mais tarde.\n\n'+(a.motivo||''));
  return {autorizada:szb('ok','Autorizada',a.protocolo?'Protocolo '+a.protocolo:''),cancelada:szb('ruim','CANCELADA',a.motivo),denegada:szb('ruim','DENEGADA',a.motivo),nao_encontrada:szb('aviso','Não encontrada na SEFAZ',a.motivo)}[a.situacao]||szb('aviso',a.motivo||('Situação '+a.cStat))}
 function szSeloErro(e){return /autXML/i.test(e)?szb('cinza','Selo: sem acesso',`A SEFAZ-AM só mostra o selo a quem emitiu o documento ou está autorizado no XML dele (autXML). Peça ao emitente para incluir o CNPJ da sua empresa no autXML.\n\n${e}`):/n[ãa]o localizad/i.test(e)?szb('aviso','Sem registro de selo na SEFAZ-AM',e):szb('cinza','SEFAZ-AM: sem resposta',e)}
 function szSeloNf(x){if(!x)return '';if(x.erro)return szSeloErro(x.erro);
@@ -97,7 +111,7 @@ function openTripForm(){
  const SEF={estado:'',assin:'',r:null,timer:null};
  const verificar=(nfe,cte,forcar)=>{const assin=JSON.stringify([nfe,cte]);if(!forcar&&assin===SEF.assin)return;SEF.assin=assin;clearTimeout(SEF.timer);
   if(!nfe.length&&!cte.length){SEF.estado='';SEF.r=null;return}
-  SEF.estado='lendo';SEF.timer=setTimeout(async()=>{const r=await sefazConsultar(nfe,cte);if(SEF.assin!==assin)return;SEF.r=r;SEF.estado=r.configurado?'ok':'off';desenhar('trip-nf',NF,rotNF)},500)};
+  SEF.estado='lendo';SEF.timer=setTimeout(async()=>{const r=await sefazConsultar(nfe,cte,!!forcar);if(SEF.assin!==assin)return;SEF.r=r;SEF.estado=r.configurado?'ok':'off';desenhar('trip-nf',NF,rotNF)},500)};
  const OBRIG=['chave_acesso','numero','valor_frete_bruto','origem_municipio','origem_uf','destino_municipio','destino_uf'];
  const nomes={chave_acesso:'chave',numero:'número',valor_frete_bruto:'frete',origem_municipio:'origem',origem_uf:'UF de origem',destino_municipio:'destino',destino_uf:'UF de destino'};
  const ctes=()=>CT.flatMap((x,fi)=>x.r?(x.r.documentos||[x.r]).map(d=>({fi,campos:d.campos,paginas:d.paginas||[],fonte:x.r.fonte,arquivo:x.r.arquivo})):[]);
@@ -303,7 +317,7 @@ async function cteSefaz(id,btn){
  const c=state.ctes.find(x=>x.id===id);if(!c)return;const d=c.dados||{};
  const nfs=[...new Set([...(Array.isArray(d.nf)?d.nf.map(x=>x.chave):[]),...String(d.notas||'').split(/\s+/)].filter(k=>/^\d{44}$/.test(k)&&k.slice(20,22)==='55'))];
  if(btn){btn.disabled=true;btn.textContent='Verificando na SEFAZ…'}
- const r=await sefazConsultar(nfs,[c.chave_acesso]);
+ const r=await sefazConsultar(nfs,[c.chave_acesso],true);
  if(!r.configurado){if(btn){btn.disabled=false;btn.textContent='Verificar na SEFAZ agora'}return toast('SEFAZ não verificada: '+(r.erro||''))}
  const sefaz={consultado_em:r.consultado_em,cte:r.cte?.[c.chave_acesso]||null,nfe:Object.fromEntries(nfs.map(k=>[k,r.nfe?.[k]||null]))};
  const {error:e}=await state.db.from(TAB.tms_ctes).update({dados:{...d,sefaz}}).eq('id',id);if(e)toast('Consultado, mas não salvou: '+e.message);
