@@ -39,6 +39,7 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
 6. `006_romaneios.sql`: módulo Romaneios (entrega / ordem de serviço com o CNPJ e os preços da empresa). Depois, ligue "Romaneios" em Administração.
 5. `005_cotacoes.sql`: módulo Cotações (itens, lojas, preços e pedidos de cotação respondidos por link).
    Depois, em **Administração**, ligue "Cotações" na empresa.
+7. `007_excluir_cte.sql`: permite ao gestor excluir CT-e de viagem Em Aberto (apaga junto a receita do DRE).
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
 
