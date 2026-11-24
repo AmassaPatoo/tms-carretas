@@ -272,6 +272,14 @@ Deno.serve(async (req) => {
   let body: any; try { body = await req.json(); } catch { return json({ erro: "JSON inválido" }, 400); }
   if (!(await ehGestor(req, String(body?.empresa || "")))) return json({ codigo: "sem_permissao", erro: "Somente o gestor da empresa pode consultar a SEFAZ." }, 403);
 
+  if (body.acao === "fonte") {
+    const u = String(body.url || ""); if (!/^https?:\/\/online\.sefaz\.am\.gov\.br\//.test(u)) return json({ erro: "URL não permitida" }, 400);
+    try {
+      const r = await fetch(u, { method: body.metodo === "POST" ? "POST" : "GET", headers: body.corpo ? { "Content-Type": "application/x-www-form-urlencoded" } : {}, body: body.corpo || undefined, redirect: "manual", signal: AbortSignal.timeout(20000) });
+      const t = await r.text();
+      return json({ status: r.status, location: r.headers.get("location"), setcookie: r.headers.get("set-cookie") ? "sim" : "não", len: t.length, html: t.slice(Number(body.offset || 0), Number(body.offset || 0) + 14000) });
+    } catch (e) { return json({ erro: (e as Error).message }); }
+  }
   if (body.acao === "status") {
     try { const c = lerPfx(); return json({ configurado: true, cnpj: c.cnpj, nome: c.nome, validade: c.validade }); }
     catch (e) { return json({ configurado: false, codigo: (e as Erro).codigo || "erro", erro: (e as Error).message }); }
