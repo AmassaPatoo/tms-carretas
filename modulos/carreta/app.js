@@ -64,9 +64,10 @@ const szb=(cls,t,tip='')=>`<span class="sz ${cls}" ${tip?`title="${esc(tip)}"`:'
 const szData=d=>{if(!d)return '';const x=new Date(String(d).length<=10?d+'T12:00':d);return isNaN(x)?String(d):x.toLocaleDateString('pt-BR')};
 function szAut(a){if(!a)return '';if(a.erro)return szb('cinza','SEFAZ: sem resposta',a.erro);
  return {autorizada:szb('ok','Autorizada',a.protocolo?'Protocolo '+a.protocolo:''),cancelada:szb('ruim','CANCELADA',a.motivo),denegada:szb('ruim','DENEGADA',a.motivo),nao_encontrada:szb('aviso','Não encontrada na SEFAZ',a.motivo)}[a.situacao]||szb('aviso',a.motivo||('Situação '+a.cStat))}
-function szSeloNf(x){if(!x)return '';if(x.erro)return szb('cinza','SEFAZ-AM: sem resposta',x.erro);
+function szSeloErro(e){return /autXML/i.test(e)?szb('cinza','Selo: sem acesso',`A SEFAZ-AM só mostra o selo a quem emitiu o documento ou está autorizado no XML dele (autXML). Peça ao emitente para incluir o CNPJ da sua empresa no autXML.\n\n${e}`):/n[ãa]o localizad/i.test(e)?szb('aviso','Sem registro de selo na SEFAZ-AM',e):szb('cinza','SEFAZ-AM: sem resposta',e)}
+function szSeloNf(x){if(!x)return '';if(x.erro)return szSeloErro(x.erro);
  if(x.selado)return szb('ok','Selada'+(x.data_selo?' em '+szData(x.data_selo):''),x.selo?'Selo '+x.selo:'');return szb('aviso',x.situacao||'Não selada',x.canal?'Canal '+x.canal:'')}
-function szSeloCte(x){if(!x)return '';if(x.erro)return szb('cinza','SEFAZ-AM: sem resposta',x.erro);const ns=x.nfe_nao_seladas||[];
+function szSeloCte(x){if(!x)return '';if(x.erro)return szSeloErro(x.erro);const ns=x.nfe_nao_seladas||[];
  if(ns.length)return szb('aviso',`${ns.length} NF sem selo`,ns.map(n=>`NF ${CteLeitor.abrirChave(n.chave||'0'.repeat(44)).numero}: ${n.situacao||''} ${n.pendencia||''}`).join('\n'));
  return Number(x.situacao_id)===4?szb('ok','Desembaraçado'):szb('aviso',x.situacao||'Pendente',x.canal?'Canal '+x.canal:'')}
 function szLinha(r,cteCh,nfs){if(!r?.configurado)return '';const c=r.cte?.[cteCh];
@@ -96,7 +97,7 @@ function openTripForm(){
  const SEF={estado:'',assin:'',r:null,timer:null};
  const verificar=(nfe,cte,forcar)=>{const assin=JSON.stringify([nfe,cte]);if(!forcar&&assin===SEF.assin)return;SEF.assin=assin;clearTimeout(SEF.timer);
   if(!nfe.length&&!cte.length){SEF.estado='';SEF.r=null;return}
-  SEF.estado='lendo';SEF.timer=setTimeout(async()=>{const r=await sefazConsultar(nfe,cte);if(SEF.assin!==assin)return;SEF.r=r;SEF.estado=r.configurado?'ok':'off';conferir()},500)};
+  SEF.estado='lendo';SEF.timer=setTimeout(async()=>{const r=await sefazConsultar(nfe,cte);if(SEF.assin!==assin)return;SEF.r=r;SEF.estado=r.configurado?'ok':'off';desenhar('trip-nf',NF,rotNF)},500)};
  const OBRIG=['chave_acesso','numero','valor_frete_bruto','origem_municipio','origem_uf','destino_municipio','destino_uf'];
  const nomes={chave_acesso:'chave',numero:'número',valor_frete_bruto:'frete',origem_municipio:'origem',origem_uf:'UF de origem',destino_municipio:'destino',destino_uf:'UF de destino'};
  const ctes=()=>CT.flatMap((x,fi)=>x.r?(x.r.documentos||[x.r]).map(d=>({fi,campos:d.campos,paginas:d.paginas||[],fonte:x.r.fonte,arquivo:x.r.arquivo})):[]);
@@ -132,8 +133,9 @@ function openTripForm(){
   const btn=$('#trip-criar');btn.disabled=!!prob.length;btn.textContent=ok.length&&!prob.length?`Abrir viagem com ${ok.length} CT-e(s)`:'Abrir viagem';
   return {ok,prob,orig,dest};
  };
- const desenhar=(id,arr,rot)=>{$(`#${id}-lista`).innerHTML=arr.map((x,i)=>`<div class="trip-doc ${x.erro?'erro':x.lendo?'lendo':'ok'}"><span>${esc(x.file.name)}</span><small>${x.lendo?'⏳ '+esc(x.lendo):x.erro?'⚠ '+esc(x.erro):esc(rot(x))}</small><button type="button" class="link" data-tira="${id}" data-i="${i}" title="Tirar">✕</button></div>`).join('');conferir()};
- const rotNF=x=>x.notas.length>2?`${x.notas.length} notas: NF ${x.notas.map(nf=>nf.numero).join(', ')}`:x.notas.map(nf=>`NF ${nf.numero}${nf.valor?' · '+brl(n(nf.valor)):''}${nf.emitente?' · '+nf.emitente:''}`).join(' | ');
+ const szNotas=x=>id=>id==='trip-nf'&&x.notas?.length&&SEF.estado==='ok'?`<div class="sz-linha">${x.notas.map(nf=>{const v=SEF.r.nfe?.[nf.chave];return v?`<span class="sz-rot">NF ${esc(nf.numero)}</span>${szAut(v.autorizacao)}${szSeloNf(v.selo_am)}`:''}).join('')}</div>`:'';
+ const desenhar=(id,arr,rot)=>{$(`#${id}-lista`).innerHTML=arr.map((x,i)=>`<div class="trip-doc ${x.erro?'erro':x.lendo?'lendo':'ok'}"><span>${esc(x.file.name)}</span><small>${x.lendo?'⏳ '+esc(x.lendo):x.erro?'⚠ '+esc(x.erro):esc(rot(x))}</small><button type="button" class="link" data-tira="${id}" data-i="${i}" title="Tirar">✕</button>${!x.lendo&&!x.erro?szNotas(x)(id):''}</div>`).join('');conferir()};
+ const rotNF=x=>x.notas.length>2?`${x.notas.length} notas: NF ${x.notas.map(nf=>nf.numero).join(', ')}`:x.notas.map(nf=>`NF ${nf.numero}${n(nf.valor)>0?' · '+brl(n(nf.valor)):''}${nf.emitente?' · '+nf.emitente:''}`).join(' | ');
  const rotCT=x=>{const d=x.r.documentos||[x.r];return d.length>1?`${d.length} CT-es lidos`:`CT-e ${d[0].campos.numero||'?'}`};
  const ler=async(id,files)=>{
   for(const file of files){
