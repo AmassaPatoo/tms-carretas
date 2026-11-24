@@ -48,14 +48,102 @@ function dashboard(){let abertas=state.trips.filter(v=>v.status==='Em Aberto');l
 function tripTable(arr){if(!arr.length)return '<div class="empty">Nenhuma viagem cadastrada.</div>';
  return `<div class="tablewrap"><table><thead><tr><th>Carreta</th><th>Motorista</th><th>Rota</th><th>Saída</th><th>Status</th><th></th></tr></thead><tbody>${arr.map(v=>`<tr><td><b>${esc(vehicle(v.veiculo_id)?.placa||'—')}</b></td><td>${esc(driver(v.funcionario_id)?.nome||'—')}</td><td class="wrap">${esc(v.origens)} → ${esc(v.destinos)}</td><td>${fdate(v.data_saida)}</td><td>${statusTag(v.status)}</td><td><button class="outline" data-action="trip" data-id="${v.id}">Detalhes</button>${gestor()?` <button class="danger outline" data-action="trip-del" data-id="${v.id}" title="Excluir viagem">Excluir</button>`:''}</td></tr>`).join('')}</tbody></table></div>`}
 function viagens(){main.innerHTML=title('Viagens','Abertura, acompanhamento e fechamento de percursos.',gestor()?'<button class="primary" id="new-trip">+ Abrir viagem</button>':'')+tripTable(state.trips)}
-function openTripForm(){const vehicles=state.vehicles.filter(x=>x.status==='Disponível'), drivers=state.drivers.filter(x=>!state.trips.some(v=>v.status==='Em Aberto'&&v.funcionario_id===x.id));
- showModal(`<h2>Abrir nova viagem</h2><p class="help">O sistema impedirá duas viagens simultâneas para a mesma carreta ou motorista.</p><form id="trip-form" class="form-grid">
- <label>Carreta<select name="veiculo_id" required>${opts(vehicles,v=>v.placa+' — '+v.modelo)}</select></label><label>Motorista<select name="funcionario_id" required>${opts(drivers,d=>d.nome)}</select></label>
- <label>Saída<input type="datetime-local" name="data_saida" value="${dtlocal()}" required></label><label><span>KM inicial <small class="opcional">(opcional)</small></span><input type="number" name="km_inicial" min="0" step="0.1" placeholder="Pode deixar em branco"><small class="dica" id="km-dica"></small></label>
- <label>Origem<input name="origens" required placeholder="Manaus / AM"></label><label>Destino<input name="destinos" required placeholder="Boa Vista / RR"></label>
- <div class="full form-actions"><button class="primary">Criar viagem</button></div></form>`);
- const select=$('#trip-form [name=veiculo_id]');select.onchange=()=>{const km=n(vehicle(select.value)?.km_inicial),i=$('#trip-form [name=km_inicial]');i.value='';i.min=km;$('#km-dica').textContent=km>0?`Em branco, fica o último KM da carreta (${km.toLocaleString('pt-BR')}).`:'Se não souber, deixe em branco.'};if(vehicles.length){select.value=vehicles[0].id;select.onchange()};
- $('#trip-form').onsubmit=async e=>{e.preventDefault();const f=formData(e.currentTarget);try{await insert('viagens',{veiculo_id:f.veiculo_id,funcionario_id:f.funcionario_id,data_saida:iso(f.data_saida),origens:f.origens.trim(),destinos:f.destinos.trim(),km_inicial:f.km_inicial===''?n(vehicle(f.veiculo_id)?.km_inicial):n(f.km_inicial),created_by:state.user.id});closeModal();await refresh();goto('viagens')}catch(ex){error(ex)}};
+function openTripForm(){
+ const vehicles=state.vehicles.filter(x=>x.status==='Disponível'), drivers=state.drivers.filter(x=>!state.trips.some(v=>v.status==='Em Aberto'&&v.funcionario_id===x.id));
+ if(!vehicles.length)return toast('Nenhuma carreta disponível. Finalize a viagem em aberto ou cadastre uma carreta.');
+ if(!drivers.length)return toast('Nenhum motorista livre. Finalize a viagem em aberto ou cadastre um motorista.');
+ const drop=(id,titulo,txt,accept,multi)=>`<label class="cte-drop trip-drop" id="${id}-drop"><b>${titulo}</b><span>${txt}</span><input type="file" id="${id}" accept="${accept}" ${multi?'multiple':''} hidden></label><div class="trip-doc-lista" id="${id}-lista"></div>`;
+ showModal(`<h2>Abrir nova viagem</h2><p class="help">A viagem só abre com a <b>nota fiscal</b> e o <b>CT-e</b> dela. Origem e destino vêm do CT-e.</p>
+ <form id="trip-form" class="form-grid">
+ <fieldset class="full cte-fieldset"><legend>1. Documentos da carga (obrigatórios)</legend><div class="form-grid">
+  <div>${drop('trip-nf','🧾 Nota fiscal','PDF (DANFE), XML ou foto. Pode anexar várias.','application/pdf,.pdf,.xml,application/xml,text/xml,image/*',true)}</div>
+  <div>${drop('trip-cte','🚚 CT-e da nota','PDF (pode ter vários CT-es) ou foto do DACTE. Pode anexar vários.','application/pdf,.pdf,image/*',true)}</div>
+  <div class="full" id="trip-conf"></div>
+ </div></fieldset>
+ <fieldset class="full cte-fieldset"><legend>2. Dados internos (só o gestor)</legend><div class="form-grid">
+  <label>Carreta<select name="veiculo_id" required>${opts(vehicles,v=>v.placa+' — '+v.modelo)}</select></label><label>Motorista<select name="funcionario_id" required>${opts(drivers,d=>d.nome)}</select></label>
+  <label>Saída<input type="datetime-local" name="data_saida" value="${dtlocal()}" required></label><label>Rota (vem do CT-e)<input id="trip-rota" readonly placeholder="Anexe o CT-e" tabindex="-1"></label>
+ </div></fieldset>
+ <div class="full form-actions"><button class="primary" id="trip-criar" disabled>Abrir viagem</button></div></form>`);
+ const select=$('#trip-form [name=veiculo_id]');if(vehicles.length===1)select.value=vehicles[0].id;
+ const NF=[],CT=[]; // NF: {file,notas,fonte,arquivo,erro} · CT: {file,r,erro}
+ const OBRIG=['chave_acesso','numero','valor_frete_bruto','origem_municipio','origem_uf','destino_municipio','destino_uf'];
+ const nomes={chave_acesso:'chave',numero:'número',valor_frete_bruto:'frete',origem_municipio:'origem',origem_uf:'UF de origem',destino_municipio:'destino',destino_uf:'UF de destino'};
+ const ctes=()=>CT.flatMap((x,fi)=>x.r?(x.r.documentos||[x.r]).map(d=>({fi,campos:d.campos,paginas:d.paginas||[],fonte:x.r.fonte,arquivo:x.r.arquivo})):[]);
+ const chavesNF=()=>new Set(NF.flatMap(x=>(x.notas||[]).map(n=>n.chave)));
+ const notasDo=c=>String(c.notas||'').split(/\s+/).filter(k=>/^\d{44}$/.test(k)&&['55','65'].includes(k.slice(20,22)));
+ const cidade=(m,u)=>`${m}/${u}`;
+ const conferir=()=>{
+  const lista=ctes(),nfs=chavesNF(),prob=[];let html='';
+  const usadas=new Set();
+  lista.forEach(d=>{const c=d.campos,falta=OBRIG.filter(k=>!c[k]),ns=notasDo(c),tem=ns.filter(k=>nfs.has(k));tem.forEach(k=>usadas.add(k));
+   const dup=state.ctes.some(x=>x.chave_acesso===c.chave_acesso)||lista.filter(o=>o.campos.chave_acesso===c.chave_acesso).length>1;
+   let st,cls='ok';
+   if(dup){st='CT-e já cadastrado ou repetido';cls='erro'}
+   else if(falta.length){st='Não consegui ler: '+falta.map(k=>nomes[k]).join(', ');cls='erro'}
+   else if(!ns.length){st=nfs.size?'O CT-e não mostra a nota: confira se é a nota anexada':'Falta a nota fiscal';cls=nfs.size?'aviso':'erro'}
+   else if(!tem.length){st='Falta a NF '+ns.map(k=>CteLeitor.abrirChave(k).numero).join(', ');cls='erro'}
+   else st='NF '+tem.map(k=>CteLeitor.abrirChave(k).numero).join(', ')+' anexada ✓';
+   d.ok=cls!=='erro';d.nfs=tem.length?tem:(ns.length?[]:[...nfs]);if(cls==='erro')prob.push(`CT-e ${c.numero||'?'}: ${st}`);
+   html+=`<div class="trip-conf-item ${cls}"><div><b>CT-e ${esc(c.numero||'?')}</b>${d.paginas.length&&d.arquivo==='pdf'?` · pág. ${esc(d.paginas.join(', '))}`:''} · ${esc(c.origem_municipio?cidade(c.origem_municipio,c.origem_uf):'?')} → ${esc(c.destino_municipio?cidade(c.destino_municipio,c.destino_uf):'?')} · frete ${brl(n(c.valor_frete_bruto))}</div><small>${esc(st)}</small></div>`});
+  const todasNotasLidas=lista.length&&lista.every(d=>notasDo(d.campos).length);
+  if(todasNotasLidas)[...nfs].filter(k=>!usadas.has(k)).forEach(k=>{prob.push(`NF ${CteLeitor.abrirChave(k).numero} sem CT-e`);html+=`<div class="trip-conf-item erro"><div><b>NF ${esc(CteLeitor.abrirChave(k).numero)}</b></div><small>Nenhum CT-e anexado é desta nota.</small></div>`});
+  if(!NF.some(x=>x.notas?.length))prob.unshift('Anexe a nota fiscal');
+  if(!lista.length)prob.unshift('Anexe o CT-e da nota');
+  const ok=lista.filter(d=>d.ok);
+  const orig=[...new Set(ok.map(d=>cidade(d.campos.origem_municipio,d.campos.origem_uf)))],dest=[...new Set(ok.map(d=>cidade(d.campos.destino_municipio,d.campos.destino_uf)))];
+  $('#trip-rota').value=ok.length?`${orig.join(', ')} → ${dest.join(', ')}`:'';
+  $('#trip-conf').innerHTML=(lista.length||NF.length?`<div class="trip-conf">${html}</div>`:'')+(prob.length?`<div class="falta">Para abrir a viagem: ${esc(prob.join(' · '))}</div>`:`<div class="ok-box">Tudo certo: ${ok.length} CT-e(s) com nota fiscal. A viagem abre com eles já cadastrados no DRE.</div>`);
+  const btn=$('#trip-criar');btn.disabled=!!prob.length;btn.textContent=ok.length&&!prob.length?`Abrir viagem com ${ok.length} CT-e(s)`:'Abrir viagem';
+  return {ok,prob,orig,dest};
+ };
+ const desenhar=(id,arr,rot)=>{$(`#${id}-lista`).innerHTML=arr.map((x,i)=>`<div class="trip-doc ${x.erro?'erro':x.lendo?'lendo':'ok'}"><span>${esc(x.file.name)}</span><small>${x.lendo?'⏳ '+esc(x.lendo):x.erro?'⚠ '+esc(x.erro):esc(rot(x))}</small><button type="button" class="link" data-tira="${id}" data-i="${i}" title="Tirar">✕</button></div>`).join('');conferir()};
+ const rotNF=x=>x.notas.length>2?`${x.notas.length} notas: NF ${x.notas.map(nf=>nf.numero).join(', ')}`:x.notas.map(nf=>`NF ${nf.numero}${nf.valor?' · '+brl(n(nf.valor)):''}${nf.emitente?' · '+nf.emitente:''}`).join(' | ');
+ const rotCT=x=>{const d=x.r.documentos||[x.r];return d.length>1?`${d.length} CT-es lidos`:`CT-e ${d[0].campos.numero||'?'}`};
+ const ler=async(id,files)=>{
+  for(const file of files){
+   if(file.size>15*1024*1024){toast(file.name+': acima de 15 MB.');continue}
+   const arr=id==='trip-nf'?NF:CT,x={file,lendo:'lendo…'};arr.push(x);desenhar(id,arr,id==='trip-nf'?rotNF:rotCT);
+   try{
+    if(id==='trip-nf'){Object.assign(x,await CteLeitor.lerNota(file,{progresso:(p,t)=>{x.lendo=t;desenhar(id,arr,rotNF)}}))}
+    else{if(/xml/i.test(file.type)||/\.xml$/i.test(file.name))throw Error('Envie o PDF ou a foto do DACTE (o XML do CT-e pode ser anexado depois, no CT-e).');
+     x.r=await CteLeitor.lerArquivo(file,{progresso:(p,t)=>{x.lendo=t||('lendo… '+p+'%');desenhar(id,arr,rotCT)}});if(x.r.arquivo==='xml')throw Error('Envie o PDF ou a foto do DACTE.')}
+   }catch(ex){x.erro=ex.message||String(ex);delete x.r;delete x.notas}
+   delete x.lendo;desenhar(id,arr,id==='trip-nf'?rotNF:rotCT);
+  }
+ };
+ for(const id of ['trip-nf','trip-cte']){const inp=$('#'+id),dz=$(`#${id}-drop`);
+  inp.onchange=()=>{ler(id,[...inp.files]);inp.value=''};
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('over');ler(id,[...e.dataTransfer.files])});}
+ $('#trip-form').addEventListener('click',e=>{const t=e.target.closest('[data-tira]');if(!t)return;const id=t.dataset.tira,arr=id==='trip-nf'?NF:CT;arr.splice(Number(t.dataset.i),1);desenhar(id,arr,id==='trip-nf'?rotNF:rotCT)});
+ $('#trip-form').onsubmit=async e=>{e.preventDefault();const {ok,prob,orig,dest}=conferir();if(prob.length)return toast(prob[0]);
+  const f=formData(e.currentTarget),btn=$('#trip-criar');btn.disabled=true;btn.textContent='Abrindo a viagem…';
+  let viagem=null;const enviados=[];
+  try{
+   const {data:vg,error:e1}=await state.db.from(TAB.viagens).insert({empresa_id:state.empresaId,veiculo_id:f.veiculo_id,funcionario_id:f.funcionario_id,data_saida:iso(f.data_saida),origens:orig.join(', '),destinos:dest.join(', '),km_inicial:n(vehicle(f.veiculo_id)?.km_inicial),created_by:state.user.id}).select('id').single();
+   if(e1)throw e1;viagem=vg.id;
+   const sobe=async(file,ext)=>{let arq=file;if(ext==='pdf'&&/^image\//.test(file.type))arq=await fotoParaPdf(file);const path=`${viagem}/${crypto.randomUUID()}.${ext}`;
+    const {error:e2}=await state.db.storage.from('tms-cte').upload(path,arq,{upsert:false,contentType:ext==='pdf'?'application/pdf':'application/xml'});if(e2)throw e2;enviados.push(path);return path};
+   const nfPath=new Map(),nfInfo=new Map();
+   for(const x of NF.filter(x=>x.notas?.length)){const path=await sobe(x.file,x.arquivo==='xml'?'xml':'pdf');x.notas.forEach(nn=>{nfPath.set(nn.chave,path);nfInfo.set(nn.chave,nn)})}
+   const ctPath=new Map();for(const x of CT.filter(x=>x.r))ctPath.set(x,await sobe(x.file,'pdf'));
+   let i=0;for(const d of ok){i++;btn.textContent=`Cadastrando CT-e ${i}/${ok.length}…`;
+    const c=d.campos,bruto=n(c.valor_frete_bruto),tax=Math.min(n(c.valor_impostos||c.icms),bruto);
+    const dados={};for(const [,,fields] of cteFields)for(const [k] of fields)dados[k]=c[k]!=null?String(c[k]):'';if(dados.modal==='')dados.modal='Rodoviário';
+    dados.leitura=`Lido de ${d.fonte}${d.paginas.length>1||CT[d.fi].r.documentos?.length>1?' (página '+d.paginas.join(', ')+')':''} em ${new Date().toLocaleString('pt-BR')} · abertura da viagem`;
+    dados.pagina=d.arquivo==='pdf'?d.paginas.join(','):'';dados.documento_tipo=d.arquivo==='foto'?'foto':'pdf';
+    dados.nf=d.nfs.map(k=>({chave:k,numero:nfInfo.get(k)?.numero||CteLeitor.abrirChave(k).numero,valor:nfInfo.get(k)?.valor||'',emitente:nfInfo.get(k)?.emitente||'',arquivo:nfPath.get(k)||null}));
+    await rpc('tms_registrar_cte',{p_registro:{viagem_id:viagem,numero:String(c.numero),chave_acesso:c.chave_acesso,valor_frete_bruto:bruto,valor_impostos:tax,pdf_path:ctPath.get(CT[d.fi]),xml_path:null,dados}});
+   }
+   closeModal();await refresh();state.tab='ctes';await detail(viagem);toast(`Viagem aberta com ${ok.length} CT-e(s) e nota(s) fiscal(is).`);
+  }catch(ex){
+   if(viagem){try{await rpc('tms_excluir_viagem',{p_viagem:viagem})}catch(e3){console.warn('Não desfez a viagem',e3)}}
+   if(enviados.length)await state.db.storage.from('tms-cte').remove(enviados);
+   btn.disabled=false;conferir();error(ex);
+  }
+ };
+ conferir();
 }
 async function detail(id){
  if(!gestor())return motoristaTrip(id);
@@ -179,7 +267,8 @@ async function viagemExcluir(id){
  if(!confirm(`Excluir a viagem ${nome} (${v.status})?\n\nSerão apagados junto: ${qtd} CT-e(s), fretes, despesas, abastecimentos e adiantamentos dela.${v.status==='Em Aberto'?' A carreta volta a ficar disponível.':''}\nIsso não pode ser desfeito.`))return;
  const placa=(vehicle(v.veiculo_id)?.placa||'').toUpperCase();
  if(placa&&(prompt(`Para confirmar, digite a placa ${placa}:`)||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'')!==placa.replace(/[^A-Z0-9]/g,''))return toast('Exclusão cancelada: a placa não confere.');
- try{const r=await rpc('tms_excluir_viagem',{p_viagem:id});const arq=r?.arquivos_sem_uso||[];
+ const nfArq=state.ctes.filter(c=>c.viagem_id===id).flatMap(c=>Array.isArray(c.dados?.nf)?c.dados.nf.map(x=>x.arquivo):[]).filter(Boolean);
+ try{const r=await rpc('tms_excluir_viagem',{p_viagem:id});const arq=[...new Set([...(r?.arquivos_sem_uso||[]),...nfArq])];
   if(arq.length){const {error:e}=await state.db.storage.from('tms-cte').remove(arq);if(e)console.warn('Arquivo do CT-e não apagado',e)}
   state.selected=null;state.detail=null;if(modal.open)closeModal();await refresh();
   if(state.page==='fechamento')fechamento();else goto('viagens');toast('Viagem excluída, com tudo o que era dela.')}
@@ -299,7 +388,7 @@ function cteLeitorBind(){
  return handle;
 }
 function cteView(id){const c=state.ctes.find(x=>x.id===id);if(!c)return toast('CT-e não encontrado.');let d=c.dados||{};let sections=cteFields.map(([_,title,fields])=>`<section class="cte-view-group"><h3>${esc(title)}</h3><div class="cte-view-grid">${fields.map(([k,label])=>`<div><small>${esc(label)}</small><p>${esc(d[k]||'—')}</p></div>`).join('')}</div></section>`).join('');
- showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">${d.leitura?esc(d.leitura)+' · conferido pelo gestor':'Cadastro manual'} — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">${d.documento_tipo==='foto'?'Abrir foto do CT-e (PDF)':'Abrir PDF do CT-e'+(d.pagina?' (página '+esc(d.pagina)+')':'')}</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button>${cteApagavel(c)?`<button class="danger outline" data-action="cte-del" data-id="${esc(c.id)}">Excluir CT-e</button>`:''}</div></div></div>`);
+ showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">${d.leitura?esc(d.leitura)+' · conferido pelo gestor':'Cadastro manual'} — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}${Array.isArray(d.nf)&&d.nf.length?`<div class="cte-view-group"><h3>Nota(s) fiscal(is) da carga</h3><div class="list">${d.nf.map(x=>`<div class="item row"><div><b>NF ${esc(x.numero)}</b>${x.valor?' · '+brl(n(x.valor)):''}${x.emitente?' · '+esc(x.emitente):''}<br><small>Chave: <code>${esc(x.chave)}</code></small></div>${x.arquivo?`<button class="outline" data-action="cte-file" data-path="${esc(x.arquivo)}">Abrir nota</button>`:''}</div>`).join('')}</div></div>`:''}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">${d.documento_tipo==='foto'?'Abrir foto do CT-e (PDF)':'Abrir PDF do CT-e'+(d.pagina?' (página '+esc(d.pagina)+')':'')}</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button>${cteApagavel(c)?`<button class="danger outline" data-action="cte-del" data-id="${esc(c.id)}">Excluir CT-e</button>`:''}</div></div></div>`);
 }
 let jspdfCarregado=null;
 function carregarJsPdf(){if(window.jspdf?.jsPDF)return Promise.resolve(window.jspdf.jsPDF);return jspdfCarregado||=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='../../vendor/jspdf.umd.min.js';sc.onload=()=>res(window.jspdf.jsPDF);sc.onerror=()=>{jspdfCarregado=null;rej(Error('Não foi possível preparar o PDF da foto.'))};document.head.appendChild(sc)})}

@@ -40,3 +40,16 @@
 .cte-card-acoes {display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .danger.outline {background:white;color:#b52828;border:1px solid #e3a5a5}
 .danger.outline:hover:not(:disabled) {background:#fdeeee}
+.trip-drop {padding:14px;min-height:96px}
+.trip-doc-lista {display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.trip-doc {display:flex;align-items:center;gap:8px;border:1px solid #dce5ed;border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff}
+.trip-doc span {font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:45%}
+.trip-doc small {flex:1;color:#4e6478}
+.trip-doc.ok {border-color:#b7e6ce}.trip-doc.erro {border-color:#f0b4b4;background:#fff6f6}.trip-doc.erro small {color:#a12b2b}
+.trip-doc .link {border:0;background:none;color:#7a8b9c;padding:2px 6px;font-size:14px}
+.trip-conf {display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.trip-conf-item {display:flex;justify-content:space-between;gap:12px;align-items:center;border-left:4px solid #3aa676;background:#f3faf6;border-radius:6px;padding:8px 10px;font-size:13px}
+.trip-conf-item small {color:#2f6b4f;text-align:right}
+.trip-conf-item.aviso {border-color:#d9a21b;background:#fff9ea}.trip-conf-item.aviso small {color:#80591b}
+.trip-conf-item.erro {border-color:#c94040;background:#fff4f4}.trip-conf-item.erro small {color:#a12b2b}
+#trip-rota {background:#f4f7fa;color:#24405a;font-weight:650}

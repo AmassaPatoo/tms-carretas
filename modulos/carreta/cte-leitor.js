@@ -392,5 +392,51 @@ async function lerArquivo(file, { progresso } = {}) {
   }
   throw Error('Use PDF, foto (JPG/PNG/WEBP) ou XML do CT-e.');
 }
-window.CteLeitor = { lerArquivo, lerTexto, lerXml, dvOk, abrirChave, chavesNoTexto, montarCelulas };
+/* ---------- nota fiscal (NF-e) ---------- */
+// Devolve { notas:[{chave, numero, serie, emitente_cnpj, emitente, destinatario, valor, emissao}], fonte, arquivo }.
+function notaDeChave(ch) { const a = abrirChave(ch); return { chave: ch, numero: a.numero, serie: a.serie, emitente_cnpj: fmtDoc(a.cnpj), emitente: '', destinatario: '', valor: '', emissao: '' }; }
+function lerNotaXml(raw) {
+  if (/<!DOCTYPE|<!ENTITY/i.test(raw)) throw Error('XML com DTD/entidades não é aceito.');
+  const doc = new DOMParser().parseFromString(raw, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length) throw Error('XML inválido.');
+  const tag = (el, n) => el ? el.getElementsByTagNameNS('*', n)[0] || null : null, txt = (el, n) => (tag(el, n)?.textContent || '').trim();
+  const notas = [...doc.getElementsByTagNameNS('*', 'infNFe')].map(inf => {
+    const ch = so(inf.getAttribute('Id')); if (!/^\d{44}$/.test(ch)) return null;
+    const ide = tag(inf, 'ide'), emit = tag(inf, 'emit'), dest = tag(inf, 'dest'), tot = tag(inf, 'ICMSTot');
+    return { ...notaDeChave(ch), numero: txt(ide, 'nNF') || abrirChave(ch).numero, serie: txt(ide, 'serie') || abrirChave(ch).serie,
+      emitente_cnpj: fmtDoc(txt(emit, 'CNPJ') || txt(emit, 'CPF')), emitente: txt(emit, 'xNome'), destinatario: txt(dest, 'xNome'),
+      valor: num(txt(tot, 'vNF')), emissao: (txt(ide, 'dhEmi') || txt(ide, 'dEmi')).slice(0, 16) };
+  }).filter(Boolean);
+  if (!notas.length) {
+    if (doc.getElementsByTagNameNS('*', 'infCte').length) throw Error('Este XML é de CT-e, não de nota fiscal.');
+    throw Error('Não achei a nota fiscal (NF-e) neste XML.');
+  }
+  return notas;
+}
+function notasDoTexto(txt) {
+  const chaves = chavesNoTexto(txt), nfe = chaves.filter(k => k.slice(20, 22) === '55' || k.slice(20, 22) === '65');
+  const valor = (/VALOR\s+TOTAL\s+DA\s+NOTA[^\d]{0,80}?([\d.]+,\d{2})/i.exec(txt) || [])[1];
+  return { cte: chaves.some(k => k.slice(20, 22) === '57'), notas: nfe.map(k => ({ ...notaDeChave(k), valor: nfe.length === 1 && valor ? num(valor) : '' })) };
+}
+async function lerNota(file, { progresso } = {}) {
+  if (!file) throw Error('Nenhum arquivo.');
+  const nome = file.name || '', tipo = file.type || '';
+  let notas = [], fonte = '', cte = false;
+  if (/xml/i.test(tipo) || /\.xml$/i.test(nome)) { if (file.size > 5 * 1024 * 1024) throw Error('XML acima de 5 MB.'); notas = lerNotaXml(await file.text()); fonte = 'XML da NF-e'; }
+  else if (/pdf/i.test(tipo) || /\.pdf$/i.test(nome)) {
+    const pags = await paginasDoPdf(new Uint8Array(await file.arrayBuffer())), vistos = new Set();
+    if (pags.reduce((a, p) => a + p.texto.replace(/\s/g, '').length, 0) < 80) throw Error('Este PDF da nota não tem texto (é escaneado). Envie o XML ou uma foto da nota.');
+    for (const pg of pags) { const r = notasDoTexto(pg.texto); cte ||= r.cte; r.notas.forEach(x => { if (!vistos.has(x.chave)) { vistos.add(x.chave); notas.push(x); } }); }
+    fonte = 'PDF da nota (DANFE)';
+  } else if (/^image\//i.test(tipo)) {
+    const bar = await chaveDoCodigoDeBarras(file);
+    let r = notasDoTexto(bar.join('\n'));
+    if (!r.notas.length) { progresso?.(0, 'Lendo a foto da nota…'); const { texto } = await textoDaFoto(file, p => progresso?.(p, `Lendo a foto da nota… ${p}%`)); r = notasDoTexto(texto); }
+    notas = r.notas; cte = r.cte; fonte = 'Foto da nota (DANFE)';
+  } else throw Error('Use PDF, foto (JPG/PNG/WEBP) ou XML da nota fiscal.');
+  if (!notas.length) throw Error(cte ? 'Este arquivo é um CT-e, não a nota fiscal. Anexe o DANFE ou o XML da NF-e.' : 'Não achei a chave de acesso da nota fiscal (44 números) neste arquivo.');
+  return { notas, fonte, arquivo: /xml/i.test(tipo) || /\.xml$/i.test(nome) ? 'xml' : /^image\//i.test(tipo) ? 'foto' : 'pdf' };
+}
+
+window.CteLeitor = { lerArquivo, lerNota, lerTexto, lerXml, dvOk, abrirChave, chavesNoTexto, montarCelulas };
 })();
