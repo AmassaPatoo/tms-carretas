@@ -56,9 +56,22 @@ main{max-width:460px;margin:-32px auto 0;padding:0 14px;display:flex;flex-direct
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = v => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const q = new URLSearchParams(location.hash.slice(1) || location.search.slice(1));
-const d = { k: q.get('k') || '', n: q.get('n') || '', c: q.get('c') || '', v: parseFloat(q.get('v') || '0') || 0, t: q.get('t') || '',
-            e: q.get('e') || q.get('n') || '', o: q.get('o') || '', r: q.get('r') || '', ch: q.get('ch') || '' };
+const bruto = location.hash.slice(1) || location.search.slice(1);
+let d;
+if (bruto.includes('=')) {           // formato antigo: k=..&v=..&n=..
+  const q = new URLSearchParams(bruto);
+  d = { k: q.get('k') || '', n: q.get('n') || '', c: q.get('c') || '', v: parseFloat(q.get('v') || '0') || 0, t: q.get('t') || '',
+        e: q.get('e') || q.get('n') || '', o: q.get('o') || '', r: q.get('r') || '', ch: q.get('ch') || '' };
+} else {                             // formato legível: ORC0001/total/1002,25/KE-obra-facil/Manaus/chave[/empresa]
+  const s = bruto.split('/');
+  const txt = x => { try { return decodeURIComponent(x || '').replace(/-/g, ' '); } catch (_) { return (x || '').replace(/-/g, ' '); } };
+  const ref = (s[1] || '').toLowerCase();
+  const r = ref === 'total' ? 'Valor total' : ref === 'restante' ? 'Restante'
+          : ref.startsWith('entrada') ? 'Entrada' + (ref.split('-')[1] ? ' (' + ref.split('-')[1] + '%)' : '') : '';
+  let k = ''; try { k = decodeURIComponent(s[5] || ''); } catch (_) { k = s[5] || ''; }
+  d = { t: s[0] || '', r, v: parseFloat((s[2] || '0').replace(',', '.')) || 0, n: txt(s[3]), c: txt(s[4]), k,
+        e: s[6] ? txt(s[6]) : txt(s[3]), o: '', ch: '' };
+}
 // número do orçamento sai do identificador (ORC0003) e a chave é mostrada com máscara
 if (!d.o && /^ORC\d+$/.test(d.t)) d.o = d.t.slice(3);
 if (!d.ch) {
