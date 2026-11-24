@@ -530,10 +530,19 @@ function formAddLoja() {
    Aqui o dono vê os achados e guarda no histórico o que fizer sentido. */
 const NET = { dados: null, erro: null, carregado: false, status: null };
 async function carregarInternet() {
-  try {
-    const r = await fetch(P.raiz + 'robo/achados.json?t=' + Date.now(), { cache: 'no-store' });
-    NET.dados = r.ok ? await r.json() : null; NET.erro = r.ok ? null : (r.status === 404 ? 'vazio' : 'HTTP ' + r.status);
-  } catch (e) { NET.dados = null; NET.erro = 'rede'; }
+  // tenta até 3 vezes: logo depois que o robô publica, o site leva ~1 minuto para atualizar
+  let dados = null, erro = null;
+  for (let t = 0; t < 3 && !dados; t++) {
+    if (t) await new Promise(ok => setTimeout(ok, 2500));
+    try {
+      const r = await fetch(P.raiz + 'robo/achados.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) { erro = r.status === 404 ? 'vazio' : 'publicando'; continue; }
+      const txt = await r.text();
+      try { dados = JSON.parse(txt); erro = null; } catch (e) { erro = 'publicando'; }
+    } catch (e) { erro = navigator.onLine === false ? 'rede' : 'publicando'; }
+  }
+  if (dados) { NET.dados = dados; NET.erro = null; }
+  else if (!NET.dados) NET.erro = erro;   // se já tinha dados, continua mostrando os anteriores
   try {
     const r = await fetch(P.raiz + 'robo/status.json?t=' + Date.now(), { cache: 'no-store' });
     NET.status = r.ok ? await r.json() : null;
@@ -687,7 +696,9 @@ function telaInternet() {
   if (!NET.carregado) { carregarInternet().then(render); return '<div class="carregando">Buscando o que o robô encontrou…</div>'; }
   const d = NET.dados;
   if (!d || !Array.isArray(d.itens)) return `<section class="card"><div class="vazio"><b>O robô ainda não trouxe resultados</b>
-    ${NET.erro === 'rede' ? 'Sem internet agora. Tente de novo.' : 'Ele pesquisa todo dia de manhã e os achados aparecem aqui.'}</div></section>`;
+    ${NET.erro === 'rede' ? 'Sem internet agora. Tente de novo.'
+      : NET.erro === 'publicando' ? 'O robô acabou de publicar a pesquisa e o site está se atualizando. Clique em <b>Atualizar</b> daqui a 1 minuto.'
+      : 'Ele pesquisa todo dia de manhã e os achados aparecem aqui.'}</div></section>`;
   const comOferta = d.itens.filter(i => (i.ofertas || []).length);
   return `<section class="card">
     <h2>🤖 Preços encontrados na internet</h2>
