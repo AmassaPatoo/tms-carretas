@@ -3,3 +3,5 @@
 
 /* V1.0.1: respeitar hidden, inclusive quando classes definem display:grid/flex */
 [hidden] { display: none !important; }
+
+.opcional{font-weight:500;color:#8a9aab}.dica{font-weight:400;font-size:11.5px;color:#6b7f93;line-height:1.4}
