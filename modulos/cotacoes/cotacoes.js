@@ -528,13 +528,54 @@ function formAddLoja() {
 /* ---------------- 🤖 robô de pesquisa na internet ----------------
    O robô (tarefa agendada do Claude) grava robo/achados.json no GitHub.
    Aqui o dono vê os achados e guarda no histórico o que fizer sentido. */
-const NET = { dados: null, erro: null, carregado: false };
+const NET = { dados: null, erro: null, carregado: false, status: null };
 async function carregarInternet() {
   try {
     const r = await fetch(P.raiz + 'robo/achados.json?t=' + Date.now(), { cache: 'no-store' });
     NET.dados = r.ok ? await r.json() : null; NET.erro = r.ok ? null : (r.status === 404 ? 'vazio' : 'HTTP ' + r.status);
   } catch (e) { NET.dados = null; NET.erro = 'rede'; }
+  try {
+    const r = await fetch(P.raiz + 'robo/status.json?t=' + Date.now(), { cache: 'no-store' });
+    NET.status = r.ok ? await r.json() : null;
+  } catch (e) { NET.status = null; }
   NET.carregado = true;
+  vigiarRobo();
+}
+/* situação do robô: pesquisando agora, atrasado ou em dia */
+function situacaoRobo() {
+  const st = NET.status || {}, ult = NET.dados && NET.dados.atualizado_em ? new Date(NET.dados.atualizado_em) : null;
+  const agora = new Date();
+  if (st.estado === 'pesquisando' && st.inicio) {
+    const ini = new Date(st.inicio);
+    if (!ult || ini > ult) {
+      const min = (agora - ini) / 6e4;
+      if (min < 120) return { tipo: 'pesquisando', ini, min };
+      return { tipo: 'travou', ini };
+    }
+  }
+  // passou das 8h15 em Manaus e a pesquisa de hoje não chegou
+  const mn = new Date(agora.toLocaleString('en-US', { timeZone: 'America/Manaus' }));
+  const hojeM = mn.toLocaleDateString('sv-SE'), ultM = ult ? new Date(ult.toLocaleString('en-US', { timeZone: 'America/Manaus' })).toLocaleDateString('sv-SE') : '';
+  if (ult && ultM < hojeM && (mn.getHours() > 8 || (mn.getHours() === 8 && mn.getMinutes() >= 15))) return { tipo: 'atrasado' };
+  return { tipo: 'ok' };
+}
+function vigiarRobo() {   // enquanto pesquisa, confere sozinho a cada 2 minutos
+  clearTimeout(vigiarRobo._t);
+  if (situacaoRobo().tipo !== 'pesquisando') return;
+  vigiarRobo._t = setTimeout(async () => {
+    const antes = NET.dados && NET.dados.atualizado_em;
+    await carregarInternet();
+    if (UI.aba === 'internet') { renderMantendoRolagem(); if (NET.dados && NET.dados.atualizado_em !== antes) toast('✅ Pesquisa de hoje chegou!'); }
+  }, 120000);
+}
+function avisoRobo() {
+  const s = situacaoRobo(), hm = d => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Manaus' });
+  if (s.tipo === 'pesquisando') return `<div class="robo-aviso rodando"><span class="giro">🔄</span><div><b>O robô está pesquisando os preços agora</b>
+      Começou às ${hm(s.ini)} (há ${Math.max(1, Math.round(s.min))} min) e costuma levar 30 a 40 minutos. Enquanto isso, aparecem os preços da pesquisa anterior.
+      Esta tela se atualiza sozinha quando terminar.</div></div>`;
+  if (s.tipo === 'travou') return `<div class="robo-aviso atraso">⚠️ <div><b>A pesquisa que começou às ${hm(s.ini)} não terminou.</b> Mostrando os preços da pesquisa anterior.</div></div>`;
+  if (s.tipo === 'atrasado') return `<div class="robo-aviso atraso">⏳ <div><b>A pesquisa de hoje ainda não chegou.</b> Mostrando os preços da pesquisa anterior. Clique em Atualizar daqui a pouco.</div></div>`;
+  return '';
 }
 const normal = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ');
 function itemParecido(termo) {
@@ -626,7 +667,8 @@ function telaInternet() {
     <h2>🤖 Preços encontrados na internet</h2>
     <div class="sub">O robô pesquisa <b>todo dia às 7h30</b> em <b>📍 Manaus</b> (lojas da cidade, Bemol, OLX Manaus…) e <b>🌐 fora</b>
       (Mercado Livre, Amazon, Magalu, Shopee, MadeiraMadeira…). <b>Confira antes de guardar</b>: o preço de fora normalmente não inclui o frete até Manaus.</div>
-    <div class="tiles"><div class="tile"><small>Última pesquisa</small><b style="font-size:17px">${d.atualizado_em ? haQuanto(d.atualizado_em) : '—'}</b><div class="hint">${d.atualizado_em ? new Date(d.atualizado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''}</div></div>
+    ${avisoRobo()}
+    <div class="tiles"><div class="tile"><small>Última pesquisa</small><b style="font-size:17px">${d.atualizado_em ? haQuanto(d.atualizado_em) : '—'}</b>${situacaoRobo().tipo === 'pesquisando' ? ' <span class="tag lar"><span class="giro">🔄</span> atualizando…</span>' : ''}<div class="hint">${d.atualizado_em ? new Date(d.atualizado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''}</div></div>
       <div class="tile"><small>🔥 Promoções</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(ehPromo).length, 0)}</b><div class="hint">${d.itens.some(i => (i.ofertas || []).some(ehPromo)) ? 'use o filtro "Só promoções"' : 'nenhuma nesta pesquisa'}</div></div>
       <div class="tile"><small>Itens com ofertas</small><b>${comOferta.length}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.length}</span></b></div>
       <div class="tile"><small>Ofertas 📍 Manaus / 🌐 fora</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local === 'Manaus').length, 0)}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local !== 'Manaus').length, 0)}</span></b></div></div>

@@ -14,7 +14,11 @@ todas com link e preço visível, Manaus e fora separados, conversões corretas 
 1. Clone/atualize `AmassaPatoo/tms-carretas` (branch `main`).
 2. Leia `robo/itens.json` (o que pesquisar, unidade e dica de cada item) e o `achados.json` anterior
    (para saber onde achou preço da última vez — **comece por essas mesmas páginas**, os preços mudam mas as lojas continuam).
-3. Faça as buscas de itens diferentes **em paralelo** (várias chamadas de WebSearch na mesma vez) para ganhar tempo.
+3. **Avise o sistema que começou:** grave `robo/status.json` com
+   `{"estado": "pesquisando", "inicio": "<agora em ISO, ex. 2026-11-25T07:31:00-04:00>"}`,
+   faça commit (`Robô: pesquisando AAAA-MM-DD`) e push **logo no início**, antes de pesquisar.
+   A tela do dono mostra "🔄 O robô está pesquisando" enquanto isso.
+4. Faça as buscas de itens diferentes **em paralelo** (várias chamadas de WebSearch na mesma vez) para ganhar tempo.
 
 ## 1. 📍 Manaus (obrigatório para todo item)
 
@@ -109,6 +113,8 @@ Ele confere o formato, aponta ofertas sem link/preço, itens sem pesquisa de Man
 **Corrija tudo que ele marcar como ERRO** e rode de novo. Avisos (AVISO) podem ficar, mas leia cada um.
 
 ## 6. Publicar
+Antes do commit final, grave `robo/status.json` com `{"estado": "pronto", "inicio": "<o mesmo do início>", "fim": "<agora em ISO>"}`.
+Se o push for recusado, faça `git pull --rebase origin main` e tente de novo.
 Commit **só** dos arquivos de `robo/` com a mensagem `Robô: preços da internet de AAAA-MM-DD`
 (autor `Claude <noreply@anthropic.com>`) e push na `main`. Não altere nenhum outro arquivo do sistema.
 
