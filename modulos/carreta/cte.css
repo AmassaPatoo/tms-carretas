@@ -14,3 +14,15 @@
 .cte-view-grid small {display:block;color:#62748a;margin-bottom:3px}
 .cte-view-grid p {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:680px){.cte-key{align-items:stretch}.cte-fieldset{padding:9px}.cte-view-grid{grid-template-columns:1fr}}
+
+/* Leitura automática do CT-e */
+.cte-leitor {display:grid;gap:10px}
+.cte-drop {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2px dashed #8fb3cf;border-radius:12px;padding:18px;background:#f4f9fd;cursor:pointer;transition:background .15s,border-color .15s}
+.cte-drop b {font-size:16px;color:#0f3b5c}.cte-drop span {font-size:13px;color:#4e6478}
+.cte-drop:hover,.cte-drop.over {background:#e6f2fb;border-color:#0d6ea8}
+.cte-ler-status {border-radius:10px;padding:10px 12px;background:#eef5fb;border:1px solid #cfe0ee;font-size:13px}
+.cte-ler-status.ok {background:#eefaf3;border-color:#b9e3c9}.cte-ler-status.warn {background:#fff6e5;border-color:#f0d08a}
+.cte-ler-status ul {margin:6px 0 0 18px;padding:0}.cte-ler-status .ok {color:#17804a}.cte-ler-status .erro {color:#b3261e;font-weight:700;margin-top:4px}.cte-ler-status .falta {color:#8a5a00;margin-top:4px}
+.cte-ler-prev img,.cte-ler-prev iframe {width:100%;max-height:420px;height:420px;object-fit:contain;border:1px solid #d5e0ea;border-radius:10px;background:#fff}
+#cte-form .lido {background:#fff8d6;border-color:#e3b93b;box-shadow:0 0 0 2px #f6dc7a55}
+#cte-form .conferido {background:#f1fbf4;border-color:#8fd0a7}

@@ -167,23 +167,65 @@ function cteForm(tripId=''){
  const sel=tripId&&trips.some(v=>v.id===tripId)?tripId:trips[0].id;
  const basic=`<label>Viagem vinculada<select name="viagem_id" required>${trips.map(v=>`<option value="${esc(v.id)}" ${v.id===sel?'selected':''}>${esc(vehicle(v.veiculo_id)?.placa||'Carreta')} — ${esc(v.origens)} → ${esc(v.destinos)}</option>`).join('')}</select></label><label>Número do CT-e<input name="numero" required maxlength="30"></label><label class="full">Chave de acesso (44 dígitos)<input name="chave_acesso" inputmode="numeric" pattern="[0-9]{44}" minlength="44" maxlength="44" required placeholder="Somente números"></label><label>Valor bruto do frete (R$)<input name="valor_frete_bruto" type="number" min="0" step="0.01" required></label><label>Impostos considerados no DRE (R$)<input name="valor_impostos" type="number" min="0" step="0.01" value="0" required></label>`;
  const sections=cteFields.map(([key,title,fields])=>`<fieldset class="full cte-fieldset"><legend>${esc(title)}</legend><div class="form-grid">${fields.map(cteField).join('')}</div></fieldset>`).join('');
- showModal(`<h2>Cadastrar CT-e manualmente</h2><p class="help">Cada CT-e pode ter origem e destino diferentes da rota geral da viagem. O lançamento financeiro será criado automaticamente uma única vez.</p><form id="cte-form" class="form-grid">${basic}${sections}<fieldset class="full cte-fieldset"><legend>Arquivos do documento</legend><div class="form-grid"><label>PDF do DACTE / CT-e (obrigatório)<input type="file" name="pdf" accept=".pdf,application/pdf" required></label><label>XML do CT-e (opcional)<input type="file" name="xml" accept=".xml,application/xml,text/xml"></label></div></fieldset><div class="full form-actions"><button class="primary" type="submit">Salvar CT-e e anexos</button></div></form>`);
+ const leitor=`<div class="full cte-leitor"><label class="cte-drop" id="cte-drop"><b>📄 Ler o CT-e por PDF, foto ou XML</b><span>Escolha o arquivo ou arraste aqui: os campos são preenchidos sozinhos para você conferir.</span><input type="file" id="cte-ler" accept="application/pdf,.pdf,image/*,.xml,application/xml,text/xml" hidden></label><div id="cte-ler-status" class="cte-ler-status" hidden></div><div id="cte-ler-prev" class="cte-ler-prev" hidden></div></div>`;
+ showModal(`<h2>Cadastrar CT-e</h2><p class="help">Anexe o DACTE (PDF ou foto) ou o XML: o sistema identifica chave, número, participantes, rota, carga e valores e deixa tudo registrado. Confira os campos marcados em amarelo antes de salvar. Cada CT-e pode ter origem e destino diferentes da rota geral da viagem; o lançamento financeiro é criado uma única vez.</p><form id="cte-form" class="form-grid">${leitor}${basic}${sections}<fieldset class="full cte-fieldset"><legend>Arquivos do documento</legend><div class="form-grid"><label>DACTE / CT-e em PDF ou foto (obrigatório)<input type="file" name="pdf" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" required></label><label>XML do CT-e (opcional)<input type="file" name="xml" accept=".xml,application/xml,text/xml"></label></div></fieldset><div class="full form-actions"><button class="primary" type="submit">Salvar CT-e e anexos</button></div></form>`);
+ cteLeitorBind(sel);
  $('#cte-form').onsubmit=async e=>{e.preventDefault();let form=e.currentTarget,submit=form.querySelector('[type=submit]');submit.disabled=true;let uploaded=[];try{
  const f=formData(form);let key=String(f.chave_acesso).replace(/\s/g,'');if(!/^\d{44}$/.test(key))throw Error('A chave precisa conter exatamente 44 dígitos.');
  const bruto=Number(f.valor_frete_bruto),tax=Number(f.valor_impostos);if(!Number.isFinite(bruto)||bruto<0||!Number.isFinite(tax)||tax<0||tax>bruto)throw Error('Confira os valores de frete e impostos.');
  if(state.ctes.some(x=>x.chave_acesso===key))throw Error('Essa chave de acesso já está cadastrada.');
- const pdf=form.elements.pdf.files[0],xml=form.elements.xml.files[0];if(!pdf||pdf.size>15*1024*1024||pdf.size<1||!(/\.pdf$/i.test(pdf.name))||pdf.type&&pdf.type!=='application/pdf')throw Error('Anexe um PDF válido de até 15 MB.');
+ const pdf=form.elements.pdf.files[0],xml=form.elements.xml.files[0];const docImg=pdf&&/^image\/(jpeg|png|webp)$/.test(pdf.type);if(!pdf||pdf.size>15*1024*1024||pdf.size<1||!(docImg||(/\.pdf$/i.test(pdf.name)&&(!pdf.type||pdf.type==='application/pdf'))))throw Error('Anexe o DACTE em PDF ou foto (JPG/PNG/WEBP) de até 15 MB.');
  if(xml&&(xml.size>5*1024*1024||xml.size<1||!(/\.xml$/i.test(xml.name))))throw Error('XML deve ter até 5 MB.');
  // Upload precede o registro: caso falhe a gravação, os arquivos novos são removidos.
- const put=async(file,type)=>{const path=`${f.viagem_id}/${crypto.randomUUID()}.${type}`;const {error:e}=await state.db.storage.from('tms-cte').upload(path,file,{upsert:false,contentType:type==='pdf'?'application/pdf':'application/xml'});if(e)throw e;uploaded.push(path);return path};
- const pdf_path=await put(pdf,'pdf'),xml_path=xml?await put(xml,'xml'):null;
+ const put=async(file,type)=>{const path=`${f.viagem_id}/${crypto.randomUUID()}.${type}`;const ct={pdf:'application/pdf',xml:'application/xml',jpg:'image/jpeg',png:'image/png',webp:'image/webp'}[type];const {error:e}=await state.db.storage.from('tms-cte').upload(path,file,{upsert:false,contentType:ct});if(e)throw e;uploaded.push(path);return path};
+ const pdf_path=await put(pdf,docImg?({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[pdf.type]:'pdf'),xml_path=xml?await put(xml,'xml'):null;
  const dados={};for(const [section,_,fields] of cteFields)for(const [field,,type] of fields)dados[field]=f[field]||'';
+ if(form.dataset.leitura)dados.leitura=form.dataset.leitura;dados.documento_tipo=docImg?'foto':'pdf';
  const payload={viagem_id:f.viagem_id,numero:String(f.numero).trim(),chave_acesso:key,valor_frete_bruto:bruto,valor_impostos:tax,pdf_path,xml_path,dados};
  await rpc('tms_registrar_cte',{p_registro:payload});uploaded=[];closeModal();await refresh();if(state.page==='fechamento')fechamento();else await detail(f.viagem_id);toast('CT-e cadastrado com documento e receita vinculada.');
  }catch(ex){if(uploaded.length){const {error:cleanupError}=await state.db.storage.from('tms-cte').remove(uploaded);if(cleanupError)console.warn('Falha ao remover upload temporário',cleanupError)}error(ex)}finally{submit.disabled=false}};
 }
+/* Leitura automática do CT-e (cte-leitor.js): preenche o formulário para conferência. */
+function cteLeitorBind(){
+ const form=$('#cte-form'),inp=$('#cte-ler'),drop=$('#cte-drop'),st=$('#cte-ler-status'),prev=$('#cte-ler-prev');if(!form||!inp)return;
+ let url=null;
+ const status=(html,cls='')=>{st.hidden=false;st.className='cte-ler-status '+cls;st.innerHTML=html};
+ const setFile=(name,file)=>{try{const dt=new DataTransfer();dt.items.add(file);form.elements[name].files=dt.files;form.elements[name].classList.add('lido')}catch(e){console.warn(e)}};
+ const fill=(name,val)=>{const el=form.elements[name];if(!el||val==null||val==='')return false;const v=String(val);
+  if(el.value&&el.value!=='0'&&!el.classList.contains('lido')&&el.value!==v)return false; // não apaga o que o gestor já digitou
+  if(el.tagName==='SELECT'){const o=[...el.options].find(o=>o.value===v||o.text===v);if(!o)return false;el.value=o.value}
+  else if(el.type==='datetime-local'){if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v))return false;el.value=v.slice(0,16)}
+  else if(el.type==='number'){const x=Number(v);if(!Number.isFinite(x))return false;el.value=String(x)}
+  else el.value=name.endsWith('_uf')?v.toUpperCase().slice(0,2):v;
+  el.classList.add('lido');el.title='Preenchido pela leitura do documento: confira';return true};
+ form.addEventListener('input',e=>{if(e.target.classList?.contains('lido')){e.target.classList.remove('lido');e.target.classList.add('conferido')}});
+ const handle=async file=>{if(!file)return;if(!window.CteLeitor)return toast('O leitor de CT-e não carregou. Atualize a página.');
+  if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(file);
+  prev.hidden=false;prev.innerHTML=/^image\//.test(file.type)?`<img src="${url}" alt="CT-e anexado">`:/pdf/i.test(file.type)||/\.pdf$/i.test(file.name)?`<iframe src="${url}#toolbar=0" title="CT-e anexado"></iframe>`:`<div class="mini">XML: ${esc(file.name)}</div>`;
+  status('⏳ Lendo o documento…');
+  try{
+   const r=await CteLeitor.lerArquivo(file,{progresso:(p,t)=>status('⏳ '+esc(t||('Lendo… '+p+'%')))});
+   if(r.arquivo==='xml')setFile('xml',file);else setFile('pdf',file);
+   const c=r.campos,ok=[],labels={chave_acesso:'Chave',numero:'Número',valor_frete_bruto:'Frete',valor_impostos:'Impostos (ICMS)'};cteFields.forEach(([,,fs])=>fs.forEach(([k,l])=>labels[k]=l));
+   for(const [k,v] of Object.entries(c))if(fill(k,v))ok.push(labels[k]||k);
+   const chave=c.chave_acesso,dup=chave&&state.ctes.some(x=>x.chave_acesso===chave);
+   form.dataset.leitura=`Lido de ${r.fonte} em ${new Date().toLocaleString('pt-BR')}`;
+   const falta=['chave_acesso','numero','valor_frete_bruto','origem_municipio','origem_uf','destino_municipio','destino_uf'].filter(k=>!form.elements[k]?.value).map(k=>labels[k]||k);
+   status(`<b>${esc(r.fonte)}: ${ok.length} campo(s) identificado(s)</b>${chave?` · chave ${CteLeitor.dvOk(chave)?'<span class="ok">✓ dígito verificador conferido</span>':''}`:''}
+    ${dup?'<div class="erro">⚠ Esta chave de acesso já está cadastrada.</div>':''}
+    ${falta.length?`<div class="falta">Faltam: ${esc(falta.join(', '))}</div>`:''}
+    ${r.avisos?.length?`<ul>${r.avisos.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>`:''}
+    <div class="mini">Campos em amarelo vieram do documento${r.confianca==='baixa'?' (leitura de foto: confira com atenção)':''}. Ao editar, a marca some.</div>`,dup?'warn':'ok');
+   form.querySelector('.lido:not([type=file])')?.scrollIntoView({block:'nearest'});
+  }catch(ex){status('⚠ '+esc(ex.message||String(ex)),'warn');if(!/xml/i.test(file.type)&&!/\.xml$/i.test(file.name)&&/^(image\/|application\/pdf)/.test(file.type))setFile('pdf',file)}
+ };
+ inp.onchange=e=>handle(e.target.files[0]);
+ drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
+ drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+ drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');handle(e.dataTransfer.files[0])});
+}
 function cteView(id){const c=state.ctes.find(x=>x.id===id);if(!c)return toast('CT-e não encontrado.');let d=c.dados||{};let sections=cteFields.map(([_,title,fields])=>`<section class="cte-view-group"><h3>${esc(title)}</h3><div class="cte-view-grid">${fields.map(([k,label])=>`<div><small>${esc(label)}</small><p>${esc(d[k]||'—')}</p></div>`).join('')}</div></section>`).join('');
- showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">Cadastro manual — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">Abrir PDF do CT-e</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button></div></div></div>`);
+ showModal(`<div class="cte-view"><h2>CT-e nº ${esc(c.numero)}</h2><p class="help">${d.leitura?esc(d.leitura)+' · conferido pelo gestor':'Cadastro manual'} — os dados não foram validados na SEFAZ.</p><div class="cte-view-group"><h3>Identificação e DRE</h3><div class="cte-view-grid"><div><small>Chave de acesso</small><p class="cte-break">${esc(c.chave_acesso)}</p></div><div><small>Viagem</small><p>${esc(vehicle(state.trips.find(v=>v.id===c.viagem_id)?.veiculo_id)?.placa||'—')}</p></div><div><small>Frete bruto</small><p>${brl(c.valor_frete_bruto)}</p></div><div><small>Impostos no DRE</small><p>${brl(c.valor_impostos)}</p></div><div><small>Receita vinculada</small><p>${esc(c.receita_id||'—')}</p></div><div><small>Cadastrado em</small><p>${fdate(c.created_at)}</p></div></div></div>${sections}<div class="cte-view-group"><h3>Documentos anexados</h3><div class="toolbar"><button class="primary" data-action="cte-file" data-path="${esc(c.pdf_path)}">${/\.(jpe?g|png|webp)$/i.test(c.pdf_path||'')?'Abrir foto do CT-e':'Abrir PDF do CT-e'}</button>${c.xml_path?`<button class="outline" data-action="cte-file" data-path="${esc(c.xml_path)}">Abrir XML</button>`:''}<button class="outline" data-action="cte-copy" data-key="${esc(c.chave_acesso)}">Copiar chave</button></div></div></div>`);
 }
 async function cteOpenFile(path){if(!path)return;const {data,error:e}=await state.db.storage.from('tms-cte').createSignedUrl(path,120);if(e)throw e;window.open(data.signedUrl,'_blank','noopener,noreferrer')}
 
