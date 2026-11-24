@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<title>Pagamento via Pix</title>
+<meta name="description" content="Toque para ver o QR Code e copiar o código Pix.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="💠 Pagamento via Pix">
+<meta property="og:description" content="Toque para ver o QR Code e copiar o código Pix com um toque.">
+<meta property="og:image" content="https://amassapatoo.github.io/tms-carretas/pix/previa.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script src="../vendor/qrcode.js"></script>
+<style>
+:root{--navy:#0C3446;--deep:#06263a;--orange:#FF6A00;--bg:#f2f5f8;--ink:#15212d;--muted:#6b7a88;--line:#dde5ec;--ok:#1e8a50;--pix:#32bcad}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;padding-bottom:30px}
+button{font:inherit;cursor:pointer}
+.topo{background:linear-gradient(120deg,var(--deep),var(--navy));color:#fff;padding:20px 16px 46px;text-align:center;border-bottom:4px solid var(--orange)}
+.topo small{display:block;opacity:.75;font-size:13px}
+.topo h1{font-size:19px;margin-top:2px}
+main{max-width:460px;margin:-32px auto 0;padding:0 14px;display:flex;flex-direction:column;gap:12px}
+.card{background:#fff;border-radius:18px;box-shadow:0 1px 2px rgba(12,52,70,.06),0 8px 24px rgba(12,52,70,.09);padding:20px;text-align:center}
+.valor small{display:block;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.valor b{display:block;font-size:36px;color:var(--navy);line-height:1.15}
+.valor span{color:var(--muted);font-size:13.5px}
+.qr{width:230px;height:230px;margin:16px auto 6px;padding:8px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.qr svg{width:100%;height:100%;display:block}
+.dica{color:var(--muted);font-size:13px}
+.btn{width:100%;height:56px;border:none;border-radius:14px;background:var(--pix);color:#fff;font-weight:800;font-size:17px;margin-top:16px;box-shadow:0 6px 18px rgba(50,188,173,.35)}
+.btn.ok{background:var(--ok)}
+.codigo{margin-top:12px;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--muted);word-break:break-all;background:#f6f9fb;border-radius:10px;padding:10px;text-align:left;user-select:all}
+.passos{text-align:left}
+.passos h2{font-size:15px;color:var(--navy);margin-bottom:8px}
+.passos ol{padding-left:20px;color:var(--ink);font-size:14px}
+.passos li{margin:4px 0}
+.linha{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;text-align:left}
+.linha:last-child{border-bottom:none}
+.linha span{color:var(--muted)}
+.linha b{text-align:right}
+.erro{color:#c62828}
+.rodape{text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="topo"><small>Pagamento via Pix</small><h1 id="empresa">—</h1></div>
+<main id="app"></main>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = v => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const q = new URLSearchParams(location.hash.slice(1) || location.search.slice(1));
+const d = { k: q.get('k') || '', n: q.get('n') || '', c: q.get('c') || '', v: parseFloat(q.get('v') || '0') || 0, t: q.get('t') || '',
+            e: q.get('e') || q.get('n') || '', o: q.get('o') || '', r: q.get('r') || '', ch: q.get('ch') || '' };
+// número do orçamento sai do identificador (ORC0003) e a chave é mostrada com máscara
+if (!d.o && /^ORC\d+$/.test(d.t)) d.o = d.t.slice(3);
+if (!d.ch) {
+  const k = d.k;
+  d.ch = /^\d{14}$/.test(k) ? k.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+       : /^\d{11}$/.test(k) ? k.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
+       : /^\+55\d{10,11}$/.test(k) ? k.replace(/^\+55(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : k;
+}
+
+/* mesmo código Pix (BR Code) gerado no sistema de orçamentos */
+function crc16(s) { let c = 0xFFFF; for (let i = 0; i < s.length; i++) { c ^= s.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF; } return c.toString(16).toUpperCase().padStart(4, '0'); }
+function payload() {
+  const f = (id, v) => id + String(v.length).padStart(2, '0') + v;
+  const p = f('00', '01') + f('26', f('00', 'br.gov.bcb.pix') + f('01', d.k)) + f('52', '0000') + f('53', '986') +
+    (d.v > 0 ? f('54', d.v.toFixed(2)) : '') + f('58', 'BR') + f('59', (d.n || 'RECEBEDOR').slice(0, 25)) + f('60', (d.c || 'BRASIL').slice(0, 15)) +
+    f('62', f('05', (d.t || '***').slice(0, 25))) + '6304';
+  return p + crc16(p);
+}
+
+$('#empresa').textContent = d.e || 'Pagamento';
+document.title = 'Pix · ' + (d.e || 'Pagamento');
+if (!d.k) { $('#app').innerHTML = '<div class="card erro">Link do Pix incompleto. Peça um novo link para quem te enviou.</div>'; return; }
+const cod = payload();
+const qr = qrcode(0, 'M'); qr.addData(cod); qr.make();
+$('#app').innerHTML = `
+  <div class="card">
+    <div class="valor"><small>Valor a pagar</small><b>${d.v > 0 ? money(d.v) : 'Valor livre'}</b>
+      <span>${[d.r, d.o ? 'Orçamento nº ' + esc(d.o) : ''].filter(Boolean).map(esc).join(' · ')}</span></div>
+    <div class="qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>
+    <div class="dica">No computador ou em outro celular: leia o QR Code no app do banco.</div>
+    <button class="btn" id="copiar">Copiar código Pix</button>
+    <div class="codigo" id="codigo">${esc(cod)}</div>
+  </div>
+  <div class="card passos">
+    <h2>Como pagar pelo celular</h2>
+    <ol><li>Toque em <b>Copiar código Pix</b>.</li><li>Abra o app do seu banco e entre em <b>Pix › Pix Copia e Cola</b>.</li>
+      <li>Cole o código, confira o valor e o recebedor e confirme.</li></ol>
+  </div>
+  <div class="card">
+    <div class="linha"><span>Recebedor</span><b>${esc(d.n)}</b></div>
+    <div class="linha"><span>Chave Pix</span><b>${esc(d.ch)}</b></div>
+    ${d.c ? `<div class="linha"><span>Cidade</span><b>${esc(d.c)}</b></div>` : ''}
+  </div>
+  <div class="rodape">Depois de pagar, envie o comprovante para ${esc(d.e || 'a empresa')}.</div>`;
+$('#copiar').addEventListener('click', async () => {
+  const b = $('#copiar');
+  try { await navigator.clipboard.writeText(cod); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($('#codigo')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); }
+  b.textContent = '✓ Código copiado! Agora cole no app do banco'; b.classList.add('ok');
+  setTimeout(() => { b.textContent = 'Copiar código Pix'; b.classList.remove('ok'); }, 4000);
+});
+})();
+</script>
+</body>
+</html>

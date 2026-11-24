@@ -4086,6 +4086,7 @@ document.addEventListener('click',async e=>{
     case 'pix-valor': $('#cpValor').value=b.dataset.v; atualizarCobrancaPix(); return;
     case 'pix-copiar': copiarTexto($('#cpCodigo').value); return;
     case 'pix-wa': abrirWhats(foneWa(state.foneCliente),mensagemPix()); return;
+    case 'pix-pagina': window.open(linkPix(valorCobrancaPix()),'_blank'); return;
     case 'pix-baixar': baixarQRPix(); return;
     case 'pix-cadastrar': fecharModal(); { const d=$('#cardEmpresa'); d.open=true; const i=document.querySelector('[data-c="pix.chave"]'); i.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>i.focus(),400); } return;
     case 'garantia': abrirGarantia(); return;
@@ -4474,9 +4475,7 @@ function chavePix(){
 function crc16(s){ let c=0xFFFF; for(let i=0;i<s.length;i++){ c^=s.charCodeAt(i)<<8; for(let j=0;j<8;j++) c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF; } return c.toString(16).toUpperCase().padStart(4,'0'); }
 function pixPayload(valor){
   const f=(id,v)=>id+String(v.length).padStart(2,'0')+v;
-  const nome=(semAcento(cfg.pix.nome||cfg.empresa.nome)||'RECEBEDOR').slice(0,25);
-  const cidade=(semAcento(String(cfg.pix.cidade||cfg.empresa.cidade||'').split(/[\/,\-–]/)[0])||'BRASIL').slice(0,15);
-  const txid=('ORC'+pad4(state.numero)).replace(/[^A-Za-z0-9]/g,'').slice(0,25);
+  const {nome,cidade,txid}=pixPartes();
   const p=f('00','01')+f('26',f('00','br.gov.bcb.pix')+f('01',chavePix()))+f('52','0000')+f('53','986')+
     (valor>0?f('54',valor.toFixed(2)):'')+f('58','BR')+f('59',nome)+f('60',cidade)+f('62',f('05',txid))+'6304';
   return p+crc16(p);
@@ -4898,6 +4897,7 @@ function abrirCobrancaPix(){
       <button class="btn-sec" data-act="pix-copiar">📋 Copiar código</button>
       <button class="btn-sec" data-act="pix-baixar">⬇️ Baixar QR Code</button>
       <button class="btn-pri" data-act="pix-wa">💬 Enviar no WhatsApp</button>
+      <button class="btn-sec" data-act="pix-pagina">🔗 Ver a página que o cliente recebe</button>
     </div>
     <p class="hint" style="margin-top:8px">O cliente pode ler o QR Code ou colar o código no app do banco (Pix › Copia e Cola). O dinheiro cai direto na sua conta.</p>`);
   $('#cpValor').addEventListener('input',atualizarCobrancaPix);
@@ -4910,12 +4910,38 @@ function atualizarCobrancaPix(){
   const qr=qrcode(0,'M'); qr.addData(cod); qr.make();
   $('#cpQR').innerHTML=qr.createSvgTag({cellSize:4,margin:2,scalable:true});
 }
+/* dados do Pix num link curto para a página de pagamento (pix/) — sem banco de dados */
+function pixPartes(){
+  return {nome:(semAcento(cfg.pix.nome||cfg.empresa.nome)||'RECEBEDOR').slice(0,25),
+          cidade:(semAcento(String(cfg.pix.cidade||cfg.empresa.cidade||'').split(/[\/,\-–]/)[0])||'BRASIL').slice(0,15),
+          txid:('ORC'+pad4(state.numero)).replace(/[^A-Za-z0-9]/g,'').slice(0,25)};
+}
+function referentePix(v){
+  const c=calcTudo(), pct=Math.min(100,Math.max(1,toNum(state.pix.pct)||50)), ent=Math.round(c.total*pct)/100;
+  if(Math.abs(v-c.total)<0.01) return 'Valor total';
+  if(Math.abs(v-ent)<0.01) return `Entrada (${fmtQ(pct)}%)`;
+  if(Math.abs(v-(c.total-ent))<0.01) return 'Restante';
+  return 'Pagamento';
+}
+function linkPix(v){
+  const p=pixPartes(), h=new URLSearchParams({k:chavePix(), v:v.toFixed(2), n:p.nome, c:p.cidade, t:p.txid});
+  const ref=referentePix(v); if(ref!=='Pagamento') h.set('r',ref);
+  const emp=(cfg.empresa.nome||'').trim(); if(emp && semAcento(emp).toLowerCase()!==p.nome.toLowerCase()) h.set('e',emp);
+  return new URL('../../pix/', location.href).href+'#'+h.toString();
+}
 function mensagemPix(){
   const v=valorCobrancaPix(), nome=(state.cliente||'').trim().split(' ')[0];
   const cap=nome?nome.charAt(0).toUpperCase()+nome.slice(1):'';
-  return `Olá${cap?', '+cap:''}!\nSegue o Pix de *${money(v)}* referente ao orçamento nº ${pad4(state.numero)} da *${cfg.empresa.nome||'KE Obra Fácil'}*.\n\n`+
-    `Recebedor: ${cfg.pix.nome||cfg.empresa.nome||''}\nChave Pix: ${cfg.pix.chave}\n\n`+
-    `Ou copie o código abaixo e cole no app do banco em Pix > Copia e Cola:\n\n${pixPayload(v)}`;
+  const tipoChave={cpf:'CPF',cnpj:'CNPJ',telefone:'telefone',email:'e-mail',aleatoria:'chave aleatória'}[cfg.pix.tipo]||'chave';
+  return `Olá${cap?', '+cap:''}! Tudo bem?\n`+
+    `Segue o Pix do orçamento nº ${pad4(state.numero)} da *${cfg.empresa.nome||'KE Obra Fácil'}*:\n\n`+
+    `*${referentePix(v)}: ${money(v)}*\n`+
+    `Recebedor: ${cfg.pix.nome||cfg.empresa.nome||''}\n`+
+    `Chave Pix (${tipoChave}): ${cfg.pix.chave}\n\n`+
+    `*Para pagar é só tocar no link* (abre o QR Code e o botão de copiar o código):\n${linkPix(v)}\n\n`+
+    `Se preferir, copie o código abaixo e cole no app do banco em _Pix > Pix Copia e Cola_:\n`+
+    '```'+pixPayload(v)+'```\n\n'+
+    `Depois de pagar, me mande o comprovante por aqui. Obrigado!`;
 }
 function baixarQRPix(){
   const v=valorCobrancaPix(), cod=pixPayload(v);
