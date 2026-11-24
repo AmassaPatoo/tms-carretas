@@ -2821,7 +2821,13 @@ details.card[open]>summary{margin-bottom:14px}
 .btn-add{flex:1;min-width:160px;height:44px;border:1.5px dashed var(--orange);color:var(--orange-ink);background:var(--orange-soft);border-radius:11px;font-weight:700;font-size:14px}
 .btn-add.alt{border-color:var(--navy-2);color:var(--navy);background:#edf4f8}
 .btn-add:hover{filter:brightness(.97)}
-.compra{margin-top:14px;border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;background:#fbfdff}
+.compra{margin-top:14px;border:1.5px solid #f3d2ad;border-radius:12px;padding:12px;background:#fffaf2}
+.compra-tit{font-weight:800;font-size:14px;color:var(--navy);margin-bottom:10px}
+.compra-tit em{font-style:normal;font-weight:400;color:var(--muted);font-size:12px;margin-left:4px}
+.compra-res{margin-top:10px;border-radius:10px;padding:10px 12px;background:#fff;border:1px dashed var(--line)}
+.compra-res span{display:block;font-size:22px;font-weight:900;color:var(--orange-ink)}
+.compra-res small{display:block;color:var(--muted);font-size:12.5px;line-height:1.4}
+.compra-res.pronto{border:1.5px solid var(--orange);background:#fff}
 .compra summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--navy);list-style:none;display:flex;gap:8px;align-items:center}
 .compra summary::-webkit-details-marker{display:none}
 .compra summary em{font-style:normal;font-weight:400;color:var(--muted);font-size:12px}
@@ -3203,7 +3209,7 @@ const SERV = {
     tipos:['Piso vinílico','Piso laminado','Manta vinílica','Porcelanato','Piso cerâmico'],
     ph:'Ambiente (ex.: Sala)', addLabel:'Adicionar ambiente', itensLabel:'Ambientes',
     hintMed:'Some partes do cômodo com + e desconte recortes (ilhas, pilares) com −.',
-    emb:['caixa','caixas'], rendLabel:'m² por caixa', rendPh:'Ex.: 2,60', perda:'10'},
+    emb:['caixa','caixas'], rendLabel:'m² por caixa', rendPh:'Ex.: 4,44', perda:'10'},
   ripado: {titulo:'Ripado', ico:'▥', kind:'peca', rot:'Valor', col:'LOCAL',
     tipos:['Ripado de parede','Ripado de teto','Painel ripado MDF','Ripado WPC','Cabeceira ripada'],
     ph:'Parede / local (ex.: Parede da TV)', addLabel:'Adicionar local', itensLabel:'Locais e quantidade de peças',
@@ -3569,7 +3575,7 @@ function calcCompra(key){
   if(!c.emb || !s.ativo) return null;
   const r=calcServ(key); if(r.cobr<=0) return null;
   const perda=Math.max(0,toNum(s.perda)), comPerda=r.cobr*(1+perda/100), rend=toNum(s.rend);
-  const n=rend>0?Math.ceil(comPerda/rend-1e-9):0;
+  const n=rend>0?Math.ceil(Math.round(comPerda/rend*1e6)/1e6):0;  /* arredonda antes: 48,84/4,44 dá 11,0000000002 no computador */
   return {qtd:r.cobr, perda, comPerda, rend, n, emb:n===1?c.emb[0]:c.emb[1]};
 }
 function valorPix(c){ const m=state.pix.modo; if(m==='total') return c.total; if(m==='entrada') return c.total*Math.min(100,Math.max(0,toNum(state.pix.pct)))/100; return 0; }
@@ -3635,13 +3641,14 @@ function cardServico(key){
           <div class="hint">Se a conta der menos, cobra o mínimo.</div>
         </div>
       </div>
-      ${c.emb?`<details class="compra"><summary>🛒 Material para comprar <em>só para você</em><span id="compra-${key}"></span></summary>
+      ${c.emb?`<div class="compra">
+        <div class="compra-tit">📦 Quantas ${c.emb[1]} comprar <em>só para você · não sai no PDF</em></div>
         <div class="grid2">
-          <div><label>${c.rendLabel}</label><input data-k="servicos.${key}.rend" inputmode="decimal" placeholder="${c.rendPh}"></div>
-          <div><label>Perda (%)</label><input data-k="servicos.${key}.perda" inputmode="decimal" placeholder="10"></div>
+          <div><label>Metragem ${c.emb[0]==='caixa'||c.emb[0]==='placa'?'da '+c.emb[0]:'do '+c.emb[0]} (${c.rendLabel})</label><input data-k="servicos.${key}.rend" inputmode="decimal" placeholder="${c.rendPh}"></div>
+          <div><label>Perda / sobra (%)</label><input data-k="servicos.${key}.perda" inputmode="decimal" placeholder="10"></div>
         </div>
-        <div class="hint" id="compraTxt-${key}"></div>
-      </details>`:''}
+        <div class="compra-res" id="compraRes-${key}"><span id="compra-${key}"></span><small id="compraTxt-${key}"></small></div>
+      </div>`:''}
       <div class="sublabel">Materiais no orçamento — ${c.titulo.toLowerCase()}</div>
       <div id="mats-${key}"></div>
       <button class="btn-add" data-act="add-mat" data-o="${key}">+ Adicionar material</button>
@@ -3830,9 +3837,17 @@ function recalc(){
     cob.placeholder = 'Soma: '+(kind(key)==='peca'?fmtQ(r.soma):fmt(r.soma));
     if(SERV[key].emb){
       const cp=calcCompra(key);
-      $('#compra-'+key).textContent = cp && cp.n ? `${cp.n} ${cp.emb}` : '';
-      $('#compraTxt-'+key).textContent = !cp ? 'Informe as medidas para calcular.' :
-        `${qF(key,cp.qtd,true)} + ${fmtQ(cp.perda)}% de perda = ${qF(key,cp.comPerda,true)}` + (cp.n ? ` → comprar ${cp.n} ${cp.emb}.` : `. Preencha "${SERV[key].rendLabel}" para saber quantas ${SERV[key].emb[1]} comprar.`);
+      const E=SERV[key].emb;
+      $('#compraRes-'+key).classList.toggle('pronto', !!(cp && cp.n));
+      if(cp && cp.n){
+        const semPerda=Math.ceil(Math.round(cp.qtd/cp.rend*1e6)/1e6), total=cp.n*cp.rend;
+        $('#compra-'+key).textContent = `${cp.n} ${cp.emb}`;
+        $('#compraTxt-'+key).textContent = `${qF(key,cp.qtd,true)} + ${fmtQ(cp.perda)}% de perda = ${qF(key,cp.comPerda,true)} → ${cp.n} × ${fmt(cp.rend)} = ${qF(key,total,true)}`+
+          (cp.perda>0 ? ` · sem perda seriam ${semPerda} ${semPerda===1?E[0]:E[1]}` : '');
+      } else {
+        $('#compra-'+key).textContent = '';
+        $('#compraTxt-'+key).textContent = !cp ? 'Informe as medidas dos ambientes para calcular.' : `${qF(key,cp.qtd,true)} + ${fmtQ(cp.perda)}% de perda = ${qF(key,cp.comPerda,true)}. Informe a metragem ${E[0]==='caixa'||E[0]==='placa'?'da '+E[0]:'do '+E[0]} (ex.: ${SERV[key].rendPh.replace('Ex.: ','')}) para saber quantas ${E[1]} comprar.`;
+      }
     }
     s.itens.forEach(it=>{
       const el=document.querySelector(`.item[data-i="${it.id}"]`); if(!el) return;
