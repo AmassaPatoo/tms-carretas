@@ -204,3 +204,21 @@ table.t tr.grupo small{color:var(--muted);font-weight:600}
 .robo-aviso.atraso{background:#fff6e5;border:1px solid #f5d49a;color:#6b4300}
 .giro{display:inline-block;animation:giro 1.4s linear infinite}
 @keyframes giro{to{transform:rotate(360deg)}}
+
+/* esquilo estudando (aviso do robô) */
+.robo-aviso.rodando{align-items:center}
+.esquilo{width:88px;height:74px;flex:0 0 88px;overflow:visible}
+.esq-cauda{transform-origin:38px 84px;animation:esqCauda 2.4s ease-in-out infinite}
+.esq-cabeca{transform-origin:66px 56px;animation:esqLer 3.2s ease-in-out infinite}
+.esq-olhos{animation:esqOlhos 3.2s ease-in-out infinite}
+.esq-olhos ellipse,.esq-olhos circle{animation:esqPisca 4.6s linear infinite;transform-box:fill-box;transform-origin:center}
+.esq-pagina{transform-origin:66px 74px;animation:esqPagina 3.2s ease-in-out infinite}
+.esq-ideia circle{animation:esqIdeia 3.2s ease-in-out infinite;opacity:0}
+.esq-ideia circle:nth-child(2){animation-delay:.25s}.esq-ideia circle:nth-child(3){animation-delay:.5s}
+@keyframes esqCauda{0%,100%{transform:rotate(0)}50%{transform:rotate(-7deg)}}
+@keyframes esqLer{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(3deg) translateY(1px)}}
+@keyframes esqOlhos{0%,100%{transform:translateX(-1.6px)}45%,55%{transform:translateX(1.8px)}}
+@keyframes esqPisca{0%,92%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+@keyframes esqPagina{0%,70%{transform:scaleX(1)}85%{transform:scaleX(-1)}100%{transform:scaleX(-1);opacity:0}}
+@keyframes esqIdeia{0%,60%{opacity:0;transform:translateY(3px)}75%,90%{opacity:1;transform:translateY(0)}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.esquilo *{animation:none!important}}

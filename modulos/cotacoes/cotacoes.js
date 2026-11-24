@@ -568,9 +568,35 @@ function vigiarRobo() {   // enquanto pesquisa, confere sozinho a cada 2 minutos
     if (UI.aba === 'internet') { renderMantendoRolagem(); if (NET.dados && NET.dados.atualizado_em !== antes) toast('✅ Pesquisa de hoje chegou!'); }
   }, 120000);
 }
+const ESQUILO = `<svg class="esquilo" viewBox="0 0 120 100" aria-hidden="true">
+  <g class="esq-cauda"><path d="M30 86 C6 82 2 52 16 36 C26 24 44 22 50 34 C40 34 32 42 34 54 C36 66 46 72 44 84 Z" fill="#b8692e"/>
+    <path d="M26 74 C14 66 14 48 24 40 C30 36 38 38 40 42 C32 44 28 52 30 62 Z" fill="#d98a47"/></g>
+  <ellipse cx="62" cy="74" rx="22" ry="18" fill="#c9773a"/>
+  <ellipse cx="64" cy="78" rx="13" ry="12" fill="#f3d2a6"/>
+  <g class="esq-cabeca">
+    <path d="M48 26 L44 10 L56 20 Z" fill="#b8692e"/><path d="M76 20 L84 8 L84 26 Z" fill="#b8692e"/>
+    <path d="M49 22 L47 14 L54 20 Z" fill="#f0a77a"/><path d="M79 19 L83 12 L83 23 Z" fill="#f0a77a"/>
+    <ellipse cx="66" cy="38" rx="21" ry="18" fill="#c9773a"/>
+    <ellipse cx="66" cy="45" rx="12" ry="8" fill="#f3d2a6"/>
+    <g class="esq-olhos"><ellipse cx="58" cy="36" rx="3.4" ry="4" fill="#2b1a10"/><ellipse cx="74" cy="36" rx="3.4" ry="4" fill="#2b1a10"/>
+      <circle cx="59.2" cy="34.6" r="1.1" fill="#fff"/><circle cx="75.2" cy="34.6" r="1.1" fill="#fff"/></g>
+    <g fill="none" stroke="#2b1a10" stroke-width="1.6" class="esq-oculos"><circle cx="58" cy="36" r="6.5"/><circle cx="74" cy="36" r="6.5"/><path d="M64.5 36 h3"/></g>
+    <ellipse cx="66" cy="43" rx="2.6" ry="1.9" fill="#4a2a18"/>
+    <path d="M63 46.5 q3 2.4 6 0" fill="none" stroke="#4a2a18" stroke-width="1.3" stroke-linecap="round"/>
+    <circle cx="53" cy="44" r="2.6" fill="#f08a6a" opacity=".55"/><circle cx="79" cy="44" r="2.6" fill="#f08a6a" opacity=".55"/>
+  </g>
+  <g class="esq-livro">
+    <path d="M66 62 L44 58 L44 84 L66 88 Z" fill="#2f6fb3"/><path d="M66 62 L88 58 L88 84 L66 88 Z" fill="#3b82c4"/>
+    <path d="M66 64 L47 60.5 L47 82 L66 85.5 Z" fill="#fffdf6"/><path d="M66 64 L85 60.5 L85 82 L66 85.5 Z" fill="#fffdf6"/>
+    <g stroke="#c9d3e0" stroke-width="1.2"><path d="M50 66 l12 2M50 70 l12 2M50 74 l12 2M50 78 l9 1.6"/><path d="M70 68 l12 -2M70 72 l12 -2M70 76 l12 -2"/></g>
+    <path class="esq-pagina" d="M66 64 L85 60.5 L85 82 L66 85.5 Z" fill="#f4efe2" stroke="#d8cfb8" stroke-width=".6"/>
+  </g>
+  <ellipse cx="47" cy="76" rx="5" ry="4.2" fill="#c9773a"/><ellipse cx="85" cy="76" rx="5" ry="4.2" fill="#c9773a"/>
+  <g class="esq-ideia"><circle cx="100" cy="22" r="2" fill="#f5b301"/><circle cx="106" cy="14" r="3" fill="#f5b301"/><circle cx="96" cy="10" r="1.6" fill="#f5b301"/></g>
+</svg>`;
 function avisoRobo() {
   const s = situacaoRobo(), hm = d => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Manaus' });
-  if (s.tipo === 'pesquisando') return `<div class="robo-aviso rodando"><span class="giro">🔄</span><div><b>O robô está pesquisando os preços agora</b>
+  if (s.tipo === 'pesquisando') return `<div class="robo-aviso rodando">${ESQUILO}<div><b>O robô está pesquisando os preços agora</b>
       Começou às ${hm(s.ini)} (há ${Math.max(1, Math.round(s.min))} min) e costuma levar 30 a 40 minutos. Enquanto isso, aparecem os preços da pesquisa anterior.
       Esta tela se atualiza sozinha quando terminar.</div></div>`;
   if (s.tipo === 'travou') return `<div class="robo-aviso atraso">⚠️ <div><b>A pesquisa que começou às ${hm(s.ini)} não terminou.</b> Mostrando os preços da pesquisa anterior.</div></div>`;
