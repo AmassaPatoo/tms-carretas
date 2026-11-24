@@ -39,6 +39,7 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
 6. `006_romaneios.sql`: módulo Romaneios (entrega / ordem de serviço com o CNPJ e os preços da empresa). Depois, ligue "Romaneios" em Administração.
 5. `005_cotacoes.sql`: módulo Cotações (itens, lojas, preços e pedidos de cotação respondidos por link).
    Depois, em **Administração**, ligue "Cotações" na empresa.
+8. `008_sefaz_pelo_banco.sql`: consulta à SEFAZ-SP/Ambiente Nacional pelo banco (certificado no cofre).
 7. `007_excluir_cte.sql`: permite ao gestor excluir CT-e (apaga junto a receita do DRE) e excluir viagem (com tudo dela).
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
@@ -168,7 +169,12 @@ Em "Visualizar CT-e" há o botão **Verificar na SEFAZ agora**. Sem a função i
 
 O certificado fica só nos segredos do Supabase; o app nunca o recebe.
 
-### Intermediário da SEFAZ (`sefaz-proxy`, Vercel em São Paulo)
+### SEFAZ-SP e Ambiente Nacional pelo banco (padrão, sem serviço externo)
+
+Rode `supabase/migrations/008_sefaz_pelo_banco.sql`. A função `sefaz` copia o certificado para o cofre (Vault)
+e passa a fazer essas consultas pela extensão `http` do banco (libcurl/OpenSSL), que atende a renegociação.
+
+### Alternativa: intermediário externo (`sefaz-proxy`, Vercel em São Paulo)
 
 A SEFAZ-SP e o Ambiente Nacional pedem o certificado por **renegociação TLS**, que o servidor do Supabase
 (Deno/rustls) não suporta: a conexão cai ("connection reset"). A função `sefaz` então manda esses pedidos

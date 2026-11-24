@@ -126,9 +126,40 @@ async function cliente(): Promise<Deno.HttpClient> {
 // Algumas SEFAZ (SP, Ambiente Nacional) pedem o certificado por renegociação TLS, que este servidor não suporta:
 // nelas o pedido vai pelo intermediário Node (SEFAZ_PROXY_URL + SEFAZ_PROXY_TOKEN), que faz a conexão com o certificado.
 const precisaIntermediario = new Set<string>(["nfe.fazenda.sp.gov.br", "www1.nfe.fazenda.gov.br", "www.nfe.fazenda.gov.br"]);
+// Sem intermediário externo: o banco do Supabase (extensão http = libcurl/OpenSSL) faz a conexão com o certificado do cofre.
+function chaveServico(): string {
+  const k = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"); if (k) return k;
+  try { const d = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}"); return String(Object.values(d)[0] || ""); } catch { return ""; }
+}
+async function rpcServico(fn: string, args: unknown) {
+  const url = Deno.env.get("SUPABASE_URL"), k = chaveServico();
+  if (!url || !k) throw new Error("Chave de serviço do Supabase indisponível na função.");
+  const h: Record<string, string> = { apikey: k, "Content-Type": "application/json" }; if (k.startsWith("eyJ")) h.Authorization = `Bearer ${k}`;
+  const r = await fetch(`${url}/rest/v1/rpc/${fn}`, { method: "POST", headers: h, body: JSON.stringify(args), signal: AbortSignal.timeout(40000) });
+  const t = await r.text(); let j: any = null; try { j = JSON.parse(t); } catch { /* texto */ }
+  if (!r.ok) {
+    const m = j?.message || t.slice(0, 200);
+    if (/sefaz_soap_banco|sefaz_cert|schema cache|does not exist/i.test(m)) throw new Erro("sem_banco", "Falta rodar a atualização 008_sefaz_pelo_banco.sql no Supabase.");
+    throw new Error(m);
+  }
+  return j;
+}
+let certNoCofre = false;
+async function viaBanco(url: string, body: string, contentType: string): Promise<string> {
+  if (!certNoCofre) {
+    const c = lerPfx(), imp = forge.md.md5.create().update(c.cert + c.key).digest().toHex();
+    const atual = await rpcServico("sefaz_cert_impressao", {});
+    if (atual !== imp) await rpcServico("sefaz_cert_sincronizar", { p_cert: c.cert, p_key: c.key });
+    certNoCofre = true;
+  }
+  const j = await rpcServico("sefaz_soap_banco", { p_url: url, p_corpo: body, p_tipo: contentType });
+  if (!j?.status || !j?.corpo) throw new Error("A SEFAZ não respondeu (sem resposta pela conexão do banco).");
+  if (j.status >= 400 && !/<(\w+:)?Envelope/i.test(j.corpo)) throw new Error(`HTTP ${j.status}: ${String(j.corpo).slice(0, 200)}`);
+  return String(j.corpo);
+}
 async function viaIntermediario(url: string, body: string, contentType: string, timeout: number): Promise<string> {
   const proxy = Deno.env.get("SEFAZ_PROXY_URL"), token = Deno.env.get("SEFAZ_PROXY_TOKEN");
-  if (!proxy || !token) throw new Erro("sem_intermediario", `A SEFAZ ${new URL(url).hostname} exige o intermediário, que ainda não foi configurado.`);
+  if (!proxy || !token) return viaBanco(url, body, contentType);
   const r = await fetch(proxy, { method: "POST", headers: { "Content-Type": "application/json", "x-proxy-token": token }, body: JSON.stringify({ url, corpo: body, tipo: contentType }), signal: AbortSignal.timeout(timeout + 5000) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(`Intermediário: ${j.erro || "HTTP " + r.status}`);
@@ -138,7 +169,7 @@ async function viaIntermediario(url: string, body: string, contentType: string, 
 async function post(url: string, body: string, contentType: string, timeout = 25000): Promise<string> {
   const teste = Deno.env.get("SEFAZ_URL_TESTE"); if (teste) url = teste + new URL(url).pathname; // só para testes locais
   const host = new URL(url).hostname;
-  if (precisaIntermediario.has(host) && Deno.env.get("SEFAZ_PROXY_URL")) return viaIntermediario(url, body, contentType, timeout);
+  if (precisaIntermediario.has(host)) return viaIntermediario(url, body, contentType, timeout);
   const client = await cliente();
   let r: Response;
   try { r = await fetch(url, { method: "POST", body, headers: { "Content-Type": contentType }, client, signal: AbortSignal.timeout(timeout) } as RequestInit); }
@@ -257,11 +288,12 @@ Deno.serve(async (req) => {
         catch (e) { out[`${u} ${rot}`] = (e as Error).message.slice(-140); }
       }
     }));
-    if (Deno.env.get("SEFAZ_PROXY_URL")) {
+    {
       const env = `<?xml version="1.0" encoding="utf-8"?><soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"><soap12:Body><nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4"><consStatServ xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><tpAmb>1</tpAmb><cUF>35</cUF><xServ>STATUS</xServ></consStatServ></nfeDadosMsg></soap12:Body></soap12:Envelope>`;
-      try { const t = await viaIntermediario("https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx", env, "application/soap+xml; charset=utf-8", 20000); out["intermediario SP status"] = (tag(t, "cStat") + " " + tag(t, "xMotivo")).trim() || t.slice(0, 120); }
-      catch (e) { out["intermediario SP status"] = (e as Error).message.slice(0, 160); }
-    } else out["intermediario"] = "não configurado";
+      try { const t = await viaIntermediario("https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx", env, "application/soap+xml; charset=utf-8", 20000); out["SP status"] = (tag(t, "cStat") + " " + tag(t, "xMotivo")).trim() || t.slice(0, 120); }
+      catch (e) { out["SP status"] = (e as Error).message.slice(0, 160); }
+    }
+    out["caminho SP"] = Deno.env.get("SEFAZ_PROXY_URL") ? "intermediário externo" : "banco do Supabase (extensão http)";
     let ip = ""; try { ip = await (await fetch("https://api.ipify.org", { signal: AbortSignal.timeout(8000) })).text(); } catch { /* sem ip */ }
     return json({ ip, regiao: Deno.env.get("SB_REGION") || Deno.env.get("DENO_REGION") || "", acs_icp: (await acsIcpBrasil()).length, resultado: out });
   }
