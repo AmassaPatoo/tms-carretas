@@ -199,7 +199,7 @@ async function seloAm(tipo: 1 | 2, chaves: string[]) {
 
 // ---------- quem pode usar: gestor da empresa ----------
 async function ehGestor(req: Request, empresa: string): Promise<boolean> {
-  const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY"), auth = req.headers.get("Authorization") || "";
+  const url = Deno.env.get("SUPABASE_URL"), anon = req.headers.get("apikey") || Deno.env.get("SUPABASE_ANON_KEY"), auth = req.headers.get("Authorization") || "";
   if (!url || !anon || !auth || !/^[0-9a-f-]{36}$/.test(empresa)) return false;
   const r = await fetch(`${url}/rest/v1/rpc/car_eh_gestor`, { method: "POST", headers: { apikey: anon, Authorization: auth, "Content-Type": "application/json" }, body: JSON.stringify({ p_empresa: empresa }) });
   return r.ok && (await r.json()) === true;
