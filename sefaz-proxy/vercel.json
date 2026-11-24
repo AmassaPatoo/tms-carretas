@@ -1,0 +1,4 @@
+{
+  "regions": ["gru1"],
+  "functions": { "api/sefaz.js": { "maxDuration": 30 } }
+}

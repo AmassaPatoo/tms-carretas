@@ -1,0 +1,1 @@
+{ "name": "sefaz-proxy", "private": true, "engines": { "node": ">=20" } }

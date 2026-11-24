@@ -167,3 +167,16 @@ Em "Visualizar CT-e" há o botão **Verificar na SEFAZ agora**. Sem a função i
      1 = emitente do documento, 2 = CNPJ autorizado no XML, 3 = terminal credenciado).
 
 O certificado fica só nos segredos do Supabase; o app nunca o recebe.
+
+### Intermediário da SEFAZ (`sefaz-proxy`, Vercel em São Paulo)
+
+A SEFAZ-SP e o Ambiente Nacional pedem o certificado por **renegociação TLS**, que o servidor do Supabase
+(Deno/rustls) não suporta: a conexão cai ("connection reset"). A função `sefaz` então manda esses pedidos
+para o intermediário em Node (`sefaz-proxy/api/sefaz.js`), que faz a conexão com o certificado e só devolve a resposta.
+
+1. Vercel → **Add New → Project** → importe o repositório `tms-carretas`, **Root Directory**: `sefaz-proxy`. Deploy.
+   A região já vem fixada em São Paulo (`gru1`, no `vercel.json`).
+2. Vercel → projeto → **Settings → Environment Variables**: `SEFAZ_CERT_PFX`, `SEFAZ_CERT_SENHA` (os mesmos do Supabase)
+   e `PROXY_TOKEN` (uma senha longa, 32+ caracteres). Faça **Redeploy**.
+3. Supabase → Edge Functions → Secrets: `SEFAZ_PROXY_URL` = `https://SEU-PROJETO.vercel.app/api/sefaz` e
+   `SEFAZ_PROXY_TOKEN` = o mesmo `PROXY_TOKEN`.

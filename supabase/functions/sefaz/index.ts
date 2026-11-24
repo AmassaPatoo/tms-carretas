@@ -11,6 +11,8 @@
 //   SEFAZ_AM_PERFIL   perfis na SEFAZ-AM, em ordem de tentativa (opcional, padrão "1,2")
 //                     1 = emitente do documento · 2 = CNPJ autorizado no XML · 3 = terminal credenciado
 //   SEFAZ_CA_PEM      certificados extras de AC em PEM          (opcional)
+//   SEFAZ_PROXY_URL   endereço do intermediário Node (sefaz-proxy) para SEFAZ que renegociam o TLS (SP, Ambiente Nacional)
+//   SEFAZ_PROXY_TOKEN senha longa combinada com o intermediário (PROXY_TOKEN lá)
 //
 //  O certificado nunca sai daqui: o app só recebe o resultado.
 // =====================================================================
@@ -121,10 +123,30 @@ async function cliente(): Promise<Deno.HttpClient> {
   clienteCache = D.createHttpClient({ cert: c.cert, key: c.key, caCerts, http2: false });
   return clienteCache!;
 }
+// Algumas SEFAZ (SP, Ambiente Nacional) pedem o certificado por renegociação TLS, que este servidor não suporta:
+// nelas o pedido vai pelo intermediário Node (SEFAZ_PROXY_URL + SEFAZ_PROXY_TOKEN), que faz a conexão com o certificado.
+const precisaIntermediario = new Set<string>(["nfe.fazenda.sp.gov.br", "www1.nfe.fazenda.gov.br", "www.nfe.fazenda.gov.br"]);
+async function viaIntermediario(url: string, body: string, contentType: string, timeout: number): Promise<string> {
+  const proxy = Deno.env.get("SEFAZ_PROXY_URL"), token = Deno.env.get("SEFAZ_PROXY_TOKEN");
+  if (!proxy || !token) throw new Erro("sem_intermediario", `A SEFAZ ${new URL(url).hostname} exige o intermediário, que ainda não foi configurado.`);
+  const r = await fetch(proxy, { method: "POST", headers: { "Content-Type": "application/json", "x-proxy-token": token }, body: JSON.stringify({ url, corpo: body, tipo: contentType }), signal: AbortSignal.timeout(timeout + 5000) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(`Intermediário: ${j.erro || "HTTP " + r.status}`);
+  if (j.status >= 400 && !/<(\w+:)?Envelope/i.test(j.corpo || "")) throw new Error(`HTTP ${j.status}: ${String(j.corpo || "").slice(0, 200)}`);
+  return String(j.corpo || "");
+}
 async function post(url: string, body: string, contentType: string, timeout = 25000): Promise<string> {
-  const client = await cliente();
   const teste = Deno.env.get("SEFAZ_URL_TESTE"); if (teste) url = teste + new URL(url).pathname; // só para testes locais
-  const r = await fetch(url, { method: "POST", body, headers: { "Content-Type": contentType }, client, signal: AbortSignal.timeout(timeout) } as RequestInit);
+  const host = new URL(url).hostname;
+  if (precisaIntermediario.has(host) && Deno.env.get("SEFAZ_PROXY_URL")) return viaIntermediario(url, body, contentType, timeout);
+  const client = await cliente();
+  let r: Response;
+  try { r = await fetch(url, { method: "POST", body, headers: { "Content-Type": contentType }, client, signal: AbortSignal.timeout(timeout) } as RequestInit); }
+  catch (e) {
+    const m = (e as Error).message || "";
+    if (/reset by peer|no renegotiation|connection error|SendRequest/i.test(m)) { precisaIntermediario.add(host); return viaIntermediario(url, body, contentType, timeout); }
+    throw e;
+  }
   const t = await r.text();
   if (!r.ok && !/<(soap|env)?:?Envelope/i.test(t)) throw new Error(`HTTP ${r.status}: ${t.slice(0, 200)}`);
   return t;
@@ -235,6 +257,11 @@ Deno.serve(async (req) => {
         catch (e) { out[`${u} ${rot}`] = (e as Error).message.slice(-140); }
       }
     }));
+    if (Deno.env.get("SEFAZ_PROXY_URL")) {
+      const env = `<?xml version="1.0" encoding="utf-8"?><soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"><soap12:Body><nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4"><consStatServ xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><tpAmb>1</tpAmb><cUF>35</cUF><xServ>STATUS</xServ></consStatServ></nfeDadosMsg></soap12:Body></soap12:Envelope>`;
+      try { const t = await viaIntermediario("https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx", env, "application/soap+xml; charset=utf-8", 20000); out["intermediario SP status"] = (tag(t, "cStat") + " " + tag(t, "xMotivo")).trim() || t.slice(0, 120); }
+      catch (e) { out["intermediario SP status"] = (e as Error).message.slice(0, 160); }
+    } else out["intermediario"] = "não configurado";
     let ip = ""; try { ip = await (await fetch("https://api.ipify.org", { signal: AbortSignal.timeout(8000) })).text(); } catch { /* sem ip */ }
     return json({ ip, regiao: Deno.env.get("SB_REGION") || Deno.env.get("DENO_REGION") || "", acs_icp: (await acsIcpBrasil()).length, resultado: out });
   }
