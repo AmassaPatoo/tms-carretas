@@ -4929,13 +4929,10 @@ function referentePix(v){
   return 'Pagamento';
 }
 function linkPix(v){
-  // endereço legível: pix/#ORC0001/total/1002,25/KE-obra-facil/Manaus/40717630000104
-  const p=pixPartes(), ref=referentePix(v);
-  const slug=t=>encodeURIComponent(String(t).trim().replace(/[\/#]/g,' ').replace(/-/g,' ').replace(/\s+/g,'-'));
-  const r=ref==='Valor total'?'total':ref==='Restante'?'restante':/^Entrada/.test(ref)?'entrada-'+String(toNum(state.pix.pct)||50).replace('.',','):'pagamento';
-  const partes=[p.txid, r, v.toFixed(2).replace('.',','), slug(p.nome), slug(p.cidade), encodeURIComponent(chavePix()).replace(/%2B/g,'+').replace(/%40/g,'@')];
-  const emp=(cfg.empresa.nome||'').trim(); if(emp && semAcento(emp).toLowerCase()!==p.nome.toLowerCase()) partes.push(slug(emp));
-  return new URL('../../pix/', location.href).href+'#'+partes.join('/');
+  const p=pixPartes(), h=new URLSearchParams({k:chavePix(), v:v.toFixed(2), n:p.nome, c:p.cidade, t:p.txid});
+  const ref=referentePix(v); if(ref!=='Pagamento') h.set('r',ref);
+  const emp=(cfg.empresa.nome||'').trim(); if(emp && semAcento(emp).toLowerCase()!==p.nome.toLowerCase()) h.set('e',emp);
+  return new URL('../../pix/', location.href).href+'#'+h.toString();
 }
 function mensagemPix(){
   const v=valorCobrancaPix(), nome=(state.cliente||'').trim().split(' ')[0];

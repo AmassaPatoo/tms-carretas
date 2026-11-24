@@ -2,7 +2,7 @@
    Os dados vêm sempre do Supabase (precisa de internet); aqui guardamos só
    os arquivos do app para abrir rápido e mesmo com sinal fraco.
    Ao publicar uma versão nova, aumente o número da VERSAO. */
-const VERSAO = 'plataforma-v19';
+const VERSAO = 'plataforma-v20';
 const ARQUIVOS = [
   './', './index.html', './config.js', './manifest.webmanifest',
   './core/plataforma.js', './core/inicio.js', './core/inicio.css', './vendor/supabase.js',
