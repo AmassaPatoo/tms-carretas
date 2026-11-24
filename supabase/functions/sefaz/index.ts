@@ -224,6 +224,21 @@ Deno.serve(async (req) => {
     catch (e) { return json({ configurado: false, codigo: (e as Erro).codigo || "erro", erro: (e as Error).message }); }
   }
 
+  if (body.acao === "diagnostico") {
+    const alvos = ["https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx", "https://nfe.svrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx",
+      "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx", "https://nfe.sefaz.am.gov.br/services2/services/NfeStatusServico4", GAF];
+    const out: Record<string, string> = {};
+    let client: Deno.HttpClient | null = null; try { client = await cliente(); } catch (e) { return json({ erro: (e as Error).message }); }
+    await Promise.all(alvos.map(async (u) => {
+      for (const [rot, c] of [["com_cert", client], ["sem_cert", null]] as const) {
+        try { const r = await fetch(u + "?wsdl", { client: c ?? undefined, signal: AbortSignal.timeout(15000) } as RequestInit); out[`${u} ${rot}`] = "HTTP " + r.status; await r.body?.cancel(); }
+        catch (e) { out[`${u} ${rot}`] = (e as Error).message.slice(-140); }
+      }
+    }));
+    let ip = ""; try { ip = await (await fetch("https://api.ipify.org", { signal: AbortSignal.timeout(8000) })).text(); } catch { /* sem ip */ }
+    return json({ ip, regiao: Deno.env.get("SB_REGION") || Deno.env.get("DENO_REGION") || "", acs_icp: (await acsIcpBrasil()).length, resultado: out });
+  }
+
   const limpa = (a: unknown) => [...new Set((Array.isArray(a) ? a : []).map((x) => String(x).replace(/\D/g, "")).filter(dvOk))];
   const nfe = limpa(body.nfe).filter((k) => ["55"].includes(k.slice(20, 22))).slice(0, 100);
   const cte = limpa(body.cte).filter((k) => ["57", "67"].includes(k.slice(20, 22))).slice(0, 30);
