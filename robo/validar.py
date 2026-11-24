@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Confere robo/achados.json antes de publicar e mostra o resumo da semana.
+"""Confere robo/achados.json antes de publicar e mostra o resumo do dia.
 
 Uso: python3 robo/validar.py            (a partir da raiz do repositório)
 Sai com código 1 se houver ERRO.
@@ -84,7 +84,7 @@ for it in A.get('itens', []):
         if med and isinstance(pu, (int, float)) and pu < med * 0.5 and 'conferir' not in str(o.get('obs', '')):
             avisos.append(f'{q}: {money(pu)} é menos da metade da mediana ({money(med)}) — marque "conferir" em obs')
 
-# semana anterior
+# pesquisa anterior
 anteriores = sorted(p for p in glob.glob(os.path.join(AQUI, 'historico', '*.json')) if os.path.basename(p)[:10] < hoje)
 ant = {}
 if anteriores:
@@ -96,7 +96,7 @@ print(f'Pesquisa de {hoje}: {total} ofertas ({man} de Manaus, {total - man} de f
 if anteriores:
     print('Comparando com', os.path.basename(anteriores[-1]))
 print('=' * 78)
-print(f'{"Item":36} {"📍 Manaus":>12} {"🌐 Fora":>12}  Dif.   Semana passada')
+print(f'{"Item":36} {"📍 Manaus":>12} {"🌐 Fora":>12}  Dif.   Pesquisa anterior')
 for it in A.get('itens', []):
     t, ofs = it['termo'], it.get('ofertas', [])
     vm, lm = menor(ofs, 'Manaus'); vf, lf = menor(ofs, 'online')
@@ -111,6 +111,11 @@ for it in A.get('itens', []):
     print(f'{t[:36]:36} {money(vm):>12} {money(vf):>12} {dif:>5}  {hist}')
     if lm or lf:
         print(f'{"":36} {(lm or "")[:12]:>12} {(lf or "")[:12]:>12}')
+promos = [(it['termo'], o) for it in A.get('itens', []) for o in it.get('ofertas', []) if o.get('promocao')]
+print()
+print(f'🔥 Promoções hoje: {len(promos)}')
+for t, o in promos:
+    print(f'  - {t[:30]}: {o.get("loja", "")} {money(o.get("preco"))} — {o["promocao"]}  {o.get("url", "")}')
 print()
 for a in avisos:
     print('AVISO:', a)

@@ -1,6 +1,6 @@
 # Robô de pesquisa de preços — KE Obra Fácil (Manaus/AM)
 
-Você é o robô semanal. Ele roda na nuvem do Claude, **não** acessa o Supabase: só pesquisa na internet
+Você é o robô diário (roda todo dia às 7h31 de Manaus). Ele roda na nuvem do Claude, **não** acessa o Supabase: só pesquisa na internet
 e grava o resultado neste repositório. O dono vê os achados no módulo **Cotações → 🤖 Internet**
 (comparação **📍 Manaus × 🌐 fora**) e escolhe o que guardar no histórico de preços.
 
@@ -36,7 +36,7 @@ Regras de Manaus:
   (ex.: "A Cocil tem a cola X, mas sem preço no site: peça pela aba Pedir cotação").
 - Se só achar uma **marca equivalente** em Manaus (ex.: Cascola no lugar de Tekbond), pode entrar,
   com o título dizendo "(equivalente, não é <marca>)".
-- Se não achar nada: `nota` = "Sem preço publicado em Manaus nesta semana."
+- Se não achar nada: `nota` = "Sem preço publicado em Manaus nesta pesquisa."
 - Referências de **serviço** em Manaus (ex.: Habitissimo, anúncios de instalação na OLX) não entram como oferta,
   mas valem ouro na `nota` (o dono usa para comparar com os preços dele).
 
@@ -105,7 +105,7 @@ Rode:
 ```
 python3 robo/validar.py
 ```
-Ele confere o formato, aponta ofertas sem link/preço, itens sem pesquisa de Manaus ou de fora, e compara com a semana anterior.
+Ele confere o formato, aponta ofertas sem link/preço, itens sem pesquisa de Manaus ou de fora, e compara com a pesquisa anterior.
 **Corrija tudo que ele marcar como ERRO** e rode de novo. Avisos (AVISO) podem ficar, mas leia cada um.
 
 ## 6. Publicar
@@ -114,4 +114,14 @@ Commit **só** dos arquivos de `robo/` com a mensagem `Robô: preços da interne
 
 ## 7. Resumo final (em português, curto)
 Use a saída do `validar.py`: por item, menor em Manaus × menor fora (loja e diferença %), o que subiu ou caiu
-em relação à semana anterior, e os itens sem resultado em Manaus.
+em relação à pesquisa anterior, e os itens sem resultado em Manaus.
+
+## Promoções do dia (o dono abre de manhã para ver isso)
+
+- Sempre que a página mostrar **promoção** (preço riscado "de R$ X por R$ Y", "oferta do dia", "oferta relâmpago",
+  Black Friday, cupom, desconto no Pix acima do normal), preencha o campo opcional
+  `"promocao"` da oferta com um texto curto e verdadeiro, ex.: `"de R$ 119,90 por R$ 91,73 (oferta do dia)"`
+  ou `"cupom KE10: 10% off"`. Diga até quando vale, se a página disser.
+- `preco` continua sendo o preço **com** a promoção. Não marque promoção sem ver o preço antigo ou o selo na página.
+- Se um item caiu mais de 10% em relação à pesquisa anterior, cite no resumo final como **"🔥 baixou"**.
+- No resumo final, comece pela lista de promoções encontradas hoje (item, loja, preço, link).

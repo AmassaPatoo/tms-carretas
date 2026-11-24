@@ -560,7 +560,7 @@ const MARCAS = ['Tekbond', 'Kisafix', 'Cascola', 'Quartzolit', 'Vedacit', 'Vedap
   'Nova Tintas', 'Leinertex', 'Durafloor', 'Tarkett', 'Biancogres', 'Casa Grassi', 'Ruffino', 'Pix Revestimentos', 'Tubrax', 'Graddus',
   'Kalla Decor', 'Santa Luzia', 'Formix', 'Placo', 'Knauf', 'Mapei', 'Euro Decor', 'Dryko', 'Hiperpren', 'NFR', 'Scandian', 'Kapazi',
   'Protec', 'UniPega', 'Flexfloor', 'Moldufama', 'Armstrong', 'Hunter Douglas', 'Eurogramas'];
-NET.f = { q: '', itens: new Set(), locais: new Set(), sites: new Set(), marcas: new Set(), min: '', max: '', frete: false, semConferir: false, ordem: 'preco', aberto: false };
+NET.f = { q: '', itens: new Set(), locais: new Set(), sites: new Set(), marcas: new Set(), min: '', max: '', frete: false, promo: false, semConferir: false, ordem: 'preco', aberto: false };
 const siteDe = o => String(o.loja || '').split(/\s+[–-]\s+/)[0].trim() || 'Outro';
 function marcaDe(o) {
   if (o.marca) return o.marca;
@@ -578,6 +578,7 @@ function passaFiltro(o, termo) {
   if (F.sites.size && !F.sites.has(siteDe(o))) return false;
   if (F.marcas.size && !F.marcas.has(marcaDe(o))) return false;
   if (F.frete && !temFrete(o)) return false;
+  if (F.promo && !ehPromo(o)) return false;
   if (F.semConferir && /conferir/i.test(o.obs || '')) return false;
   const mn = toNum(F.min), mx = toNum(F.max);
   if (!isNaN(mn) && (v == null || v < mn)) return false;
@@ -585,7 +586,8 @@ function passaFiltro(o, termo) {
   if (F.q.trim()) { const q = normal(F.q); if (!normal(o.titulo + ' ' + o.loja + ' ' + termo).includes(q.trim())) return false; }
   return true;
 }
-function nFiltros() { const F = NET.f; return F.itens.size + F.locais.size + F.sites.size + F.marcas.size + (F.min ? 1 : 0) + (F.max ? 1 : 0) + (F.frete ? 1 : 0) + (F.semConferir ? 1 : 0) + (F.q.trim() ? 1 : 0); }
+function ehPromo(o) { return !!(o && (o.promocao || /promo[çc][ãa]o|oferta do dia|black friday|cupom/i.test(o.obs || ''))); }
+function nFiltros() { const F = NET.f; return F.itens.size + F.locais.size + F.sites.size + F.marcas.size + (F.min ? 1 : 0) + (F.max ? 1 : 0) + (F.frete ? 1 : 0) + (F.promo ? 1 : 0) + (F.semConferir ? 1 : 0) + (F.q.trim() ? 1 : 0); }
 function painelFiltros(d) {
   const F = NET.f, todas = d.itens.flatMap(i => (i.ofertas || []).map(o => ({ o, t: i.termo })));
   const conta = fn => { const m = new Map(); todas.forEach(x => { const k = fn(x); m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]), 'pt-BR')); };
@@ -606,6 +608,7 @@ function painelFiltros(d) {
       ${grupo('Marca', 'marcas', conta(x => marcaDe(x.o)).sort((a, b) => (a[0] === 'Outras') - (b[0] === 'Outras')))}
       ${grupo('Loja / site', 'sites', conta(x => siteDe(x.o)))}
       <div class="nf-g"><div class="nf-t">Outros</div>
+        <label class="nf-op"><input type="checkbox" id="nfPromo"${F.promo ? ' checked' : ''}><span>🔥 Só promoções</span></label>
         <label class="nf-op"><input type="checkbox" id="nfFrete"${F.frete ? ' checked' : ''}><span>🚚 Com frete informado / grátis</span></label>
         <label class="nf-op"><input type="checkbox" id="nfConf"${F.semConferir ? ' checked' : ''}><span>Esconder preços "conferir"</span></label></div>
       ${n ? '<button class="btn sm" data-act="nf-limpar" style="width:100%">✕ Limpar filtros</button>' : ''}
@@ -617,13 +620,14 @@ function telaInternet() {
   if (!NET.carregado) { carregarInternet().then(render); return '<div class="carregando">Buscando o que o robô encontrou…</div>'; }
   const d = NET.dados;
   if (!d || !Array.isArray(d.itens)) return `<section class="card"><div class="vazio"><b>O robô ainda não trouxe resultados</b>
-    ${NET.erro === 'rede' ? 'Sem internet agora. Tente de novo.' : 'Ele pesquisa toda semana e os achados aparecem aqui.'}</div></section>`;
+    ${NET.erro === 'rede' ? 'Sem internet agora. Tente de novo.' : 'Ele pesquisa todo dia de manhã e os achados aparecem aqui.'}</div></section>`;
   const comOferta = d.itens.filter(i => (i.ofertas || []).length);
   return `<section class="card">
     <h2>🤖 Preços encontrados na internet</h2>
-    <div class="sub">O robô pesquisa toda semana em <b>📍 Manaus</b> (lojas da cidade, Bemol, OLX Manaus…) e <b>🌐 fora</b>
+    <div class="sub">O robô pesquisa <b>todo dia às 7h30</b> em <b>📍 Manaus</b> (lojas da cidade, Bemol, OLX Manaus…) e <b>🌐 fora</b>
       (Mercado Livre, Amazon, Magalu, Shopee, MadeiraMadeira…). <b>Confira antes de guardar</b>: o preço de fora normalmente não inclui o frete até Manaus.</div>
     <div class="tiles"><div class="tile"><small>Última pesquisa</small><b style="font-size:17px">${d.atualizado_em ? haQuanto(d.atualizado_em) : '—'}</b><div class="hint">${d.atualizado_em ? new Date(d.atualizado_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : ''}</div></div>
+      <div class="tile"><small>🔥 Promoções</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(ehPromo).length, 0)}</b><div class="hint">${d.itens.some(i => (i.ofertas || []).some(ehPromo)) ? 'use o filtro "Só promoções"' : 'nenhuma nesta pesquisa'}</div></div>
       <div class="tile"><small>Itens com ofertas</small><b>${comOferta.length}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.length}</span></b></div>
       <div class="tile"><small>Ofertas 📍 Manaus / 🌐 fora</small><b>${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local === 'Manaus').length, 0)}<span style="font-size:14px;color:var(--muted)"> / ${d.itens.reduce((s, i) => s + (i.ofertas || []).filter(o => o.local !== 'Manaus').length, 0)}</span></b></div></div>
   </section>
@@ -641,8 +645,8 @@ function telaInternet() {
     const menor = l => l.find(o => valorOferta(o) != null && !suspeito(o)) || null;
     const mM = menor(man), mF = menor(fora);
     const mapa = itemParecido(it.termo);
-    const linha = (o, destaque) => `<tr${destaque ? ' class="melhor"' : ''}><td><b>${esc(o.loja)}</b></td>
-      <td>${o.url && /^https?:\/\//.test(o.url) ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">${esc(o.titulo || 'abrir')}</a>` : esc(o.titulo || '')}${o.obs ? `<br><small style="color:var(--muted)">${esc(o.obs)}</small>` : ''}${o.frete_manaus ? `<br><small style="color:var(--orange-ink)">🚚 ${esc(o.frete_manaus)}</small>` : ''}</td>
+    const linha = (o, destaque) => `<tr${destaque ? ' class="melhor"' : ''}><td><b>${esc(o.loja)}</b>${ehPromo(o) ? '<br><span class="tag lar">🔥 promoção</span>' : ''}</td>
+      <td>${o.url && /^https?:\/\//.test(o.url) ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">${esc(o.titulo || 'abrir')}</a>` : esc(o.titulo || '')}${o.promocao ? `<br><small style="color:var(--orange-ink);font-weight:700">🔥 ${esc(o.promocao)}</small>` : ''}${o.obs ? `<br><small style="color:var(--muted)">${esc(o.obs)}</small>` : ''}${o.frete_manaus ? `<br><small style="color:var(--orange-ink)">🚚 ${esc(o.frete_manaus)}</small>` : ''}</td>
       <td class="n">${money(o.preco)}<br><small style="color:var(--muted)">${esc(o.oferta_un || '')}</small></td>
       <td class="n"><b>${valorOferta(o) != null ? money(valorOferta(o)) : '—'}</b></td>
       <td class="n">${mapa && jaGuardado(o, mapa) ? '<span class="tag ok">guardado</span>' : ''}</td></tr>`;
@@ -666,9 +670,9 @@ function telaInternet() {
       ${mapa ? `<div class="hint" style="margin:8px 0">Vai para o item: <b>${esc(nomeItem(mapa))}</b></div>` : ''}
       ${it.nota ? `<div class="sub">${esc(it.nota)}</div>` : ''}
       ${todas.length ? `<div class="tab-wrap"><table class="t"><thead><tr><th>Onde</th><th>Anúncio</th><th class="n">Preço</th><th class="n">Por ${esc(it.unidade || 'un')}</th><th></th></tr></thead><tbody>
-        ${mostrarM ? grupo('📍 Manaus', man, 'Nenhum preço publicado em Manaus nesta semana. Use a aba Pedir cotação.') : ''}
+        ${mostrarM ? grupo('📍 Manaus', man, 'Nenhum preço publicado em Manaus nesta pesquisa. Use a aba Pedir cotação.') : ''}
         ${mostrarF ? grupo('🌐 Fora (internet)', fora, 'Nada encontrado fora.') : ''}
-      </tbody></table></div>` : '<div class="vazio" style="padding:12px">Nada confiável encontrado nesta semana.</div>'}
+      </tbody></table></div>` : '<div class="vazio" style="padding:12px">Nada confiável encontrado nesta pesquisa.</div>'}
     </section>`;
   }).join('')}
   </div></div>`;
@@ -729,7 +733,7 @@ document.addEventListener('click', async e => {
       case 'recarregar': await carregar(); if (UI.aba === 'internet') await carregarInternet(); render(); return toast('Atualizado.');
       case 'net-guardar': return formGuardarNet(+b.dataset.k);
       case 'nf-toggle': NET.f.aberto = !NET.f.aberto; return render();
-      case 'nf-limpar': Object.assign(NET.f, { q: '', itens: new Set(), locais: new Set(), sites: new Set(), marcas: new Set(), min: '', max: '', frete: false, semConferir: false }); return render();
+      case 'nf-limpar': Object.assign(NET.f, { q: '', itens: new Set(), locais: new Set(), sites: new Set(), marcas: new Set(), min: '', max: '', frete: false, promo: false, semConferir: false }); return render();
       case 'net-guardar-ok': return await guardarNet(+b.dataset.k);
       case 'item': return abrirItem(id);
       case 'lancar-item': fecharModal(); UI.aba = 'precos'; UI.lanc.busca = nomeItem(id); render(); return;
@@ -806,6 +810,7 @@ document.addEventListener('change', e => {
   if (t.dataset.nf) { const S = NET.f[t.dataset.nf]; t.checked ? S.add(t.value) : S.delete(t.value); return renderMantendoRolagem(); }
   if (t.id === 'nfOrdem') { NET.f.ordem = t.value; return renderMantendoRolagem(); }
   if (t.id === 'nfFrete') { NET.f.frete = t.checked; return renderMantendoRolagem(); }
+  if (t.id === 'nfPromo') { NET.f.promo = t.checked; return renderMantendoRolagem(); }
   if (t.id === 'nfConf') { NET.f.semConferir = t.checked; return renderMantendoRolagem(); }
   if (t.id === 'nfMin' || t.id === 'nfMax') { NET.f[t.id === 'nfMin' ? 'min' : 'max'] = t.value; return renderMantendoRolagem(); }
   if (t.id === 'fCat') { UI.categoria = t.value; render(); }
