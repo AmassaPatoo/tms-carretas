@@ -33,3 +33,10 @@
 .cte-multi-item small {color:#4e6478}
 
 .cte-drop-page {margin:6px 0 14px;padding:22px}
+.cte-sel-bar {display:flex;justify-content:space-between;align-items:center;gap:12px;margin:4px 0 10px;font-size:13px}
+.cte-sel-bar label {flex-direction:row;align-items:center;gap:8px;font-weight:600}
+.cte-sel-bar input,.cte-card input.cte-sel {width:18px;height:18px;padding:0;flex:none;accent-color:#b52828}
+.cte-card-main {flex:1;min-width:0}
+.cte-card-acoes {display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.danger.outline {background:white;color:#b52828;border:1px solid #e3a5a5}
+.danger.outline:hover:not(:disabled) {background:#fdeeee}
