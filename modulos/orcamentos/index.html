@@ -4939,14 +4939,10 @@ function mensagemPix(){
   const cap=nome?nome.charAt(0).toUpperCase()+nome.slice(1):'';
   const tipoChave={cpf:'CPF',cnpj:'CNPJ',telefone:'telefone',email:'e-mail',aleatoria:'chave aleatória'}[cfg.pix.tipo]||'chave';
   return `Olá${cap?', '+cap:''}! Tudo bem?\n`+
-    `Segue o Pix do orçamento nº ${pad4(state.numero)} da *${cfg.empresa.nome||'KE Obra Fácil'}*:\n\n`+
-    `*${referentePix(v)}: ${money(v)}*\n`+
+    `Segue o Pix do orçamento nº ${pad4(state.numero)} da ${cfg.empresa.nome||'KE Obra Fácil'}:\n\n`+
     `Recebedor: ${cfg.pix.nome||cfg.empresa.nome||''}\n`+
     `Chave Pix (${tipoChave}): ${cfg.pix.chave}\n\n`+
-    `*Para pagar é só tocar no link* (abre o QR Code e o botão de copiar o código):\n${linkPix(v)}\n\n`+
-    `Se preferir, copie o código abaixo e cole no app do banco em _Pix > Pix Copia e Cola_:\n`+
-    '```'+pixPayload(v)+'```\n\n'+
-    `Depois de pagar, me mande o comprovante por aqui. Obrigado!`;
+    `Toque no link para ir para as condições de pagamento:\n${linkPix(v)}`;
 }
 function baixarQRPix(){
   const v=valorCobrancaPix(), cod=pixPayload(v);
