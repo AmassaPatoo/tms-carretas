@@ -2921,6 +2921,17 @@ details.card[open]>summary{margin-bottom:14px}
 .stat small{display:block;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 .stat b{display:block;font-size:19px;color:var(--navy);margin-top:2px}
 .stat em{font-style:normal;font-size:12px;color:var(--muted)}
+.stat .split{display:flex;height:7px;border-radius:99px;overflow:hidden;background:#edf1f5;margin:8px 0 6px}
+.stat .split i{display:block;height:100%}
+.stat .split .g{background:#e0793a}.stat .split .l{background:#1e9e5a}
+.stat .fin{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:2px 0}
+.stat .fin span{color:var(--muted)}.stat .fin strong{white-space:nowrap}
+.stat .fin .gasto{color:#c0581c}.stat .fin .lucro{color:#1e8a50}
+.stat .aviso{display:block;margin-top:5px;font-size:11.5px;color:#9a6a00}
+.orc-side .fin{display:block;font-size:11.5px;color:var(--muted);white-space:nowrap;margin-top:1px}
+.orc-side .fin .lucro{color:#1e8a50;font-weight:700}.orc-side .fin .neg{color:var(--danger);font-weight:700}
+.orc-side .fin.sem{color:#9a6a00}
+@media(max-width:520px){.stats{grid-template-columns:1fr}}
 .filtros{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
 .filtros button{flex-shrink:0;height:34px;padding:0 12px;border-radius:99px;border:1.5px solid var(--line);background:#fff;font-size:13px;font-weight:600;color:var(--navy)}
 .filtros button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -4146,12 +4157,35 @@ async function novoOrcamento(){
 }
 async function abrirLista(){
   await persistir().catch(erroSalvar);
-  const rows=await db.from('orc_orcamentos').select('id,numero,cliente_nome,local,data,status,total,atualizado_em,aprovado_em')
+  const rows=await db.from('orc_orcamentos').select('id,numero,cliente_nome,local,data,status,total,atualizado_em,aprovado_em,custos:dados->custos')
     .eq('empresa_id',EMP).order('atualizado_em',{ascending:false}).then(ok);
-  listaCache=rows.map(r=>({id:r.id, numero:r.numero, cliente:r.cliente_nome, local:r.local, data:String(r.data||'').slice(0,10), status:r.status, total:Number(r.total)||0, assinado:!!r.aprovado_em}));
+  listaCache=rows.map(r=>({id:r.id, numero:r.numero, cliente:r.cliente_nome, local:r.local, data:String(r.data||'').slice(0,10), status:r.status, total:Number(r.total)||0, assinado:!!r.aprovado_em, ...custoDe(r.custos)}));
   verificarAprovacao();
-  if(state && !salvoNoBanco) listaCache.unshift({id:state.id, numero:state.numero, cliente:state.cliente, local:state.local, data:state.data, status:state.status, total:calcTudo().total, novo:true});
+  if(state && !salvoNoBanco) listaCache.unshift({id:state.id, numero:state.numero, cliente:state.cliente, local:state.local, data:state.data, status:state.status, total:calcTudo().total, novo:true, ...custoDe(state.custos)});
   renderLista(); $('#painel').hidden=false; document.body.classList.add('lock');
+}
+/* Custos (material + ajudante + transporte/outros) de cada orçamento, para separar
+   o que é gasto do que é lucro no painel "Meus orçamentos". */
+function custoDe(c){
+  c=c||{};
+  const partes=['material','ajudante','outros'].map(k=>Math.max(0,toNum(c[k])));
+  return {custo:partes.reduce((t,v)=>t+v,0), temCusto:partes.some(v=>v>0)};
+}
+function somaFin(lista){
+  const total=lista.reduce((t,r)=>t+(r.total||0),0);
+  const com=lista.filter(r=>r.temCusto), sem=lista.length-com.length;
+  const gasto=com.reduce((t,r)=>t+r.custo,0), totalCom=com.reduce((t,r)=>t+(r.total||0),0);
+  const lucro=totalCom-gasto;
+  return {total, gasto, lucro, margem:totalCom>0?lucro/totalCom*100:0, sem, semValor:total-totalCom};
+}
+function blocoFin(f, futuro){
+  const base=Math.max(1,f.gasto+Math.max(0,f.lucro)+f.semValor);
+  const pg=f.gasto/base*100, pl=Math.max(0,f.lucro)/base*100;
+  const tg=futuro?'Gasto previsto':'Gasto', tl=futuro?'Lucro previsto':'Lucro';
+  return `<div class="split" title="Laranja: gasto · Verde: lucro · Cinza: sem custos informados"><i class="g" style="width:${pg}%"></i><i class="l" style="width:${pl}%"></i></div>
+    <div class="fin"><span>${tg}</span><strong class="gasto">${money(f.gasto)}</strong></div>
+    <div class="fin"><span>${tl}</span><strong class="${f.lucro>=0?'lucro':'neg'}">${money(f.lucro)} <small>(${fmtQ(Math.round(f.margem))}%)</small></strong></div>
+    ${f.sem?`<span class="aviso">⚠ ${f.sem} orçamento(s) sem custos preenchidos (${money(f.semValor)}) — fora da conta de gasto/lucro</span>`:''}`;
 }
 function fecharLista(){ $('#painel').hidden=true; document.body.classList.remove('lock'); }
 function renderLista(){
@@ -4161,9 +4195,10 @@ function renderLista(){
   const env=listaCache.filter(r=>r.status==='enviado');
   const resp=doMes.filter(r=>['aprovado','executado','recusado'].includes(r.status));
   const taxa=resp.length?Math.round(fech.length/resp.length*100):null;
+  const fFech=somaFin(fech), fEnv=somaFin(env);
   $('#stats').innerHTML = `
-    <div class="stat"><small>Fechados em ${MESES[new Date().getMonth()]}</small><b>${money(fech.reduce((t,r)=>t+(r.total||0),0))}</b><em>${fech.length} orçamento(s)${taxa!==null?` · ${taxa}% aprovados`:''}</em></div>
-    <div class="stat"><small>Aguardando resposta</small><b>${money(env.reduce((t,r)=>t+(r.total||0),0))}</b><em>${env.length} enviado(s)</em></div>`;
+    <div class="stat"><small>Fechados em ${MESES[new Date().getMonth()]}</small><b>${money(fFech.total)}</b><em>${fech.length} orçamento(s)${taxa!==null?` · ${taxa}% aprovados`:''}</em>${blocoFin(fFech,false)}</div>
+    <div class="stat"><small>Aguardando resposta</small><b>${money(fEnv.total)}</b><em>${env.length} enviado(s) · se todos forem aprovados</em>${blocoFin(fEnv,true)}</div>`;
   const cont=s=>listaCache.filter(r=>s==='todos'||r.status===s).length;
   $('#filtros').innerHTML = ['todos',...Object.keys(STATUS)].map(s=>`<button class="${filtroStatus===s?'on':''}" data-act="filtro" data-fs="${s}">${s==='todos'?'Todos':STATUS[s]} (${cont(s)})</button>`).join('');
   const q=($('#buscaOrc').value||'').toLowerCase().trim();
@@ -4171,7 +4206,7 @@ function renderLista(){
     (!q || [r.cliente,r.local,pad4(r.numero),r.numero].join(' ').toLowerCase().includes(q)));
   $('#listaOrc').innerHTML = lista.map(r=>`<div class="orc st-${r.status}${state&&r.id===state.id?' atual':''}" data-id="${r.id}">
       <div class="orc-main" data-act="abrir-orc"><b>Nº ${pad4(r.numero)} · ${esc(r.cliente||'Sem nome')}</b><small>${esc(r.local||'—')} · ${isoBR(r.data)}${state&&r.id===state.id?' · aberto agora':''}${r.novo?' · ainda não salvo':''}${r.assinado?' · ✍️ assinado pelo cliente':''}</small></div>
-      <div class="orc-side"><b>${money(r.total||0)}</b>
+      <div class="orc-side"><b>${money(r.total||0)}</b>${r.total>0?(r.temCusto?`<span class="fin">Gasto ${money(r.custo)} · <span class="${r.total-r.custo>=0?'lucro':'neg'}">Lucro ${money(r.total-r.custo)}</span></span>`:'<span class="fin sem">custos não informados</span>'):''}
         <select data-st="1" aria-label="Situação">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}"${r.status===k?' selected':''}>${v}</option>`).join('')}</select></div>
       <div class="orc-acts"><button data-act="abrir-orc">Abrir</button><button data-act="dup-orc">Duplicar</button><button class="del" data-act="del-orc">Excluir</button></div>
     </div>`).join('') || '<div class="empty" style="text-align:center;padding:20px">Nenhum orçamento encontrado.</div>';
