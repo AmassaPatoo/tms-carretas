@@ -10,6 +10,33 @@ todas com link e preço visível, Manaus e fora separados, conversões corretas 
 
 ---
 
+## ⭐ Itens prioritários (pesquisa bruta) — fazer PRIMEIRO
+
+Item com `"prioridade": true` em `itens.json` (hoje: **Cola de contato 2,8 kg**) é pesquisado **antes de todos os outros**
+e com muito mais profundidade. As regras normais continuam valendo (preço visível, link, nunca inventar), mas:
+
+- **Sem limite de ofertas.** Não vale a meta de 5 + 6–8: entra **toda** oferta com preço visível para a lata de 2,8 kg,
+  de **qualquer marca** (Tekbond, Cascola tradicional e sem toluol, Kisafix, Amazonas, Pulvitec e o que mais aparecer).
+  Ordene as ofertas do menor para o maior `preco_unidade` dentro de Manaus e dentro de fora.
+- **Mínimo de 10 buscas de Manaus** (todas em `mode: "extended"`): Cocil, Beny, Lobato, Casinova, Loja Constroi,
+  O Construtor, Bemol, OLX Manaus, "cola de contato 2,8 kg Manaus", "cola de sapateiro Manaus", "cola fórmica Manaus"
+  e cada marca + Manaus (ex.: `Cascola 2,8 kg Manaus`, `Tekbond 2,8 kg Manaus`).
+- **Mínimo de 20 buscas de fora**, cobrindo **cada marca** separadamente e **cada loja** separadamente com
+  `allowed_domains`: amazon.com.br, mercadolivre.com.br, magazineluiza.com.br, leroymerlin.com.br, telhanorte.com.br,
+  casasbahia.com.br, extra.com.br, americanas.com.br, shopee.com.br, madeiramadeira.com.br, carrefour.com.br,
+  lojadomecanico.com.br, balaroti.com.br, casadosoldador.com.br, cec.com.br, obramax.com.br, e busca aberta por outras lojas de ferramentas e ferragens.
+  Tente também a lista do Mercado Livre (`https://lista.mercadolivre.com.br/cola-de-contato-2,8kg`), o Google Shopping
+  e as variações de escrita: `2,8kg`, `2.8kg`, `2,8 kg`, `2800g`, `2800 g`.
+- **Reconfira todas as ofertas da pesquisa anterior** (abra cada `url` do `achados.json` anterior com WebFetch):
+  se mudou de preço, registre o novo; se esgotou, não entra, mas cite na `nota` ("esgotado hoje").
+- Abra com WebFetch toda página em que o trecho da busca não mostra preço claro, Pix × cartão ou frete para Manaus.
+- **`nota` detalhada**: menor Tekbond em Manaus e fora; menor de qualquer marca; quantas ofertas e quantas marcas foram achadas;
+  o que esgotou, subiu ou caiu desde a pesquisa anterior; quais sites bloquearam a leitura.
+- No resumo final, o item prioritário vem **logo depois das promoções**, com a lista completa das 5 mais baratas
+  (loja, marca, preço, link).
+
+---
+
 ## 0. Preparação
 1. Clone/atualize `AmassaPatoo/tms-carretas` (branch `main`).
 2. Leia `robo/itens.json` (o que pesquisar, unidade e dica de cada item) e o `achados.json` anterior
@@ -77,6 +104,7 @@ Faça **no mínimo 3 buscas por item**:
 - Preço **muito abaixo** dos outros (menos da metade) → entra, mas `obs` = "preço muito abaixo — conferir".
 - Página antiga/desatualizada → `obs` = "página antiga: confirmar preço".
 - Meta: até **5 de Manaus** e até **6–8 de fora** por item, priorizando as mais baratas e as marcas mais comuns.
+  **Exceção:** item com `"prioridade": true` não tem limite (ver seção ⭐ Itens prioritários).
 - **Nunca invente preço, loja ou link.**
 
 ## 4. Formato de `robo/achados.json`

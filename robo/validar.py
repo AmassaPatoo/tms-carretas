@@ -27,6 +27,7 @@ def menor(ofertas, local):
 
 
 itens_cfg = carregar(os.path.join(AQUI, 'itens.json'))['itens']
+prioritarios = {i['termo'] for i in itens_cfg if i.get('prioridade')}
 try:
     A = carregar(os.path.join(AQUI, 'achados.json'))
 except Exception as e:
@@ -61,6 +62,14 @@ for it in A.get('itens', []):
         erros.append(f'{t}: nenhuma oferta de Manaus e a nota não explica (pesquisou Manaus?)')
     if nF == 0 and not nota:
         avisos.append(f'{t}: nenhuma oferta de fora — explique na nota')
+    if t in prioritarios:  # pesquisa bruta: espera bem mais ofertas e várias marcas
+        marcas = {str(o.get('marca', '')).strip().lower() for o in ofs if o.get('marca')}
+        if nF < 10:
+            avisos.append(f'⭐ {t}: item prioritário com só {nF} oferta(s) de fora — a pesquisa bruta pede bem mais (meta: 10+)')
+        if len(marcas) < 3:
+            avisos.append(f'⭐ {t}: item prioritário com {len(marcas)} marca(s) — pesquise todas (Tekbond, Cascola, Kisafix, Amazonas, Pulvitec...)')
+        if any(not o.get('marca') for o in ofs):
+            avisos.append(f'⭐ {t}: há ofertas sem o campo "marca" — preencha em todas')
     vals = [o['preco_unidade'] for o in ofs if isinstance(o.get('preco_unidade'), (int, float))]
     med = sorted(vals)[len(vals) // 2] if vals else None
     for k, o in enumerate(ofs):
@@ -108,7 +117,7 @@ for it in A.get('itens', []):
         if vm and pm: partes.append(f'Manaus {(vm / pm - 1) * 100:+.0f}%')
         if vf and pf: partes.append(f'fora {(vf / pf - 1) * 100:+.0f}%')
         hist = ', '.join(partes)
-    print(f'{t[:36]:36} {money(vm):>12} {money(vf):>12} {dif:>5}  {hist}')
+    print(f'{("⭐ " if t in prioritarios else "") + t:36.36} {money(vm):>12} {money(vf):>12} {dif:>5}  {hist}')
     if lm or lf:
         print(f'{"":36} {(lm or "")[:12]:>12} {(lf or "")[:12]:>12}')
 promos = [(it['termo'], o) for it in A.get('itens', []) for o in it.get('ofertas', []) if o.get('promocao')]

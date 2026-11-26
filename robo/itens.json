@@ -1,8 +1,14 @@
 {
   "cidade": "Manaus",
   "estado": "AM",
-  "obs": "Lista de itens que o robô pesquisa toda semana. Para mudar, peça ao Claude ou edite este arquivo.",
+  "obs": "Lista de itens que o robô pesquisa todo dia. Itens com \"prioridade\": true são pesquisados primeiro e a fundo (ver INSTRUCOES.md, seção Itens prioritários). Para mudar, peça ao Claude ou edite este arquivo.",
   "itens": [
+    {
+      "termo": "Cola de contato Tekbond 2,8 kg",
+      "unidade": "lata",
+      "dica": "PRIORIDADE — pesquisa bruta: TODA cola de contato em lata de 2,8 kg, de qualquer marca (Tekbond EAN 7898543383635, que é a que a empresa usa; Cascola/Henkel tradicional e sem toluol, Kisafix, Amazonas, Pulvitec e qualquer outra que aparecer). Também valem os anúncios escritos 2.8kg, 2,8 kg, 2800 g ou 2800g. Fora da Tekbond, preencher marca e escrever '(equivalente, não é Tekbond)' no título.",
+      "prioridade": true
+    },
     {
       "termo": "Piso vinílico colado 2 mm",
       "unidade": "m²",
@@ -12,11 +18,6 @@
       "termo": "Piso vinílico clicado (SPC/rígido)",
       "unidade": "m²",
       "dica": "piso vinílico click / rígido; converter caixa para preço por m²"
-    },
-    {
-      "termo": "Cola de contato Tekbond 2,8 kg",
-      "unidade": "lata",
-      "dica": "cola de contato à base de neoprene, lata 2,8 kg (EAN 7898543383635). É a cola que a empresa usa. Equivalentes (Cascola 2,8 kg etc.) podem entrar marcando a marca em obs."
     },
     {
       "termo": "Rodapé de poliestireno 7 cm",
