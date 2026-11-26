@@ -41,6 +41,7 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
    Depois, em **Administração**, ligue "Cotações" na empresa.
 8. `008_sefaz_pelo_banco.sql`: consulta à SEFAZ-SP/Ambiente Nacional pelo banco (certificado no cofre).
 7. `007_excluir_cte.sql`: permite ao gestor excluir CT-e (apaga junto a receita do DRE) e excluir viagem (com tudo dela).
+9. `009_remover_assinatura_link.sql`: botão "Remover assinatura" no orçamento, inclusive para a assinatura feita pelo cliente no link (o orçamento volta para "Enviado" e o link antigo é cancelado).
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
 

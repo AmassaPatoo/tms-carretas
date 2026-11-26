@@ -3146,7 +3146,7 @@ details.card[open]>summary{margin-bottom:14px}
     <div class="sig-prev" id="assCliPrev"></div>
     <div class="btn-row">
       <button class="btn-sec" data-act="ass-cliente">✍️ Cliente assina com o dedo</button>
-      <button class="btn-sec" data-act="del-ass-cliente" id="btnDelAssCli" hidden>Apagar</button>
+      <button class="btn-sec" data-act="del-ass-cliente" id="btnDelAssCli" hidden>🗑️ Remover assinatura</button>
     </div>
     <div class="hint">Ao assinar, o orçamento é marcado como "Aprovado" e a assinatura sai no PDF.</div>
     <div class="sublabel">Aprovação à distância</div>
@@ -3729,7 +3729,7 @@ function renderBrand(){
 }
 function renderAssCliente(){
   $('#assCliPrev').innerHTML = state.assCliente ? `<img src="${state.assCliente.src}" alt="Assinatura do cliente"><span class="hint" style="margin:0">${state.assVia==='link'?`Assinado pelo link por <b>${esc(state.assNome||'')}</b> em ${esc(horaAss())}`:'Assinado em '+isoBR(state.assData)}</span>` : '<span class="hint" style="margin:0">Ainda não assinado.</span>';
-  $('#btnDelAssCli').hidden = !state.assCliente || state.assVia==='link';
+  $('#btnDelAssCli').hidden = !state.assCliente && !aprovadoEm;
   renderLink();
 }
 function renderTabela(){
@@ -4089,7 +4089,7 @@ document.addEventListener('click',async e=>{
         state.assCliente=a; state.assData=hojeISO();
         if(state.status==='rascunho'||state.status==='enviado') state.status='aprovado';
         syncInputs(); renderAssCliente(); recalc(); save(); toast('Assinado! Orçamento marcado como aprovado.'); }); return;
-    case 'del-ass-cliente': if(state.assVia==='link') return toast('A assinatura feita pelo cliente no link não pode ser apagada.'); state.assCliente=null; state.assData=''; renderAssCliente(); save(); return;
+    case 'del-ass-cliente': await removerAssinaturaCliente(); return;
     case 'gerar-link': await gerarLink(); return;
     case 'copiar-link': copiarTexto(urlLink()); return;
     case 'wa-link': abrirWhats(foneWa(state.foneCliente),mensagemCliente(calcTudo(),urlLink())); return;
@@ -4420,6 +4420,26 @@ async function cancelarLink(){
   if(!confirm('Cancelar o link? Quem tiver o link antigo não vai mais conseguir abrir nem aprovar.')) return;
   try{ await P.rpc('orc_cancelar_link',{p_orcamento:state.id}); linkAtual=null; renderLink(); toast('Link cancelado.'); }
   catch(e){ toast('Não foi possível cancelar: '+e.message,5000); }
+}
+/* apagar a assinatura do cliente: o orçamento volta a ficar pendente e a assinatura sai do PDF */
+async function removerAssinaturaCliente(){
+  const peloLink = state.assVia==='link' || !!aprovadoEm;
+  if(!confirm(peloLink
+      ? 'Remover a assinatura que '+(aprovadoNome||state.assNome||'o cliente')+' fez pelo link?\n\nO orçamento volta para "Enviado", a assinatura sai do PDF e o link antigo é cancelado. Para o cliente assinar de novo, gere um novo link.'
+      : 'Remover a assinatura do cliente?\n\nO orçamento volta para "Enviado" e a assinatura sai do PDF.')) return;
+  if(peloLink){
+    try{
+      clearTimeout(save._t); await persistir().catch(()=>{});   // guarda o que estava sendo digitado
+      await P.rpc('orc_remover_aprovacao',{p_orcamento:state.id});
+      await carregarRegistro(state.id); renderTudo();
+      toast('Assinatura removida. O orçamento voltou para "Enviado".');
+    }catch(e){ toast('Não foi possível remover a assinatura: '+e.message,6000); }
+    return;
+  }
+  state.assCliente=null; state.assData=''; state.assEmIso=''; state.assNome=''; state.assVia='';
+  if(state.status==='aprovado') state.status='enviado';
+  syncInputs(); renderAssCliente(); recalc(); save();
+  toast('Assinatura removida. O orçamento voltou para "Enviado".');
 }
 /* o cliente aprovou pelo link enquanto o orçamento estava aberto aqui? */
 async function verificarAprovacao(){
