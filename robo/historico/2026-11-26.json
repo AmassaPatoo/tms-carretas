@@ -1,10 +1,10 @@
 {
-  "atualizado_em": "2026-11-26T08:27:25-04:00",
+  "atualizado_em": "2026-11-26T08:47:42-04:00",
   "itens": [
     {
       "termo": "Cola de contato Tekbond 2,8 kg",
       "unidade": "lata",
-      "nota": "⭐ Pesquisa bruta: 56 ofertas (1 de Manaus, 55 de fora), 7 marcas (Tekbond, Kisafix, Cascola, Amazonas, Brascola, Formica, KFE). Manaus: só a Cocil mostra preço da lata 2,8 kg — Cascola R$ 168,90 (reconferido, sem promoção); nenhuma Tekbond 2,8 kg com preço em Manaus. Beny só tem latas pequenas (UNA, Polyplac, Pulvitec) com preço 'carregando'; Lobato, Casinova, Loja Constroi, O Construtor, Bemol e OLX Manaus sem a lata de 2,8 kg (18 buscas extended). Fora: menor Tekbond Casa do Soldador R$ 103,12 à vista (igual); menor de qualquer marca Kisafix Premium no Magalu/Duda Ferragens R$ 81,60 no Pix (igual). Novas hoje: Casa das Fitas e Perfis Kisafix R$ 88,90, Única Revestimentos Kisafix R$ 89,00 (conferir peso), Amazonas Extra na Loja do Mecânico R$ 104,90, JF Decor Kisafix R$ 110,00, Continental Ferramentas Tekbond R$ 119,49. Esgotado/indisponível hoje: Palácio das Ferramentas Tekbond R$ 93,95 e Amazonas R$ 124,44, Loja do Mecânico Tekbond (fora de linha), Extra/Palácio Tekbond, Leroy Brascola Covulfix e Una, Casa Toni Cascola R$ 222,60. Fora da lista por não reconferir: Magalu/Casa dos Puxadores Tekbond (R$ 117,18 de manhã, sumiu da busca) e Leroy/Decar Tekbond (R$ 141,90 de manhã). Elastobor Tekbond mostra R$ 0,00 (metadado R$ 94,90 — conferir). Ampar R$ 91,73 (Mercado Livre) não apareceu com preço. Bloquearam a leitura: Mercado Livre, Amazon, Carrefour e Obramax (têm 2,8 kg sem preço legível), C&C, Americanas, Google Shopping; Shopee sem 2,8 kg. Frete para Manaus não calculável em nenhuma loja.",
+      "nota": "⭐ Pesquisa bruta (rodada extra de 26/11, ~8h30–9h): 64 ofertas (1 de Manaus, 63 de fora), 7 marcas (Amazonas, Brascola, Cascola, Formica, KFE, Kisafix, Tekbond). 📍 Manaus (15 buscas extended): só a Cocil mostra preço da lata 2,8 kg — Cascola R$ 168,90 (reconferida, sem Black Friday; entrega Grande Manaus R$ 30, grátis acima de R$ 700). Nenhuma Tekbond, Kisafix ou Amazonas 2,8 kg com preço em Manaus. A Cocil tem Cascola 14 kg a R$ 775,00 (R$ 55,36/kg, mais barato por kg que a lata de 2,8 kg, R$ 60,32/kg). Beny só 200 g (Una, Polyplac) e Pulvitec; Lobato, Casinova, Loja Constroi, O Construtor, Bemol e OLX Manaus sem cola de contato 2,8 kg. Para cotar por telefone (sem preço na internet): PMG Loja do Compensado, Damata Madeiras, D & E Compensados, Complac, Império MDF. 🌐 Fora: menor de qualquer marca Kisafix Premium no Magalu (agora vendedor LE Ferragens) R$ 81,60 no Pix; menor Tekbond confiável Casa do Soldador R$ 103,12 à vista, depois Telhanorte R$ 113,31 no Pix. Madeiras Alba anuncia Tekbond a R$ 54,00 (preço suspeito — conferir) e CED Distribuidora Kisafix R$ 91,72 no Pix (última peça — conferir). Reconferidas as 55 ofertas da rodada anterior: preços iguais; esgotou a Cascola Alba do Magalu/Loja Star (R$ 121,00); saiu Magalu/Pabrunelli Cascola Extra (R$ 149,90, não reabriu). Novas: Decar kit 2 latas Tekbond (R$ 127,02/lata), Leroy/Decar Tekbond R$ 141,90 (voltou), Casa Mimosa Cascola R$ 139,76 Pix, Voltarelli Kisafix R$ 127,00, Normatel Tekbond R$ 214,90. Indisponíveis: Extra Tekbond, Loja do Mecânico Tekbond (fora de linha), Leroy Una, Estilo Home Center e LF Tekbond, Casa da Borracha RJ Tekbond (R$ 150,10). Ampar R$ 91,73 não apareceu com preço. Bloquearam a leitura: Mercado Livre e Amazon (robots), Carrefour, Obramax e Americanas (têm a lata, preço ilegível), Casas Bahia/Ponto Frio (erro), Google Shopping. ~35 buscas de fora nesta rodada; frete para Manaus não calculável em nenhuma loja.",
       "ofertas": [
         {
           "loja": "Cocil Home Center",
@@ -14,13 +14,26 @@
           "oferta_un": "lata 2,8 kg",
           "preco_unidade": 168.9,
           "local": "Manaus",
-          "frete_manaus": "",
-          "obs": "reconferido agora: Por R$ 168,90 ou 6x de R$ 28,15 sem juros; sem preço riscado nem Black Friday",
+          "frete_manaus": "R$ 30,00 na Grande Manaus (grátis acima de R$ 700); retirada na loja",
+          "obs": "reconferido 2ª vez hoje: Por R$ 168,90 ou 6x de R$ 28,15 sem juros; sem preço riscado nem Black Friday; estoque não informado; Henkel ref. 1406652",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
         {
-          "loja": "Magazine Luiza – Duda Ferragens",
+          "loja": "Madeiras Alba",
+          "titulo": "Cola de Contato Tekbond 2,8kg",
+          "url": "https://madeirasalba.com.br/produto/cola-de-contato-tekbond-28kg/",
+          "preco": 54.0,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 54.0,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 54,00 na página (botão Adicionar ao carrinho + 'Solicitar orçamento'); estoque e Pix não informados; menos da metade das outras Tekbond — conferir (pode ser preço desatualizado)",
+          "data": "2026-11-26",
+          "marca": "Tekbond"
+        },
+        {
+          "loja": "Magazine Luiza – LE Ferragens",
           "titulo": "Cola contato 2,8 kg Kisafix Premium 21372 (equivalente, não é Tekbond)",
           "url": "https://www.magazineluiza.com.br/cola-contato-28kg-kisafix-premiun-21372/p/he88da5af2/cj/clco/?seller_id=dudaferragenseferramentas",
           "preco": 81.6,
@@ -28,7 +41,7 @@
           "preco_unidade": 81.6,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix (15% off, visto na busca e na página da marca no Magalu); R$ 96,00 no cartão 1x; igual à pesquisa anterior",
+          "obs": "reconferido nesta rodada: R$ 81,60 no Pix (15% OFF), R$ 96,00 no cartão 1x; disponível (botão Comprar); página mostra vendedor 'LE Ferragens' (URL com seller_id=dudaferragenseferramentas)",
           "data": "2026-11-26",
           "marca": "Kisafix",
           "promocao": "de R$ 96,00 por R$ 81,60 no Pix"
@@ -42,7 +55,7 @@
           "preco_unidade": 82.88,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix (visto na busca do Magalu); R$ 97,50 no cartão 1x; igual à pesquisa anterior",
+          "obs": "reconferido nesta rodada: R$ 82,88 no Pix (15% OFF), R$ 97,50 no cartão 1x; vendedor Duda Com. Varej. Ferragens; disponível",
           "data": "2026-11-26",
           "marca": "Kisafix",
           "promocao": "de R$ 97,50 por R$ 82,88 no Pix"
@@ -56,7 +69,7 @@
           "preco_unidade": 88.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 88,90 (mesmo valor no Pix, 1x); disponível; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 88,90 (mesmo valor no Pix); estoque Disponível; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
         },
@@ -69,9 +82,23 @@
           "preco_unidade": 89.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 89,00; 121 em estoque; tabela da página diz 3,5 kg (provável peso bruto) — conferir; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 89,00; 121 em estoque; tabela da página diz 3,5 kg (provável peso bruto) — conferir; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
+        },
+        {
+          "loja": "CED Distribuidora",
+          "titulo": "Cola Contato Kisafix 2,8 Kg (equivalente, não é Tekbond)",
+          "url": "https://www.ceddistribuidora.com.br/produtos/cola-contato-kisafix-28-kg/",
+          "preco": 91.72,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 91.72,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 91,72 no Pix (15% off); R$ 107,90 normal; página diz 'última peça' mas o carrinho acusou sem estoque — conferir; frete Manaus não calculado",
+          "data": "2026-11-26",
+          "marca": "Kisafix",
+          "promocao": "15% off no Pix (de R$ 107,90)"
         },
         {
           "loja": "Casa do Soldador (PR)",
@@ -82,7 +109,7 @@
           "preco_unidade": 103.12,
           "local": "online",
           "frete_manaus": "",
-          "obs": "reconferido hoje: R$ 103,12 à vista (boleto/depósito); 2x de R$ 51,56 ou até 10x de R$ 11,02 no cartão; sem preço riscado; frete por CEP",
+          "obs": "reconferido nesta rodada: R$ 103,12 à vista (boleto/depósito); 2x R$ 51,56 ou 10x R$ 11,02 no cartão; sem preço riscado; estoque não explícito; frete por CEP",
           "data": "2026-11-26",
           "marca": "Tekbond"
         },
@@ -95,7 +122,7 @@
           "preco_unidade": 104.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço do título da página; Pix × cartão e estoque não lidos; cupom 1COMPRA 5% na 1ª compra (até R$ 75)",
+          "obs": "reconferido nesta rodada: R$ 104,90 no Pix/boleto (10% à vista); R$ 116,56 no cartão (2x R$ 58,28); botão Comprar ativo; cupom 1COMPRA 5% na 1ª compra (até R$ 75)",
           "data": "2026-11-26",
           "marca": "Amazonas"
         },
@@ -108,7 +135,7 @@
           "preco_unidade": 110.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 110,00 no boleto; R$ 119,57 no cartão; prazo 2 dias úteis; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 110,00 no boleto; R$ 119,57 no cartão; prazo 2 dias úteis; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
         },
@@ -121,7 +148,7 @@
           "preco_unidade": 110.16,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 110,16 ou 5x R$ 22,03; disponibilidade imediata (398 em estoque); frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 110,16 ou 5x R$ 22,03; 398 em estoque; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
         },
@@ -134,9 +161,10 @@
           "preco_unidade": 110.45,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira (página do produto não pôde ser aberta); frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 110,45 (de R$ 136,37, 10% OFF); página do produto não aberta; frete Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "Kisafix"
+          "marca": "Kisafix",
+          "promocao": "de R$ 136,37 por R$ 110,45 (10% OFF na listagem)"
         },
         {
           "loja": "Telhanorte",
@@ -147,7 +175,7 @@
           "preco_unidade": 113.31,
           "local": "online",
           "frete_manaus": "",
-          "obs": "reconferido agora: preço no Pix; R$ 125,90 no cartão; sem estoque nas lojas físicas (só online)",
+          "obs": "reconferido nesta rodada: R$ 113,31 no Pix; R$ 125,90 no cartão; nenhuma loja física com estoque (compra online)",
           "data": "2026-11-26",
           "marca": "Tekbond",
           "promocao": "selo -10% OFF (de R$ 139,90); cupom APP10 no app"
@@ -161,7 +189,7 @@
           "preco_unidade": 116.82,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 116,82 no Pix; R$ 122,97 normal; disponível; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 116,82 no Pix; R$ 122,97 normal; estoque Disponível; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
         },
@@ -174,7 +202,7 @@
           "preco_unidade": 119.49,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 119,49 à vista com desconto (site anuncia 5% no Pix); R$ 125,78 normal; estoque não informado; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 119,49 à vista com desconto; R$ 125,78 normal; estoque não informado; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Tekbond"
         },
@@ -187,22 +215,9 @@
           "preco_unidade": 120.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 120,00; 6 em estoque; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 120,00; 6 em estoque; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
-        },
-        {
-          "loja": "Magazine Luiza – Loja Star Ferramentas",
-          "titulo": "Cola Adesivo de Contato Cascola Alba 2,8 kg 3,3 L Henkel (equivalente, não é Tekbond)",
-          "url": "https://www.magazineluiza.com.br/cola-adesivo-de-contato-cascola-alba-28kg-33-l-henkel/p/be52036k7a/am/colm/?seller_id=lojastarferramentas",
-          "preco": 121.0,
-          "oferta_un": "lata 2,8 kg",
-          "preco_unidade": 121.0,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "R$ 121,00 em 1x no cartão (visto na busca 'cascola' do Magalu); Pix não informado; conferir se é lata",
-          "data": "2026-11-26",
-          "marca": "Cascola"
         },
         {
           "loja": "MadeiraMadeira (vendedor seller=6326)",
@@ -213,9 +228,10 @@
           "preco_unidade": 122.04,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 122,04 (de R$ 150,67, 10% OFF); frete Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "Kisafix"
+          "marca": "Kisafix",
+          "promocao": "de R$ 150,67 por R$ 122,04 (10% OFF na listagem)"
         },
         {
           "loja": "MadeiraMadeira (Aros Comercial)",
@@ -226,10 +242,36 @@
           "preco_unidade": 125.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 125,90 (selo 10% off); 1x cartão R$ 139,89; 6 em estoque; entrega MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 125,90 (selo 10% OFF); 1x cartão R$ 139,89; apenas 6 em estoque; entrega MadeiraMadeira; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix",
           "promocao": "10% off na página"
+        },
+        {
+          "loja": "Voltarelli Madeiras",
+          "titulo": "COLA CONTATO 2,8 KG - KISAFIX (equivalente, não é Tekbond)",
+          "url": "https://loja.voltarellimadeiras.com.br/cola-contato-28-kg-kisafix",
+          "preco": 127.0,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 127.0,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 127,00 ou 10x R$ 12,70; Disponível; Pix não informado; frete Manaus não calculado",
+          "data": "2026-11-26",
+          "marca": "Kisafix"
+        },
+        {
+          "loja": "Decar",
+          "titulo": "Kit 2 Cola De Contato 2,8kg Tek Bond",
+          "url": "https://www.decar.com.br/kit-2-cola-de-contato-2-8kg-tek-bond",
+          "preco": 254.03,
+          "oferta_un": "kit 2 latas 2,8 kg",
+          "preco_unidade": 127.02,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "kit com 2 latas de 2,8 kg por R$ 254,03 (R$ 127,02 por lata); Pix e estoque não informados; frete Manaus não calculado",
+          "data": "2026-11-26",
+          "marca": "Tekbond"
         },
         {
           "loja": "Ábile Componentes",
@@ -240,7 +282,7 @@
           "preco_unidade": 132.94,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 132,94 ou 2x R$ 66,47; disponibilidade imediata; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 132,94 ou 2x R$ 66,47; disponibilidade imediata; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
         },
@@ -253,7 +295,7 @@
           "preco_unidade": 135.72,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix (10% off); R$ 150,80 no cartão (6x de R$ 25,13); estoque não informado",
+          "obs": "reconferido nesta rodada: R$ 135,72 no Pix (10% off); R$ 150,80 no cartão (6x R$ 25,13); vendido por eFácil; estoque não informado",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -266,9 +308,24 @@
           "preco_unidade": 136.78,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 136,78 (de R$ 168,87, 10% OFF); frete Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "Kisafix"
+          "marca": "Kisafix",
+          "promocao": "de R$ 168,87 por R$ 136,78 (10% OFF na listagem)"
+        },
+        {
+          "loja": "Casa Mimosa",
+          "titulo": "Cola Contato Cascola Tradicional 2,8kg Henkel (equivalente, não é Tekbond)",
+          "url": "https://www.casamimosa.com.br/cola-contato-cascola-tradicional-28kg-henkel-1406652/p",
+          "preco": 139.76,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 139.76,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 139,76 no Pix; R$ 144,08 no cartão 1x; botão Comprar ativo; frete Manaus não calculado",
+          "data": "2026-11-26",
+          "marca": "Cascola",
+          "promocao": "de R$ 160,09 por R$ 144,08 (R$ 139,76 no Pix)"
         },
         {
           "loja": "Rimad",
@@ -279,22 +336,37 @@
           "preco_unidade": 140.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 140,00 ou 7x R$ 20,00; 6 em estoque; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 140,00 ou 7x R$ 20,00; 6 em estoque; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Kisafix"
         },
         {
-          "loja": "MadeiraMadeira (vendedor seller=6326)",
+          "loja": "Leroy Merlin – Decar Home Center",
+          "titulo": "Cola De Contato 2,8Kg Tekbond",
+          "url": "https://www.leroymerlin.com.br/cola-de-contato-2,8kg-tekbond_90542676",
+          "preco": 141.9,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 141.9,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "vendido por Decar Home Center (parceiro); página diz preço válido 24/11/2026; estoque não informado; frete Manaus não calculado",
+          "data": "2026-11-26",
+          "marca": "Tekbond",
+          "promocao": "OFERTA -9% (de R$ 156,90 por R$ 141,90)"
+        },
+        {
+          "loja": "MadeiraMadeira – Gasômetro",
           "titulo": "Cola Adesivo de Contato 2,8Kg Formica 01 unidade (equivalente, não é Tekbond)",
-          "url": "https://www.madeiramadeira.com.br/busca/cola%20de%20contato?q=cola+de+contato",
+          "url": "https://www.madeiramadeira.com.br/cola-adesivo-de-contato-2-8kg-formica-01-unidade-882384099.html",
           "preco": 141.94,
           "oferta_un": "lata 2,8 kg",
           "preco_unidade": 141.94,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "página do produto (antes só visto na listagem): R$ 141,94; 1x R$ 157,72 no cartão; vendedor Gasômetro com aviso de atrasos; frete por CEP",
           "data": "2026-11-26",
-          "marca": "Formica"
+          "marca": "Formica",
+          "promocao": "10% off (de R$ 175,25)"
         },
         {
           "loja": "Magazine Luiza – Aros Comercial",
@@ -305,10 +377,10 @@
           "preco_unidade": 142.41,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 149,90 no cartão (2x de R$ 74,95); embalagem galão",
+          "obs": "reconferido nesta rodada: R$ 142,41 no Pix (5% off); R$ 149,90 no cartão (2x R$ 74,95); disponível; embalagem galão",
           "data": "2026-11-26",
           "marca": "Kisafix",
-          "promocao": "de R$ 149,90 por R$ 142,41 no Pix"
+          "promocao": "de R$ 149,90 por R$ 142,41 no Pix (5% off)"
         },
         {
           "loja": "Casa do Soldador",
@@ -319,7 +391,7 @@
           "preco_unidade": 145.68,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 145,68 à vista (boleto/transferência); 2x R$ 72,84 ou 12x R$ 13,11; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 145,68 à vista (boleto/transferência); 2x R$ 72,84 ou 12x R$ 13,11; estoque não informado; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -332,23 +404,9 @@
           "preco_unidade": 145.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "reconferido hoje: R$ 145,90 à vista (crédito, Pix ou boleto); botão Comprar ativo; CEP de Manaus pode não ser atendido",
+          "obs": "reconferido nesta rodada: R$ 145,90 à vista (crédito, Pix ou boleto); botão Comprar agora ativo; CEP de Manaus pode não ser atendido",
           "data": "2026-11-26",
           "marca": "Tekbond"
-        },
-        {
-          "loja": "Magazine Luiza – Pabrunelli",
-          "titulo": "Cola Contato Extra sem Toluol 2,8 kg Cascola (equivalente, não é Tekbond)",
-          "url": "https://www.magazineluiza.com.br/cola-contato-extra-sem-toluol-28kg-cascola/p/fj1h4f9aff/cj/clco/?seller_id=pabrunelli",
-          "preco": 149.9,
-          "oferta_un": "lata 2,8 kg",
-          "preco_unidade": 149.9,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "R$ 149,90 (2x de R$ 74,95 sem juros), visto na busca 'cascola' do Magalu; Pix não informado",
-          "data": "2026-11-26",
-          "marca": "Cascola",
-          "promocao": "de R$ 179,90 por R$ 149,90"
         },
         {
           "loja": "Eletrotrafo",
@@ -359,7 +417,7 @@
           "preco_unidade": 154.85,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 154,85 no Pix (13% off); R$ 177,99 no cartão 1x; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 154,85 no Pix (13% off); R$ 177,99 no cartão 1x; estoque não informado; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -372,10 +430,10 @@
           "preco_unidade": 159.79,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 168,20 no cartão (2x de R$ 84,10)",
+          "obs": "reconferido nesta rodada: R$ 159,79 no Pix (5% OFF); R$ 168,20 no cartão (2x R$ 84,10); disponível",
           "data": "2026-11-26",
           "marca": "Kisafix",
-          "promocao": "de R$ 168,20 por R$ 159,79 no Pix"
+          "promocao": "de R$ 168,20 por R$ 159,79 no Pix (5% OFF)"
         },
         {
           "loja": "Loja do Mecânico",
@@ -386,7 +444,7 @@
           "preco_unidade": 159.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "reconferido hoje: R$ 159,90 (título da página); Pix × cartão e estoque não mostrados; cupom 1COMPRA 5% na 1ª compra (até R$ 75)",
+          "obs": "reconferido nesta rodada: R$ 159,90 no Pix/boleto (10% à vista); R$ 177,67 no cartão (4x R$ 44,42); botão Comprar ativo; cupom 1COMPRA 5% na 1ª compra (até R$ 75)",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -399,7 +457,7 @@
           "preco_unidade": 159.99,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 159,99; estoque e Pix não informados; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 159,99 na página (metadado do produto); estoque e Pix não informados; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Tekbond"
         },
@@ -412,7 +470,7 @@
           "preco_unidade": 171.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 180,00 no cartão (2x de R$ 90,00); galão",
+          "obs": "reconferido nesta rodada: R$ 171,00 no Pix (5% off); R$ 180,00 no cartão (2x de R$ 90,00); entregue pela Magalu; galão",
           "data": "2026-11-26",
           "marca": "Kisafix",
           "promocao": "de R$ 180,00 por R$ 171,00 no Pix"
@@ -426,7 +484,7 @@
           "preco_unidade": 171.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 180,00 no cartão (2x de R$ 90,00); galão; mesmo produto do anúncio acima, outro vendedor",
+          "obs": "reconferido nesta rodada: R$ 171,00 no Pix; R$ 180,00 no cartão (2x de R$ 90,00); vendedor com reputação 'Ruim' na página; mesmo produto do anúncio acima, outro vendedor",
           "data": "2026-11-26",
           "marca": "Kisafix",
           "promocao": "de R$ 180,00 por R$ 171,00 no Pix"
@@ -440,7 +498,7 @@
           "preco_unidade": 173.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 173,90 (selo 20% off; 5% off no Pix ≈ R$ 165,21, não exibido); frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 173,90 com selo -20%; 5% off no Pix (≈ R$ 165,21, valor não exibido); estoque não informado; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola",
           "promocao": "selo 20% off"
@@ -454,22 +512,24 @@
           "preco_unidade": 174.1,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira (página do produto não pôde ser aberta); frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 174,10; frete Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "Tekbond"
+          "marca": "Tekbond",
+          "promocao": "de R$ 189,24 por R$ 174,10"
         },
         {
-          "loja": "MadeiraMadeira (vendedor seller=5964)",
+          "loja": "MadeiraMadeira – Lagge Acessibilidade",
           "titulo": "Cola Contato 2,8 Kg - Kisafix (equivalente, não é Tekbond)",
-          "url": "https://www.madeiramadeira.com.br/busca/cola%20de%20contato?q=cola+de+contato",
+          "url": "https://www.madeiramadeira.com.br/cola-contato-2-8-kg-kisafix-3530154.html",
           "preco": 180.0,
           "oferta_un": "lata 2,8 kg",
           "preco_unidade": 180.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "página do produto (provável mesmo anúncio já visto na listagem a R$ 180); 14 unidades em estoque; Pix não informado",
           "data": "2026-11-26",
-          "marca": "Kisafix"
+          "marca": "Kisafix",
+          "promocao": "de R$ 190,00 por R$ 180,00"
         },
         {
           "loja": "MadeiraMadeira (vendedor seller=16054)",
@@ -480,9 +540,10 @@
           "preco_unidade": 180.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 180,00; frete Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "KFE"
+          "marca": "KFE",
+          "promocao": "de R$ 200,00 por R$ 180,00"
         },
         {
           "loja": "Sodimac",
@@ -493,7 +554,7 @@
           "preco_unidade": 189.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 189,00; estoque limitado; Pix não informado; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 189,00; meta 'estoque limitado'; sem preço riscado; Pix não informado; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -506,7 +567,7 @@
           "preco_unidade": 189.96,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 189,96; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Brascola"
         },
@@ -519,7 +580,7 @@
           "preco_unidade": 190.21,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 190,21 no Pix (15% off); R$ 223,78 ou 10x R$ 22,38 no cartão; marketplace Royal Máquinas; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 190,21 no Pix (15% off); R$ 223,78 ou 10x R$ 22,38 no cartão; marketplace Royal Máquinas; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Tekbond",
           "promocao": "de R$ 242,58 por R$ 223,78 (−8%)"
@@ -533,7 +594,7 @@
           "preco_unidade": 195.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 195,00; em estoque; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 195,00; 'In stock'; 3x R$ 68,88 com juros; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -546,7 +607,7 @@
           "preco_unidade": 195.86,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 195,86; cashback 20% indicado na listagem; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Tekbond"
         },
@@ -559,7 +620,7 @@
           "preco_unidade": 198.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 198,90 no cartão (2x de R$ 99,45), visto na busca do Magalu; Pix não informado; página do produto bloqueada",
+          "obs": "reconferido nesta rodada na listagem de busca do Magalu (página do produto bloqueada): R$ 198,90 no cartão (2x de R$ 99,45); Pix não informado",
           "data": "2026-11-26",
           "marca": "Tekbond"
         },
@@ -572,7 +633,7 @@
           "preco_unidade": 199.4,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 199,40 no Pix; R$ 209,90 normal; em estoque; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 199,40 no Pix; R$ 209,90 normal/boleto; 'Disponível'; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola",
           "promocao": "de R$ 239,88 por R$ 209,90"
@@ -586,7 +647,20 @@
           "preco_unidade": 209.8,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix (15% off); R$ 246,82 no cartão (10x de R$ 24,68); igual à pesquisa anterior",
+          "obs": "reconferido nesta rodada: R$ 209,80 no Pix (15% off); R$ 246,82 no cartão (10x de R$ 24,68); marketplace Royal Máquinas",
+          "data": "2026-11-26",
+          "marca": "Tekbond"
+        },
+        {
+          "loja": "Magazine Luiza – loja parceira",
+          "titulo": "Cola Contato Tekbond 2,8Kg",
+          "url": "https://www.magazineluiza.com.br/cola-contato-tekbond-28kg-2-430-10-028-00-tek-bond/p/ceb4bdg5g6/cj/clco/",
+          "preco": 212.81,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 212.81,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 212,81 ou 4x R$ 53,20; parceiro não nomeado; Pix não informado; caro",
           "data": "2026-11-26",
           "marca": "Tekbond"
         },
@@ -599,9 +673,22 @@
           "preco_unidade": 213.63,
           "local": "online",
           "frete_manaus": "",
-          "obs": "vendido por Satyr Casa (parceiro); preço válido 26/11, frete não incluso",
+          "obs": "reconferido nesta rodada: R$ 213,63; vendido e entregue por Satyr Casa; preço válido 26/11, frete não incluso",
           "data": "2026-11-26",
           "marca": "Brascola"
+        },
+        {
+          "loja": "Normatel",
+          "titulo": "Cola de Contato 2,8kg - Tekbond",
+          "url": "https://www.normatel.com.br/produto/cola-de-contato-2-8kg-tekbond-85161",
+          "preco": 214.9,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 214.9,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 214,90 ou 2x R$ 107,45; estoque 'consulte nas lojas'; Pix não informado; caro",
+          "data": "2026-11-26",
+          "marca": "Tekbond"
         },
         {
           "loja": "MadeiraMadeira (vendedor seller=17117)",
@@ -612,9 +699,10 @@
           "preco_unidade": 225.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 225,90; frete Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "Cascola"
+          "marca": "Cascola",
+          "promocao": "de R$ 248,90 por R$ 225,90"
         },
         {
           "loja": "MadeiraMadeira (vendedor seller=6326)",
@@ -625,7 +713,21 @@
           "preco_unidade": 230.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 230,00; frete Manaus não calculado",
+          "data": "2026-11-26",
+          "marca": "Cascola",
+          "promocao": "de R$ 283,95 por R$ 230,00"
+        },
+        {
+          "loja": "Voltarelli Madeiras",
+          "titulo": "COLA CONTATO TRADICIONAL 2,8 KG - CASCOLA (equivalente, não é Tekbond)",
+          "url": "https://loja.voltarellimadeiras.com.br/cola-tradicional-28-kg-cascola",
+          "preco": 231.0,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 231.0,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 231,00 ou 10x R$ 23,10; Disponível; caro",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -638,7 +740,7 @@
           "preco_unidade": 232.97,
           "local": "online",
           "frete_manaus": "",
-          "obs": "12x de R$ 22,02; sem preço Pix separado; mesmo anúncio também no Ponto Frio (10x de R$ 23,30); igual à pesquisa anterior",
+          "obs": "reconferido nesta rodada: R$ 232,97 ou 12x de R$ 22,02; sem preço Pix separado; mesmo anúncio também no Ponto Frio",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -651,7 +753,7 @@
           "preco_unidade": 232.97,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 232,97 ou 10x R$ 23,30; marketplace; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 232,97 ou 10x R$ 23,30; marketplace Ferragens São Carlos; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -664,7 +766,20 @@
           "preco_unidade": 233.2,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 233,20; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 233,20; sem preço riscado; sem aviso de esgotado; frete Manaus não calculado",
+          "data": "2026-11-26",
+          "marca": "Cascola"
+        },
+        {
+          "loja": "Tintas Verginia (Curitiba)",
+          "titulo": "Cola Cascola Tradicional Sem Toluol Henkel 2,8kg (equivalente, não é Tekbond)",
+          "url": "https://www.tintasverginia.com.br/cola-cascola-tradicional-sem-toluol-henkel-2-8kg/p",
+          "preco": 254.03,
+          "oferta_un": "lata 2,8 kg",
+          "preco_unidade": 254.03,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "R$ 254,03; entrega citada só para Curitiba e região — provavelmente não entrega em Manaus; caro",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -677,7 +792,7 @@
           "preco_unidade": 259.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 259,90 à vista no crédito, Pix ou boleto; entrega depende do CEP",
+          "obs": "reconferido nesta rodada: R$ 259,90 à vista no crédito, Pix ou boleto; botão comprar ativo; entrega depende do CEP",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -690,7 +805,7 @@
           "preco_unidade": 269.71,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 269,71 (5% off à vista, valor não exibido); sujeito a estoque; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 269,71 (-14%; 5% off à vista, valor não exibido); sujeito a estoque; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Amazonas",
           "promocao": "de R$ 312,29 por R$ 269,71"
@@ -704,9 +819,10 @@
           "preco_unidade": 270.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 270,90; frete Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "Cascola"
+          "marca": "Cascola",
+          "promocao": "de R$ 297,90 por R$ 270,90"
         },
         {
           "loja": "Leroy Merlin – Mtop",
@@ -717,7 +833,7 @@
           "preco_unidade": 272.89,
           "local": "online",
           "frete_manaus": "",
-          "obs": "vendido e entregue por Mtop; até 10x no cartão Celebre; caro",
+          "obs": "reconferido nesta rodada: R$ 272,89; vendido e entregue por Mtop; até 10x no cartão Celebre; caro",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -730,7 +846,7 @@
           "preco_unidade": 275.76,
           "local": "online",
           "frete_manaus": "",
-          "obs": "Preço visto na listagem de busca da MadeiraMadeira; frete Manaus não calculado",
+          "obs": "reconferido nesta rodada na listagem de busca da MadeiraMadeira: R$ 275,76; frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola"
         },
@@ -743,7 +859,7 @@
           "preco_unidade": 364.0,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 364,00; estoque limitado; ficha técnica da página cita 'Super Bond' (inconsistente); frete Manaus não calculado",
+          "obs": "reconferido nesta rodada: R$ 364,00; meta 'estoque limitado'; ficha técnica cita 'Super Bond' (inconsistente); frete Manaus não calculado",
           "data": "2026-11-26",
           "marca": "Cascola"
         }
@@ -752,7 +868,7 @@
     {
       "termo": "Piso vinílico colado 2 mm",
       "unidade": "m²",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa. A Cocil (site antigo cocil.com.br) ainda lista Biancogres Vita 2 mm Trevi e Duomo (cx 5,92 m²), mas o site não abriu de novo hoje (robots inacessível) e o www.cocil.com.br não tem piso vinílico indexado: peça pela aba Pedir cotação. Bemol lista Vinilforte 2 mm (Angelim, Pitangueira, Jacarandá, Carvalho, Seringueira, Oca Velvet, Pupunha Rustic) e Amazon Pisos 2 mm (Marmara Gri, Carvalho), todos indisponíveis e sem preço. Beny, Lobato, Casinova, Constroi e O Construtor sem piso vinílico colado com preço. OLX Manaus: só anúncios de serviço (fornecimento+instalação), sem preço visto; Habitissimo Manaus (custo de instalação) não abriu. Fora: preços iguais à pesquisa anterior; novo o Biancogres Vita Firenze 2 mm a R$ 49,90/m² na Telhanorte. Amazon (Eucafloor LVT Basic, Durafloor Urban, Nobile Faia) e Mercado Livre (Bologna 4,89 m², Ospefloor 4,04 m², Sensofloor) bloquearam a leitura, sem preço no trecho. Leroy Spot Pisos Dover e Leport LVT da pesquisa anterior não foram reabertos.",
+      "nota": "Sem preço publicado em Manaus nesta pesquisa (5 buscas extended). Cocil: só o site antigo (cocil.com.br) lista Biancogres Vita 2 mm Trevi e Duomo (cx 5,92 m²), sem preço e o site não abriu (robots inacessível); www.cocil.com.br só tem a cola Mapei Ultrabond Eco 4 LVT: peça pela aba Pedir cotação. Bemol lista Vinilforte 2 mm (Angelim, Pitangueira, Jacarandá, Carvalho, Seringueira, Oca Velvet, Pupunha, Figueira), Amazon Pisos 2 mm, Ambienzza Itapua 2 mm e Dryfloor Cedro Raiz 2 mm, mas a listagem não mostrou produtos/preço. Beny, Lobato, Casinova, Constroi e O Construtor sem piso vinílico colado com preço. OLX Manaus: só anúncio de serviço 'Piso Vinílico PROMOÇÃO (fornecimento e instalação)' no Flores, sem preço visto; a listagem da OLX não abriu. 'Piso Vinílico Manaus Pinus' (Cassol) é cor, não a cidade. Reconferência: Telhanorte (Injoy Calêndula e Camélia Liso R$ 49,90, Vita Firenze R$ 49,90, Vita Vernazza R$ 53,90) e MadeiraMadeira (Casa Grassi R$ 49,98, Pix R$ 56,98, Graddus R$ 71,98, Sofisticato R$ 72,99) com o MESMO preço, vistos nas listagens (páginas de produto da MadeiraMadeira e Telhanorte pediram permissão e não abriram). Novo: EspaçoFloor Soft 2 mm na Você Constrói R$ 67,89/m²; Tumelero tem Tarkett Lares 2 mm a R$ 79,90/m² (de R$ 87,90) e cupom BLACK11 (11% off) sem efeito claro; Telhanorte Nobile Marsala Baviera colado 2,5 mm R$ 55,90/m² (de R$ 93,03) – espessura diferente, fora; Magalu Durafloor Urban Parma 2 mm R$ 545,18 Pix a cx 4,33 m² (≈ R$ 125,91/m², caro, fora). Amazon (Durafloor Urban Taos, Nobile Faia, Eucafloor LVT Basic) e Mercado Livre (EspaçoFloor Soft/Royal, Ospefloor 4,04 m², Durafloor Urban Sinai) bloquearam a leitura, sem preço no trecho.",
       "ofertas": [
         {
           "loja": "Telhanorte",
@@ -763,7 +879,7 @@
           "preco_unidade": 49.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço por m² visto na listagem; Injoy Camélia Liso mesmo preço (de R$ 66,43); na pesquisa anterior sem estoque nas lojas físicas",
+          "obs": "preço por m² reconferido hoje na listagem; Injoy Camélia Liso mesmo preço (de R$ 66,43)",
           "data": "2026-11-26",
           "marca": "Tarkett",
           "promocao": "de R$ 76,72 por R$ 49,90/m²"
@@ -777,7 +893,7 @@
           "preco_unidade": 49.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço por m² visto na listagem; linha Vita é de colar (mesma linha que a Cocil lista em Manaus)",
+          "obs": "preço por m² reconferido hoje na listagem; linha Vita é de colar",
           "data": "2026-11-26",
           "marca": "Biancogres",
           "promocao": "de R$ 67,42 por R$ 49,90/m²"
@@ -791,7 +907,7 @@
           "preco_unidade": 49.98,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço visto na listagem de pisos vinílicos (na linha, preço por m²)",
+          "obs": "preço reconferido hoje na listagem de pisos vinílicos (página do produto não abriu)",
           "data": "2026-11-26",
           "marca": "Casa Grassi",
           "promocao": "de R$ 82,32 por R$ 49,98 (28% OFF)"
@@ -805,7 +921,7 @@
           "preco_unidade": 53.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "R$ 53,90/m² confirmado hoje na listagem da Telhanorte; caixa ≈ R$ 319,09",
+          "obs": "R$ 53,90/m² reconferido hoje na listagem (página do produto não abriu); caixa ≈ R$ 319,09",
           "data": "2026-11-26",
           "marca": "Biancogres",
           "promocao": "de R$ 55,90 por R$ 53,90/m²"
@@ -819,10 +935,24 @@
           "preco_unidade": 56.98,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço visto na listagem; outras cores R$ 58,98–59,98/m²",
+          "obs": "preço reconferido hoje na listagem; outras cores R$ 58,98–59,98/m²",
           "data": "2026-11-26",
           "marca": "Pix Revestimentos",
           "promocao": "de R$ 99,72 por R$ 56,98 (28% OFF)"
+        },
+        {
+          "loja": "Você Constrói",
+          "titulo": "Piso Vinílico Colado EspaçoFloor Soft Carvalho Old 2 mm (caixa 4,89 m²)",
+          "url": "https://www.voceconstroi.com.br/produto/piso-vinilico-colado-espacofloor-soft-carvalho-old-2-mm-69296",
+          "preco": 331.97,
+          "oferta_un": "caixa 4,89 m²",
+          "preco_unidade": 67.89,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "novo; página mostra R$ 67,89/m²; 5% de desconto à vista; estoque não informado",
+          "data": "2026-11-26",
+          "marca": "EspaçoFloor",
+          "promocao": "de R$ 351,12 por R$ 331,97 a caixa"
         },
         {
           "loja": "MadeiraMadeira",
@@ -833,7 +963,7 @@
           "preco_unidade": 71.98,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço visto na listagem; Pine mesmo preço; placa Platinum 2 mm cinza R$ 83,98 (de R$ 138,32)",
+          "obs": "preço reconferido hoje na listagem; Pine mesmo preço; placa Platinum 2 mm cinza R$ 83,98",
           "data": "2026-11-26",
           "marca": "Graddus",
           "promocao": "de R$ 118,55 por R$ 71,98 (28% OFF)"
@@ -847,7 +977,7 @@
           "preco_unidade": 72.99,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço visto na listagem",
+          "obs": "preço reconferido hoje na listagem",
           "data": "2026-11-26",
           "marca": "Ruffino",
           "promocao": "de R$ 127,74 por R$ 72,99 (28% OFF)"
@@ -857,7 +987,7 @@
     {
       "termo": "Piso vinílico clicado (SPC/rígido)",
       "unidade": "m²",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa (Cocil, Beny, Lobato, Casinova, Constroi, O Construtor e Bemol sem SPC/clicado com preço; Bemol só tem vinílicos colados 2 mm indisponíveis). 'Manaus' nos resultados é cor da linha Durafloor Nativa SPC 5 mm (Magalu/Você Constrói R$ 773,22 no Pix a caixa 2,5058 m² ≈ R$ 308,57/m²; Mercado Livre, Leroy, Padovani, Lig Pisos), não a cidade. OLX Manaus só com anúncios de serviço de fornecimento+instalação, sem preço visto; Habitissimo Manaus não abriu. Amazon (Click Max Evolution 2,23 m², Durafloor Loft Click, Beaulieu Oxford Clic) e Mercado Livre (SPC Premium 2,64 m², Nobile SPC 2,23 m²) bloquearam a leitura. Novos vs anterior: Pix Revestimentos clicado 5 mm caiu para R$ 109,98/m² (cor 929704), Nobile Ruffino SPC 5 mm R$ 126,98, Eliane Floor Temps SPC R$ 130,90 e Presto SPC 5 mm (Leroy/Stanox). Espaçofloor Solid Plank segue R$ 375,44 a caixa 2,20 m² (R$ 170,65/m²).",
+      "nota": "Sem preço publicado em Manaus nesta pesquisa (6 buscas extended: Cocil, Beny/Lobato/Casinova/Constroi/O Construtor/Bemol, busca aberta, Bemol, OLX). Cocil (antigo e www) sem SPC/clicado; Bemol só com vinílicos colados 2 mm, sem preço; OLX Manaus só com anúncio de serviço (fornecimento+instalação), listagem não abriu. 'Manaus' nos resultados é a cor Durafloor Nativa SPC 5 mm (Magalu, MadeiraMadeira, Mercado Livre, Você Constrói, Esplane, Lig Pisos), não a cidade. Reconferência: Telhanorte Nuova Palermo R$ 55,90 e Eliane Temps R$ 130,90 iguais; Leroy Tubrax Cedrinho 🔽 de R$ 80,90 para R$ 77,90 no Pix na página do produto (a listagem ainda mostra R$ 80,90); MadeiraMadeira Tubrax Off White R$ 83,62 e Graddus R$ 140,98 iguais; Presto/Stanox R$ 421,50 igual. Saíram por não reconferir: Pix Revestimentos clicado 929704 (R$ 109,98; não aparece mais na listagem, a cor 931543 está a R$ 121,98) e Nobile Ruffino SPC 157330 (R$ 126,98; listagem só mostra Romã R$ 176,99). Novos: SpotNew Click Preston 5 mm na Você Constrói R$ 103,20/m², Pix Revestimentos clicado cinza na Leroy R$ 290,61 Pix a cx 2,251 m². Magalu SPC Reno Atenas R$ 135/m² indisponível; Tumelero Ecomex Marselha SPC R$ 139,90/m² e Biancogres Studio Piacenza R$ 139,90; Espaçofloor Solid Plank R$ 375,44 a cx 2,20 m². Amazon (Nobile SPC Ruffino, Click Max Evolution 2,23 m²), Mercado Livre e Casas Bahia bloquearam a leitura.",
       "ofertas": [
         {
           "loja": "Telhanorte",
@@ -868,7 +998,7 @@
           "preco_unidade": 55.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço muito abaixo — conferir; R$ 55,90/m² confirmado hoje na listagem da Telhanorte; na pesquisa anterior nenhuma loja física com estoque",
+          "obs": "preço muito abaixo — conferir; R$ 55,90/m² reconferido hoje na listagem da Telhanorte (página do produto não abriu)",
           "data": "2026-11-26",
           "marca": "Biancogres",
           "promocao": "de R$ 111,93 por R$ 55,90/m² (50% OFF)"
@@ -877,15 +1007,15 @@
           "loja": "Leroy Merlin",
           "titulo": "Piso Vinílico Rígido Click Clicado Régua Amadeirada por m² Cedrinho – Tubrax",
           "url": "https://www.leroymerlin.com.br/piso-vinilico-rigido-click-clicado-regua-amadeirada-por-m2-cor-cedrinho-tubrax_1570771311",
-          "preco": 80.9,
+          "preco": 77.9,
           "oferta_un": "m²",
-          "preco_unidade": 80.9,
+          "preco_unidade": 77.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; visto na listagem de piso vinílico clicado; Cinza R$ 84,90, Off White R$ 86,90",
+          "obs": "preço no Pix; R$ 84,67 a prazo; caiu de R$ 80,90 (anterior); vendido em caixas de 1 ou 3 m²; Cinza R$ 84,90, Off White R$ 86,90",
           "data": "2026-11-26",
           "marca": "Tubrax",
-          "promocao": "de R$ 87,93 por R$ 80,90 (oferta 7%)"
+          "promocao": "8% off: R$ 77,90 no Pix (R$ 84,67 a prazo)"
         },
         {
           "loja": "MadeiraMadeira – parceiro",
@@ -896,38 +1026,38 @@
           "preco_unidade": 83.62,
           "local": "online",
           "frete_manaus": "",
-          "obs": "loja parceira (seller 11248); preço visto na listagem (parcela aparece como 1x R$ 91,90: conferir)",
+          "obs": "preço reconferido hoje na listagem de pisos vinílicos; loja parceira",
           "data": "2026-11-26",
           "marca": "Tubrax",
-          "promocao": "de R$ 259,90 por R$ 83,62 (Ofertas Black)"
+          "promocao": "de R$ 259,90 por R$ 83,62 (64% OFF)"
         },
         {
-          "loja": "MadeiraMadeira",
-          "titulo": "Piso Vinílico Clicado 18,3cm x 5mm x 1,23m Pix Revestimentos (caixa 2,251 m²)",
-          "url": "https://www.madeiramadeira.com.br/piso-vinilico-clicado-18-3cm-x5mm-x1-23m-pix-revestimentos-caixa-com-2-251m2-929704.html?seller=1",
-          "preco": 109.98,
-          "oferta_un": "m² (preço da listagem)",
-          "preco_unidade": 109.98,
+          "loja": "Você Constrói",
+          "titulo": "Piso Vinílico SPC Clicado SpotNew Click Preston 5 mm (caixa 2,196 m²)",
+          "url": "https://www.voceconstroi.com.br/produto/piso-vinilico-spc-clicado-spotnew-click-preston-5-mm-72631",
+          "preco": 227.05,
+          "oferta_un": "caixa 2,196 m²",
+          "preco_unidade": 103.2,
           "local": "online",
           "frete_manaus": "",
-          "obs": "vendido pela MadeiraMadeira; preço visto na busca 'vinilico click'; outra cor (931543) R$ 121,98",
+          "obs": "novo; página mostra R$ 103,20/m²; 5% de desconto à vista; estoque não informado",
+          "data": "2026-11-26",
+          "marca": "SpotNew",
+          "promocao": "de R$ 262,90 por R$ 227,05 a caixa (14% off)"
+        },
+        {
+          "loja": "Leroy Merlin",
+          "titulo": "Piso Vinílico Clicado 18,3cm x 5mm x 1,23m Pix Revestimentos Cinza (caixa 2,251 m²)",
+          "url": "https://www.leroymerlin.com.br/piso-vinilico-clicado-18,3cm-x5mm-x1,23m-pix-revestimentos-caixa-com-2,251m2-caixa-com-2,25m2-cinza_1572710623",
+          "preco": 290.61,
+          "oferta_un": "caixa 2,251 m²",
+          "preco_unidade": 129.1,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "novo; preço no Pix visto na listagem; R$ 322,90 a prazo",
           "data": "2026-11-26",
           "marca": "Pix Revestimentos",
-          "promocao": "de R$ 192,47 por R$ 109,98"
-        },
-        {
-          "loja": "MadeiraMadeira",
-          "titulo": "Piso Vinílico em Régua 22,9cm x 5mm x 1,22m SPC Click Nobile Ruffino",
-          "url": "https://www.madeiramadeira.com.br/piso-vinilico-em-regua-22-9cm-x-5mm-x-1-22m-spc-click-nobile-ruffino-157330.html?seller=1",
-          "preco": 126.98,
-          "oferta_un": "m² (preço da listagem)",
-          "preco_unidade": 126.98,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "vendido pela MadeiraMadeira; preço visto na busca; cor Romã R$ 176,99",
-          "data": "2026-11-26",
-          "marca": "Ruffino",
-          "promocao": "de R$ 222,22 por R$ 126,98"
+          "promocao": "10% off no Pix (R$ 322,90 a prazo)"
         },
         {
           "loja": "Telhanorte",
@@ -938,7 +1068,7 @@
           "preco_unidade": 130.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço por m² visto na listagem; sem preço antigo",
+          "obs": "preço por m² reconferido hoje na listagem; sem preço antigo",
           "data": "2026-11-26",
           "marca": "Eliane"
         },
@@ -951,7 +1081,7 @@
           "preco_unidade": 140.98,
           "local": "online",
           "frete_manaus": "",
-          "obs": "vendido pela MadeiraMadeira; outras cores R$ 148,98–153,98",
+          "obs": "preço reconferido hoje na listagem; outras cores R$ 148,98–153,98",
           "data": "2026-11-26",
           "marca": "Graddus",
           "promocao": "de R$ 246,72 por R$ 140,98"
@@ -965,16 +1095,17 @@
           "preco_unidade": 143.86,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 448,40 a prazo; vendido e entregue por Stanox (parceiro Leroy)",
+          "obs": "preço no Pix reconferido na listagem; R$ 448,40 a prazo; título do anúncio agora diz 'R$ 152,8 m2'",
           "data": "2026-11-26",
-          "marca": "Presto"
+          "marca": "Presto",
+          "promocao": "6% off no Pix"
         }
       ]
     },
     {
       "termo": "Rodapé de poliestireno 7 cm",
       "unidade": "barra",
-      "nota": "Em Manaus a Cocil (www) segue com rodapés 7 cm x 2,40 m com preço (reconferido na listagem da categoria hoje): Santa Luzia Lev 72 R$ 44,90, Arquitech liso 50007 R$ 46,00, frisado 51007 R$ 53,50 (preto R$ 65,00), boleado 52007 R$ 54,75, Moderna 446 R$ 67,00 e 456 R$ 68,70 - sem preço riscado e sem mudança vs anterior. A Guarnição Moderna 456 16 mm x 7 cm x 2,40 m (de R$ 68,30 por R$ 31,50) é guarnição/alizar, não rodapé (fora). Beny só tem guarnição Arquitech 7 cm x 2,25 m (sem preço); Lobato/Casinova/Constroi/O Construtor/Nono do Gesso, Bemol e OLX Manaus sem resultado. Fora: entraram Casa Grassi (Leroy R$ 34,92 Pix), Dry Office R$ 20,90 (listagem) e Telhanorte Santa Luzia 446 R$ 80,90 de R$ 83,90 (ficou fora por ser caro). Dry Office tem barras 2,40 x 1,5 cm a R$ 15,75/ml (~R$ 37,80/barra, não entrou por dúvida). Amazon (tem NFR Ruffino, kits Formix 5 e 10 barras) e Mercado Livre bloquearam a leitura; links da Cocil por produto e alguns da Leroy pediram permissão e não abriram direto.",
+      "nota": "Em Manaus a Cocil (www) segue com rodapé 7 cm x 2,40 m com preço: reconferido hoje na página do Moderna 446 (R$ 67,00), com Moderna 456 R$ 68,70 e Lev 72 R$ 44,90 sem preço riscado; Arquitech 50007/51007/52007 não reabriram (permissão), preços da rodada anterior. O site antigo cocil.com.br lista Santa Luzia 446 nas cores Cumaru e Pau Marfim, mas não abriu (robots). Beny só tem guarnição Arquitech 41007 7 cm x 2,25 m (sem preço); Lobato/Casinova/Constroi/O Construtor/Nono do Gesso, Bemol e OLX Manaus sem resultado. Fora, novos e mais baratos: MadeiraMadeira listagem de poliestireno (Redondo R$ 15,98, Frisado R$ 16,98, NFR R$ 19,98, Casa Grassi Liso R$ 25,98, todos 7 cm x 2,40 m com 28% OFF; listagem sem link de produto) e Magalu NFR R$ 22,48 Pix. Reconferidos iguais: Leroy NFR R$ 23,98 e Formix R$ 25,08 (Pix), Formix kits 5 e 10 barras (R$ 25,48/barra Pix), Dry Office R$ 20,90, RodapeShop R$ 29,90. Saíram por preço (continuam válidos/sem reabrir): RodapeShop R$ 29,90, MadeiraMadeira Formix R$ 30,74, Leroy Casa Grassi R$ 34,92, Formix kit 5 liso R$ 127,41. Magalu tem também kit 5 Arquitech 51007 R$ 246,91 Pix (R$ 49,38/barra). Amazon (NFR Ruffino, kits Formix 5 e 10 barras) e Mercado Livre bloquearam a leitura.",
       "ofertas": [
         {
           "loja": "Cocil Home Center",
@@ -985,7 +1116,7 @@
           "preco_unidade": 44.9,
           "local": "Manaus",
           "frete_manaus": "",
-          "obs": "preço visto na listagem da categoria e na página do Moderna 446; 2x de R$ 22,45",
+          "obs": "reconferido hoje nos produtos relacionados da página do Moderna 446; 2x de R$ 22,45",
           "data": "2026-11-26",
           "marca": "Santa Luzia"
         },
@@ -998,7 +1129,7 @@
           "preco_unidade": 46.0,
           "local": "Manaus",
           "frete_manaus": "",
-          "obs": "preço visto na listagem da categoria (Cocil chama de 'polietileno'; Arquitech 50007 é poliestireno)",
+          "obs": "preço da rodada anterior (~30 min), página não reaberta hoje (pediu permissão) (Cocil chama de 'polietileno'; Arquitech 50007 é poliestireno)",
           "data": "2026-11-26",
           "marca": "Arquitech"
         },
@@ -1011,7 +1142,7 @@
           "preco_unidade": 53.5,
           "local": "Manaus",
           "frete_manaus": "",
-          "obs": "preço visto na listagem da categoria; preto a R$ 65,00",
+          "obs": "preço da rodada anterior (~30 min), página não reaberta hoje (pediu permissão); preto a R$ 65,00",
           "data": "2026-11-26",
           "marca": "Arquitech"
         },
@@ -1024,7 +1155,7 @@
           "preco_unidade": 54.75,
           "local": "Manaus",
           "frete_manaus": "",
-          "obs": "preço visto na listagem da categoria",
+          "obs": "preço da rodada anterior (~30 min), página não reaberta hoje (pediu permissão)",
           "data": "2026-11-26",
           "marca": "Arquitech"
         },
@@ -1037,22 +1168,78 @@
           "preco_unidade": 67.0,
           "local": "Manaus",
           "frete_manaus": "",
-          "obs": "3x de R$ 22,33 sem juros; Moderna 456 a R$ 68,70",
+          "obs": "reconferido hoje; 3x de R$ 22,33 sem juros; Moderna 456 a R$ 68,70",
           "data": "2026-11-26",
           "marca": "Santa Luzia"
         },
         {
+          "loja": "MadeiraMadeira",
+          "titulo": "Rodapé de Poliestireno 7cm x 15mm Redondo 2,4 Metro Linear",
+          "url": "https://www.madeiramadeira.com.br/pisos-e-revestimentos/rodapes/rodape-poliestireno",
+          "preco": 15.98,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 15.98,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "novo; preço visto na listagem de rodapé de poliestireno (sem link do produto na listagem); 1 peça de 2,40 m",
+          "data": "2026-11-26",
+          "marca": "",
+          "promocao": "de R$ 27,97 por R$ 15,98 (28% OFF)"
+        },
+        {
+          "loja": "MadeiraMadeira",
+          "titulo": "Rodapé de Poliestireno 7cm x 15mm Frisado 2,4 Metro Linear",
+          "url": "https://www.madeiramadeira.com.br/pisos-e-revestimentos/rodapes/rodape-poliestireno",
+          "preco": 16.98,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 16.98,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "novo; preço visto na listagem de rodapé de poliestireno (sem link do produto na listagem)",
+          "data": "2026-11-26",
+          "marca": "",
+          "promocao": "de R$ 29,72 por R$ 16,98 (28% OFF)"
+        },
+        {
+          "loja": "MadeiraMadeira",
+          "titulo": "Rodapé de Poliestireno 7cm x 15mm x 2,40m Frisado NFR Rodapés",
+          "url": "https://www.madeiramadeira.com.br/pisos-e-revestimentos/rodapes/rodape-poliestireno",
+          "preco": 19.98,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 19.98,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "novo; preço visto na listagem de rodapé de poliestireno; Casa Grassi Liso R$ 25,98",
+          "data": "2026-11-26",
+          "marca": "NFR Rodapés (Ruffino)",
+          "promocao": "de R$ 34,97 por R$ 19,98 (28% OFF)"
+        },
+        {
           "loja": "Dry Office",
           "titulo": "Rodapé Poliestireno Branco Frisado 7 cm Barra 2,40 m x 1,0 cm",
-          "url": "https://www.dryoffice.com.br/rodape/poliestireno/",
+          "url": "https://www.dryoffice.com.br/rodape-poliestireno-branco-frisado-7cm-barra-com-2-40m-x-1-0-cm-p1577",
           "preco": 20.9,
           "oferta_un": "barra 2,40 m",
           "preco_unidade": 20.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço visto na listagem da categoria; página do produto não abriu; versão lisa indisponível",
+          "obs": "reconferido hoje na listagem; disponível; 3% de desconto à vista; versão lisa indisponível",
           "data": "2026-11-26",
           "marca": "Todorevest"
+        },
+        {
+          "loja": "Magalu – MadeiraMadeira",
+          "titulo": "Rodapé de Poliestireno 7cm x 15mm x 2,40m Frisado NFR Rodapés (Ruffino)",
+          "url": "https://www.magazineluiza.com.br/rodape-de-poliestireno-7cm-x-15mm-x-240m-frisado-nfr-rodapes-ruffino/p/dd58gbbcj9/cj/rono/?seller_id=madeiramadeira-openapi",
+          "preco": 22.48,
+          "oferta_un": "barra 2,40 m",
+          "preco_unidade": 22.48,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "novo; preço no Pix visto na busca do Magalu",
+          "data": "2026-11-26",
+          "marca": "NFR Rodapés (Ruffino)",
+          "promocao": "de R$ 24,98 por R$ 22,48 no Pix"
         },
         {
           "loja": "Leroy Merlin – MadeiraMadeira",
@@ -1063,7 +1250,7 @@
           "preco_unidade": 23.98,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 29,97 a prazo; 1 barra",
+          "obs": "reconferido hoje; preço no Pix; R$ 29,97 a prazo; 1 barra",
           "data": "2026-11-26",
           "marca": "NFR Rodapés (Ruffino)",
           "promocao": "selo OFERTA -19%: R$ 23,98 no Pix"
@@ -1077,7 +1264,7 @@
           "preco_unidade": 25.08,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 40,45 a prazo; cada unidade = 1 barra de 2,40 m",
+          "obs": "reconferido hoje; preço no Pix; R$ 40,45 a prazo; 1 barra de 2,40 m",
           "data": "2026-11-26",
           "marca": "Formix 3D",
           "promocao": "selo OFERTA -38%: R$ 25,08 no Pix (R$ 40,45 a prazo)"
@@ -1091,71 +1278,17 @@
           "preco_unidade": 25.48,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix; R$ 283,14 no cartão; também por metro a R$ 10,62 no Pix",
+          "obs": "reconferido hoje; preço no Pix; R$ 283,14 no cartão; liso mesmo preço",
           "data": "2026-11-26",
           "marca": "Formix 3D",
           "promocao": "de R$ 404,48 por R$ 254,83 no Pix"
-        },
-        {
-          "loja": "Formix 3D (loja oficial)",
-          "titulo": "Kit 5 Barras Rodapé Poliestireno 7 cm Branco Liso (7x1x240 cm)",
-          "url": "https://www.lojaformix3d.com.br/rodapes-de-poliestireno/kit-com-5-barras-de-rodape-de-poliestireno-liso-branco-7cm-de-altura-7x1x240cm",
-          "preco": 127.41,
-          "oferta_un": "kit 5 barras 2,40 m",
-          "preco_unidade": 25.48,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "preço no Pix; R$ 141,57 no cartão",
-          "data": "2026-11-26",
-          "marca": "Formix 3D",
-          "promocao": "de R$ 202,24 por R$ 127,41 no Pix"
-        },
-        {
-          "loja": "RodapeShop",
-          "titulo": "Rodapé Poliestireno 7x1,5x240 cm Preto Frisado Passa Fio 6748",
-          "url": "https://www.rodapeshop.com.br/rodape-poliestireno-7cm-preto-frisado-240-metros-6748",
-          "preco": 29.9,
-          "oferta_un": "barra 2,40 m",
-          "preco_unidade": 29.9,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "1 rodapé por unidade; até 18x sem juros (campanha Black November, sem preço riscado)",
-          "data": "2026-11-26",
-          "marca": ""
-        },
-        {
-          "loja": "MadeiraMadeira – Formix",
-          "titulo": "Rodapé de Poliestireno 7 cm Frisado Branco (7x1x240 cm) - Formix 3D",
-          "url": "https://madeiramadeira.com.br/rodape-de-poliestireno-frisado-7cm-de-altura-7x1x240cm-2639311.html",
-          "preco": 30.74,
-          "oferta_un": "barra 2,40 m",
-          "preco_unidade": 30.74,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "cada unidade = 1 barra de 2,40 m; página mostra também R$ 40,45 (provável preço antigo, sem riscado)",
-          "data": "2026-11-26",
-          "marca": "Formix 3D"
-        },
-        {
-          "loja": "Leroy Merlin – MadeiraMadeira",
-          "titulo": "Rodapé Poliestireno Frisado 7 cm x 2,40 m Casa Grassi Branco",
-          "url": "https://leroymerlin.com.br/rodape-de-poliestireno-frisado-7cm-x-2,40m-rende-2,40-metros-casa-grassi-caixa-com-2,4-m-branco_1568255484",
-          "preco": 34.92,
-          "oferta_un": "barra 2,40 m",
-          "preco_unidade": 34.92,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "preço no Pix; R$ 38,80 a prazo",
-          "data": "2026-11-26",
-          "marca": "Casa Grassi",
-          "promocao": "selo OFERTA -10%: R$ 34,92 no Pix"
         }
       ]
     },
     {
       "termo": "Ripa de MDF para ripado (2,70 m)",
       "unidade": "peça",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa. Cocil só tem chapas de MDF e ripa de poliestireno Santa Luzia 280x3 cm (site antigo, não abriu); Beny tem Painel Ripado CrossWall 12 cm x 2,8 m Arquitech e painel PVC ripado Plasmeg (painéis, sem preço visto); Lobato/Casinova/Constroi/O Construtor/Nono do Gesso e Bemol sem ripa de MDF; OLX Manaus só com 'Painel Ripado' (Tarumã-Açu) e painéis de TV, sem ripa avulsa e sem anúncio de instalação. Fora, sem mudança vs anterior: Eucatex RU 1,2x5,5x270 cm a R$ 32,90 (Cinza Supremo R$ 24,50 na RodapeShop), MadeiraMadeira/Repare R$ 36,56; faixa Black November da RodapeShop sem preço riscado. Magalu (Carvalho Tropical R$ 30,31 Pix) não reabriu hoje. Fora: caixas de 6 Eucatex (Amazon, MadeiraMadeira, Casas Bahia), kits ML e painéis Moldufama 10,5 cm. Amazon e Mercado Livre bloquearam a leitura.",
+      "nota": "Sem preço publicado em Manaus nesta pesquisa. Cocil só tem chapas de MDF (site antigo); Beny com painéis ripados (CrossWall/Plasmeg) sem preço; Lobato/Casinova/Constroi (conferida hoje: só kits de gabinete MDF)/O Construtor/Bemol sem ripa de MDF; OLX Manaus só 'Painel Ripado' (Tarumã-Açu) sem ripa avulsa nem anúncio de instalação. Fora, reconferido agora sem mudança: RodapeShop Cinza Supremo R$ 24,50 e demais cores R$ 32,90; Repare R$ 32,90; MadeiraMadeira/Repare R$ 36,56 (Louro Freijó e Fumê, por unidade). Magalu (Carvalho Tropical R$ 30,31 Pix) não reabriu; busca do Magalu 'ripa de mdf' só traz kits/painéis. Fora do item: Amazon só caixas de 6 Eucatex e painéis; ML só kits/painéis; Ripado côncavo Italy (MadeiraMadeira) é pacote de 5 e esgotado. Amazon, Mercado Livre, MadeiraNit e LigPisos bloquearam a leitura.",
       "ofertas": [
         {
           "loja": "RodapeShop",
@@ -1179,7 +1312,7 @@
           "preco_unidade": 30.31,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix (R$ 31,90 cartão) visto na busca do Magalu na pesquisa anterior de hoje; página não reabriu agora - confirmar",
+          "obs": "preço no Pix (R$ 31,90 cartão) visto na busca do Magalu mais cedo hoje; página não reabriu nas duas conferências - confirmar",
           "data": "2026-11-26",
           "marca": "Eucatex"
         },
@@ -1247,13 +1380,26 @@
           "obs": "1x sem juros; vendido por Repare; mesmo preço no Preto",
           "data": "2026-11-26",
           "marca": "Eucatex"
+        },
+        {
+          "loja": "MadeiraMadeira – Repare",
+          "titulo": "Ripado MDF 1,2x5,5 cm Fumê Eucatex - 2,70 m",
+          "url": "https://www.madeiramadeira.com.br/ripado-mdf-1-2x5-5cm-fume-eucatex-2-70-metros-657529139.html",
+          "preco": 36.56,
+          "oferta_un": "ripa 2,70 m",
+          "preco_unidade": 36.56,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "1x sem juros; vendido por unidade por Repare",
+          "data": "2026-11-26",
+          "marca": "Eucatex"
         }
       ]
     },
     {
       "termo": "Placa de drywall ST 1,20 x 1,80",
       "unidade": "placa",
-      "nota": "Manaus: Nono do Gesso tem a Placa Drywall Standard (ST) 12,5 mm 1,20 x 1,80 (1,44 m²) no site, mas a página não abriu (sem preço visível): pedir cotação. Cocil só tem acessórios de drywall (massa Placomix); Beny/Lobato/Casinova/Loja Constroi sem placa no site (Constroi conferida hoje: nenhuma placa). OLX Manaus: 'Placa de gesso Drywall - R$ 25,00 cada' (Presidente Vargas, particular; página não abriu), 'Placas de gesso acartonado' (Cidade Nova, sem preço) e vendedor de material de gesso acartonado no Parque 10 (sem preço); serviço: 'Forro de gesso comum e gesso acartonado' (Colônia Santo Antônio). Fora: preços iguais à pesquisa anterior — Knauf na Serit R$ 36,03 no Pix e na Leroy R$ 37,90 (válido 26/11); novo: Gypsum na Atitude Gesso R$ 41,62 (Placo lá indisponível). Gypsum no Magalu indisponível; Espaço Smart não reconferida (saiu). Amazon só tem acessórios (sem placa); Mercado Livre bloqueou a leitura. Placa é volumosa: frete até Manaus pesa, cotar antes.",
+      "nota": "Manaus: Nono do Gesso tem a Placa Drywall Standard (ST) 12,5 mm 1,20 x 1,80 (1,44 m²), também RU e RF 1,20x1,80, mas o site não abriu (sem preço visível): pedir cotação. Cocil/Beny/Lobato/Casinova/Loja Constroi sem placa no site (Constroi conferida de novo hoje). OLX Manaus: 'Placa de gesso Drywall - R$ 25,00 cada' (Presidente Vargas, particular), 'Placas de gesso acartonado' (Cidade Nova) e 'Placa de gesso' (Flores), sem preço; serviços: 'Placas de GESSO' (Raiz) e forro de gesso/acartonado (Colônia Santo Antônio). Fora, reconferido agora sem mudança: Serit R$ 36,03 Pix (2 em estoque), Leroy Knauf R$ 37,90 (válido 26/11), CasaBlanca R$ 38,00, Persi R$ 41,40 Pix, Atitude Gypsum R$ 41,62, Zzat Gypsum R$ 44,09 Pix (de R$ 51,90; só Curitiba), Telhanorte Placo R$ 45,90 (cupom APP10). Evolução PVC (R$ 38,90) só no título da busca; site não abriu. Amazon só acessórios (sem placa); Mercado Livre bloqueou a leitura. Placa é volumosa: frete até Manaus pesa, cotar antes.",
       "ofertas": [
         {
           "loja": "OLX – Manaus (Presidente Vargas)",
@@ -1314,7 +1460,7 @@
           "preco_unidade": 38.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço visto no título do resultado de busca (página não abriu); marca/espessura não informadas — confirmar",
+          "obs": "preço visto no título do resultado de busca de hoje (página não abriu); marca/espessura não informadas — confirmar",
           "data": "2026-11-26"
         },
         {
@@ -1375,7 +1521,7 @@
     {
       "termo": "Massa corrida PVA 25 kg",
       "unidade": "lata",
-      "nota": "Manaus: Cocil (www) Iquine 25 kg R$ 66,50 (igual) e NOVO na mesma lista: Coral balde 25 kg R$ 69,90 (3x R$ 23,30); Loja Constroi Suvinil R$ 71,99 no Pix (igual; não está na Black Constroi — a Hipercor 20 kg R$ 39,96 está, mas é 20 kg); Casinova Iquine R$ 88,78 (igual; cupom geral CASINOVA2026 no site, sem desconto informado); Cocil também tem Suvinil latão 28 kg R$ 78,50 (outro peso) e Suvinil 25 kg no site antigo (não abriu). Beny tem Massa Corrida 25 kg Iquine (cód. 2179) e Coral, mas sem preço carregado na página: ligar (92) 2129-0800. Nono do Gesso tem Iquine 25 kg (site não abriu). Bemol e Lobato sem preço. OLX Manaus sem anúncio de massa 25 kg. Online: Magalu página 1 tem Spartex R$ 54,00 e Veloz R$ 60,00 (marcas menores); Coral 25 kg da Copafer (R$ 76,27 ontem) e MaxPint R$ 34,90 não apareceram mais — saíram. Leroy: Iquine e Fortex indisponíveis. Amazon e Mercado Livre bloquearam a leitura. Frete de balde 25 kg até Manaus não calculado.",
+      "nota": "Manaus: Cocil (www) Iquine 25 kg R$ 66,50 (reconferido na lista Iquine, igual) e Coral balde 25 kg R$ 69,90 (visto mais cedo; página não reabriu agora); Loja Constroi Suvinil R$ 71,99 Pix (reconferido, igual; Hipercor 20 kg R$ 39,96 é 20 kg); Casinova Iquine R$ 88,78 (reconferido, igual). Cocil também tem Suvinil 25 kg no site antigo (sem preço lido). Beny tem Massa Corrida 25 kg Coral e Iquine, mas o preço não carrega ('carregando preços'): ligar (92) 2129-0800. Lobato tem categoria Massa Corrida PVA (site não abriu); Bemol redireciona para 'superoferta' sem lista. OLX Manaus sem anúncio de massa 25 kg. Fora: Spartex R$ 54,00 (Magalu/Porto House) agora INDISPONÍVEL — saiu; Veloz R$ 60,00 (Magalu) não reabriu — saiu. Novo: Ferreira Costa Iquine R$ 68,90. Leroy Coral 25 kg a R$ 129,90 (de R$ 142,90) — caro, não entrou; Telhanorte Sulan indisponível. Amazon e Mercado Livre bloquearam a leitura. Frete de balde 25 kg até Manaus não calculado.",
       "ofertas": [
         {
           "loja": "Cocil Home Center",
@@ -1399,7 +1545,7 @@
           "preco_unidade": 69.9,
           "local": "Manaus",
           "frete_manaus": "",
-          "obs": "3x de R$ 23,30 sem juros; preço visto na lista Fundos/Massas (www.cocil.com.br); novo vs pesquisa anterior",
+          "obs": "3x de R$ 23,30 sem juros; preço visto na lista Fundos/Massas (www.cocil.com.br) mais cedo hoje; não reaberto agora",
           "data": "2026-11-26",
           "marca": "Coral"
         },
@@ -1425,35 +1571,9 @@
           "preco_unidade": 88.78,
           "local": "Manaus",
           "frete_manaus": "",
-          "obs": "disponibilidade imediata; sem preço riscado",
+          "obs": "disponibilidade imediata; sem preço riscado; reconferido",
           "data": "2026-11-26",
           "marca": "Iquine"
-        },
-        {
-          "loja": "Magalu – Porto House",
-          "titulo": "Massa corrida PVA Spartex branca 25 kg",
-          "url": "https://www.magazineluiza.com.br/massa-corrida-pva-spartex-br-25kg/p/hj181hb11b/cj/macd/?seller_id=portohouse",
-          "preco": 54.0,
-          "oferta_un": "25 kg",
-          "preco_unidade": 54.0,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "1x sem juros; marca menos conhecida; preço visto na busca do Magalu",
-          "data": "2026-11-26",
-          "marca": "Spartex"
-        },
-        {
-          "loja": "Magalu – JP Construção",
-          "titulo": "Massa Corrida PVA 25 kg Veloz",
-          "url": "https://www.magazineluiza.com.br/massa-corrida-pva-25kg-veloz/p/cjh9j35j1f/cj/macd/?seller_id=jpconstrucao",
-          "preco": 60.0,
-          "oferta_un": "25 kg",
-          "preco_unidade": 60.0,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "1x sem juros; preço visto na busca do Magalu",
-          "data": "2026-11-26",
-          "marca": "Veloz"
         },
         {
           "loja": "Magalu – JM Mercado",
@@ -1468,6 +1588,19 @@
           "data": "2026-11-26",
           "marca": "Iquine",
           "promocao": "5% OFF no Pix: de R$ 70,00 por R$ 66,50"
+        },
+        {
+          "loja": "Ferreira Costa",
+          "titulo": "Massa Corrida PVA 25 kg Branco Iquine",
+          "url": "https://ferreiracosta.com/produto/381547/massa-corrida-pva-25kg-branco-iquine",
+          "preco": 68.9,
+          "oferta_un": "25 kg",
+          "preco_unidade": 68.9,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "1x sem juros; em estoque; sem preço Pix separado",
+          "data": "2026-11-26",
+          "marca": "Iquine"
         },
         {
           "loja": "Telhanorte",
@@ -1516,7 +1649,7 @@
     {
       "termo": "Papel de parede vinílico",
       "unidade": "rolo",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa. Medida padrão: rolo 0,53 x 10 m ≈ 5,3 m². Cocil e Beny/Lobato/Casinova/Loja Constroi/O Construtor/Nono do Gesso não têm papel de parede com preço no site. Bemol (Manaus): Edantex Colorkey 1069 rolo 0,53 x 10 m segue indisponível, sem preço; Edantex VIP 1030 sem preço (pede CEP). OLX Manaus: anúncios 'Papel de parede de bananeira' (Tarumã), 'Papel de parede com cães' (Flores) e serviços de instalação (Colônia Terra Nova; insulfilme e papel de parede no Alvorada) — OLX não abriu para ver preço. Amazon (vários 53 cm x 10 m: Isadora Design, Wiler-K VIP, Book Vogue) e Mercado Livre bloquearam a leitura. MadeiraMadeira DK-0136 e Ponto Frio DK-0336 (Casa Danka) indisponíveis, sem preço; GF Casa Decor indisponível. Ferreira Costa tem também Bianchini 55505 0,53 x 9,5 m a R$ 49,90 (rolo menor). Sem mudança de preço vs anterior em Ferreira Costa (R$ 59,90) e Plastco (R$ 79,18 Pix). Leroy Naturae (R$ 390) não reconferido; Magalu Naturae 304-15 indisponível.",
+      "nota": "Sem preço publicado em Manaus nesta pesquisa (3 buscas extended). Medida padrão: rolo 0,53 x 10 m ≈ 5,3 m². Cocil, Beny, Lobato, Casinova, Loja Constroi, O Construtor e Nono do Gesso sem papel de parede com preço no site. Bemol (Manaus): Edantex Colorkey 1069 rolo 0,53 x 10 m aparece na busca, sem preço (indisponível na pesquisa anterior). OLX Manaus: categoria 'Papéis de Parede e Adesivos – Manaus' existe, mas a página não abriu (erro do site); anúncios e serviços de instalação só vistos antes, sem preço. Reconferido agora (26/11): Ferreira Costa Bianchini R$ 59,90 (de R$ 109,90, 45% OFF, em estoque) nos 3 rolos; Plastco R$ 79,18 Pix; Magalu Bem Instalado VT47 R$ 122,55 Pix; Decorlu R$ 134,91 Pix; Magalu Magnific R$ 145,25 Pix; Casas Bahia Pure R$ 351 Pix — nenhum preço mudou. Amazon tem vários rolos 53 cm x 10 m (Evolux Stylle, Book Vogue/Amalfi/Paris, Wiler-K VIP) mas bloqueia a leitura (robots) e o trecho da busca não mostra preço. Mercado Livre bloqueado. Magalu também tem Bem Instalado linho FN46/FN69/MV02 a R$ 132,05 Pix (rolo 10 m, largura não informada).",
       "ofertas": [
         {
           "loja": "Ferreira Costa",
@@ -1633,7 +1766,7 @@
     {
       "termo": "Grama sintética decorativa 25 mm",
       "unidade": "m²",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa. Cocil, Beny/Lobato/Casinova/Loja Constroi não têm grama sintética com preço (Beny só kit grama para gatos). Bemol (Manaus) só tem tapete Kapazi 10 mm 1 x 2 m, sem preço visível. OLX Manaus: 'Grama sintética usada' (São José Operário) e serviço 'Grama sintética' (Japiim) — páginas não abriram. Amazon (Garden Grass 25 mm, rolo 2 x 10 m) e Mercado Livre bloquearam a leitura. Decoplast (mais barata) continua sem estoque; FG Vonder 2 x 5 m esgotado. Leroy Elba 25 mm sem preço. Decortech Garden Grass R$ 132,05/m² (boleto) — mais cara, ficou de fora. Magalu Becshop 5 m²/8 m² não reconferidos; hoje apareceu Becshop 2 m² a R$ 189,05 no Pix. Novos vs anterior: Magalu Vonder 10 m² (vend. gmk8) com cupom R$ 50 OFF e ML 25 m² (R$ 79,90/m²). Preços iguais ao anterior em Dutra, Leroy, Villa Americana e Decoplast.",
+      "nota": "Sem preço publicado em Manaus nesta pesquisa (3 buscas extended). Cocil, Beny, Lobato, Casinova, Loja Constroi sem grama sintética com preço; Bemol só tapete Kapazi 10 mm sem preço (pesquisa anterior). OLX Manaus: 'Grama sintética usada' (São José Operário, 1481729173) e serviço 'Grama sintética azul' (Japiim, 1461994655), sem preço no trecho. Site gramassinteticas.com.br 'Grama Sintética em Manaus' é da GTX (Bragança Paulista-SP), só orçamento, sem 25 mm — não é loja de Manaus. Reconferido agora: Decoplast R$ 49,41/m² Pix segue SEM ESTOQUE; Villa Americana R$ 138,99 (2 m²) em estoque; Dutra Vonder 5 m² R$ 379,91 Pix (de R$ 470,47, restam 8); FG Vonder 10 m² R$ 779,99 esgotado; Leroy/Guimepa R$ 793,15 Pix (OFERTA-5%); Magalu Vonder 10 m² R$ 869,90 com cupom R$ 50 OFF (vendedor agora aparece como Guimepa Shop). Preços iguais ao anterior. Magalu Becshop 2 m² não pôde ser reaberto (permissão não respondida a tempo) e ML segue bloqueado (robots) — mantidos com 'conferir'. Novo visto: Magalu Vonder 1 x 5 m 25 mm (vend. expresso102) R$ 572,90 em 8x (R$ 114,58/m², mais caro, ficou de fora). Becshop site fora do ar. Amazon (Garden Grass 25 mm) bloqueia leitura, sem preço no trecho.",
       "ofertas": [
         {
           "loja": "Decoplast BH",
@@ -1716,7 +1849,7 @@
           "marca": ""
         },
         {
-          "loja": "Magazine Luiza (vend. gmk8)",
+          "loja": "Magazine Luiza (vend. Guimepa Shop)",
           "titulo": "Grama Sintética Decorativa 25,0 mm 2,0 x 5,0 m (10 m²) Vonder",
           "url": "https://www.magazineluiza.com.br/grama-sintetica-decorativa-250mm-20x50-metros-vonder/p/ac54chek77/fj/gmst/?seller_id=gmk8",
           "preco": 869.9,
@@ -1738,7 +1871,7 @@
           "preco_unidade": 94.53,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no Pix (5% off); R$ 199,00 em 2x",
+          "obs": "preço no Pix (5% off); R$ 199,00 em 2x; não reconferido hoje (página não abriu) – conferir",
           "data": "2026-11-26",
           "marca": "Garden Grass"
         }
@@ -1747,7 +1880,7 @@
     {
       "termo": "Forro mineral 625 x 625",
       "unidade": "m²",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa. Cocil e Beny só trazem porcelanato 62,5x62,5 (Beny só forro PVC); Bemol só forro PVC; Nono do Gesso, Lobato, Casinova, Loja Constroi e O Construtor sem forro mineral no site. Vasconcelos Forros e Divisórias (Cidade Nova; (92) 99963-6073 / 3645-5525) vende forro de fibra mineral só sob orçamento (pesquisa anterior). OLX Manaus: só serviços — 'Divisória Eucatex e forro mineral' (Jorge Teixeira, am.olx.com.br ...1179043420) e 'Forro e divisórias em geral, mão de obra' (Monte das Oliveiras); instalação de forro PVC anunciada a R$ 20/m². Fora: AMF Ecomin/Adhara ~R$ 43–44/m² por caixa; EspaçoForro R$ 49–52/m²; Armstrong Scala/Georgian R$ 62–71/m². Mudanças vs anterior: Artesana (R$ 287,46, ~R$ 40,88/m²) segue ESGOTADO e saiu; novos Comercial Apoio Scala 14 mm (R$ 61,64/m²), Construção Express Georgian Tegular (R$ 62,31/m² no Pix) e Leroy Scala Square (R$ 71,24/m²). Total Isolamentos (R$ 308) e Leroy/Terac AMF (R$ 365) não puderam ser reabertos hoje (leitura não autorizada a tempo); a própria Terac mostra R$ 308,00 a caixa. MadeiraMadeira (Owa Decor, AMF Mercure, Armstrong Scala) e Leroy Divisystem: indisponíveis, sem preço. Mercado Livre bloqueou a leitura (robots). Amazon: nenhum forro mineral em 2 buscas. Frete de caixas volumosas para Manaus não informado: cotar.",
+      "nota": "Sem preço publicado em Manaus nesta pesquisa (3 buscas extended). Cocil e Beny só porcelanato 62,5x62,5 / forro PVC; Bemol só forro PVC; Nono do Gesso, Lobato, Casinova, Loja Constroi e O Construtor sem forro mineral. Vasconcelos Forros e Divisórias (Cidade Nova, Manaus; (92) 99963-6073 / 3645-5525) vende fibra mineral só sob orçamento; Fibra Amazonas apareceu na busca mas o site não abriu. OLX Manaus: só serviços (divisória Eucatex e forro mineral, Jorge Teixeira). Reconferido agora: MetalPerfil R$ 172,96, Dry Office R$ 203,60 Pix, Terac AMF R$ 308,00, Você Constrói EspaçoForro R$ 229,81, Construção Express R$ 389,44 Pix, Leroy Scala R$ 423,30 — iguais. MUDOU: Leroy EspaçoForro E-Decore subiu de R$ 245,24 para R$ 281,29 (selo OFERTA-20%, de R$ 351,61). Comercial Apoio (Ecomin e Scala) não reabriu hoje (permissão não respondida a tempo). Novo: Você Constrói Armstrong Scala 16 mm R$ 363,76 (R$ 58,20/m², de R$ 421,19). Terac Scala 14 mm R$ 419,75/cx 6,25 m² (R$ 67,16/m², de R$ 512,10) ficou de fora. Amazon: nenhum forro mineral (só forro de tábua/piscina). Magalu: nenhum forro mineral na busca. Mercado Livre bloqueado. Frete de caixas para Manaus não informado: cotar.",
       "ofertas": [
         {
           "loja": "MetalPerfil",
@@ -1758,7 +1891,7 @@
           "preco_unidade": 36.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "página não diz se R$ 172,96 é por caixa; ficha cita 12 pç/4,68 m² – conferir",
+          "obs": "página não diz se R$ 172,96 é por caixa; ficha cita 12 pç/4,68 m² – conferir; estoque 1000",
           "data": "2026-11-26",
           "marca": "Wallcoust"
         },
@@ -1816,18 +1949,32 @@
           "promocao": "de R$ 266,09 por R$ 229,81 (válido até 26/11)"
         },
         {
+          "loja": "Você Constrói",
+          "titulo": "Forro mineral lay-in Armstrong Ceilings Scala branco 16 x 625 x 625 mm (caixa 6,25 m²)",
+          "url": "https://www.voceconstroi.com.br/produto/forro-mineral-lay-in-armstrong-ceilings-scala-branco-16-x-625-x-625-mm-70107",
+          "preco": 363.76,
+          "oferta_un": "caixa 16 placas (6,25 m²)",
+          "preco_unidade": 58.2,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "site mostra R$ 58,20/m²; preço válido em 26/11/2026; sem frete/impostos",
+          "data": "2026-11-26",
+          "marca": "Armstrong",
+          "promocao": "de R$ 421,19 por R$ 363,76 (14% OFF, válido em 26/11)"
+        },
+        {
           "loja": "Leroy Merlin (vend. Você Constrói)",
           "titulo": "Forro de Fibra Mineral EspaçoForro E-Decore Square 625 x 625 x 12 mm (caixa 12 pç = 4,687 m²)",
           "url": "https://www.leroymerlin.com.br/forro-de-fibra-mineral-espaco-forro-e-decore-square-625-x-625-x-12mm-caixa-12-pcs-_1566877400",
-          "preco": 245.24,
+          "preco": 281.29,
           "oferta_un": "caixa 12 placas",
-          "preco_unidade": 52.32,
+          "preco_unidade": 60.01,
           "local": "online",
           "frete_manaus": "",
-          "obs": "frete não incluso",
+          "obs": "frete não incluso; subiu de R$ 245,24 (pesquisa anterior) para R$ 281,29",
           "data": "2026-11-26",
           "marca": "EspaçoForro",
-          "promocao": "selo OFERTA-15%: de R$ 288,52 por R$ 245,24"
+          "promocao": "selo OFERTA-20%: de R$ 351,61 por R$ 281,29"
         },
         {
           "loja": "Comercial Apoio",
@@ -1838,7 +1985,7 @@
           "preco_unidade": 61.64,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço no boleto/Pix (visto na listagem da categoria); R$ 393,12 a prazo",
+          "obs": "preço no boleto/Pix (visto na listagem da categoria); R$ 393,12 a prazo; não reaberto hoje (permissão não respondida a tempo) – conferir",
           "data": "2026-11-26",
           "marca": "Armstrong"
         },
@@ -1874,7 +2021,7 @@
     {
       "termo": "Manta vinílica hospitalar",
       "unidade": "m²",
-      "nota": "Sem preço publicado em Manaus nesta pesquisa: Cocil e Beny só têm manta líquida/asfáltica; Lobato, Casinova, Loja Constroi e O Construtor sem manta vinílica; OLX não trouxe anúncio em Manaus (só listagens nacionais); nenhuma revenda Tarkett de Manaus com preço apareceu. Fora, manta homogênea 2 mm de R$ 149,53 a R$ 250/m², quase sempre em rolo ou caixa; novidade: Harpia Casa Tarkett Standard Plus homogênea a R$ 157,84/m² no Pix. Preços iguais à pesquisa anterior (Afrel, Formaco, Harpia, Linha Direta). Piso Rápido: Eclipse Premium rolo 10 m² a R$ 3.934,51 (~R$ 393/m², caro). Harpia: linhas Flourish R$ 236,05/m² e Belgotex Palettone R$ 321,73/m² no Pix. Harpia vende com confirmação de estoque pelo WhatsApp. Amazon só tem manta PVC 0,7 mm residencial (não hospitalar). Mercado Livre (Sensofloor 2 mm homogêneo) bloqueia a leitura. Frete do rolo para Manaus pesa: cotar.",
+      "nota": "Sem preço publicado em Manaus nesta pesquisa: 3 buscas em Manaus (geral, revenda Tarkett, OLX) só trouxeram lojas nacionais; Cocil/Beny só têm manta líquida/asfáltica; OLX só listagens nacionais; nenhuma revenda de Manaus com preço. Reconferidos e iguais: Afrel Etage R$ 149,53/m² Pix (mesmo preço em 6 cores, rolo 40 m²), Formaco R$ 149,95, Harpia Standard Plus R$ 157,84 Pix, Afrel Standard Plus R$ 160,19/m², Harpia Vylon R$ 166,29, Harpia Eclipse 036 R$ 167,51 (riscado R$ 290,63), Linha Direta rolo 10 m² R$ 1.998 (riscado R$ 373,90/m²), Afrel Eclipse R$ 250,30. Novo: Elear Tarkett Standard Plus 2 mm R$ 163,19 no boleto / R$ 187,58 no cartão (título diz 1 m², rolo 46 m² — conferir unidade). Piso Rápido Eclipse rolo 10 m² R$ 3.934,51 (~R$ 393/m², caro). Quality Floor Medfloor só por orçamento. Amazon só tem manta PVC 0,7 mm residencial (não hospitalar); Amazon e Mercado Livre bloqueiam leitura; Afrel produto direto não abriu (preço visto na listagem hospitalar). Sem Black Friday nessas lojas. Frete do rolo para Manaus pesa: cotar.",
       "ofertas": [
         {
           "loja": "Afrel",
@@ -1885,7 +2032,7 @@
           "preco_unidade": 149.53,
           "local": "online",
           "frete_manaus": "",
-          "obs": "homogênea; à vista/Pix (10% off); R$ 166,14/m² a prazo; mesmo preço em outras cores",
+          "obs": "homogênea; à vista/Pix (10% off); R$ 166,14/m² a prazo; mesmo preço em outras cores; preço reconferido na listagem Hospitalar da Afrel",
           "data": "2026-11-26",
           "marca": "Etage"
         },
@@ -1911,6 +2058,19 @@
           "local": "online",
           "frete_manaus": "",
           "obs": "preço no Pix (6% off); R$ 167,91 no cartão; consultar estoque",
+          "data": "2026-11-26",
+          "marca": "Tarkett"
+        },
+        {
+          "loja": "Elear",
+          "titulo": "Piso Vinílico Manta Homogêneo Tarkett Standard Plus 21003483 2 mm (rolo 46 m²)",
+          "url": "https://www.elear.com.br/piso-vinilico-homogeneo-tarkett-standard-plus-cs-1287039-20mm-46m2",
+          "preco": 163.19,
+          "oferta_un": "m² (título diz 1 m²)",
+          "preco_unidade": 163.19,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no boleto; R$ 187,58 no cartão (12x R$ 15,63); unidade não explícita na página — conferir se é por m²",
           "data": "2026-11-26",
           "marca": "Tarkett"
         },
@@ -1986,7 +2146,7 @@
     {
       "termo": "Manta líquida impermeabilizante 18 kg",
       "unidade": "balde",
-      "nota": "Em Manaus só a Cocil publica preço (iguais à pesquisa anterior, sem preço riscado nem Black Friday): Vedalage 18 kg R$ 316,00 é a mais barata, Quartzolit 18 kg R$ 327,50 (6x R$ 54,58; entrega em Manaus R$ 30 abaixo de R$ 700), Vedapren branco R$ 372,00, Coral R$ 399,50; Vedapren preto 18 L (asfáltica) R$ 346,90. Beny tem Quartzolit 18 kg e BFM Tec 18 kg, mas o site não abriu/preço não carrega. Bemol tem Quartzolit 18 kg branca e preta (até 4x sem juros) sem preço visível. OLX: só listagens nacionais, nenhum anúncio de Manaus achado. Fora: Quartzolit 18 kg a partir de R$ 208,90 (Magalu/eFácil, era R$ 211,90 na anterior) e R$ 216,11 no Pix (Telhanorte), mas o frete de balde de 18 kg até Manaus pesa. Novos: Magalu Copafer Quartzolit R$ 241,32 Pix, Magalu Ultramarket Vedapren 18 kg R$ 264,09, Telhanorte Vedapren 18 kg R$ 359,90. Leroy: Quartzolit R$ 562,19 (vend. Cliza Shop, caro); Vedapren e Coral indisponíveis sem preço (saíram da lista). MadeiraMadeira e Ferreira Costa não reconferidos (não apareceram nas buscas) — retirados. Amazon e Mercado Livre bloquearam a leitura (sem preço nos trechos).",
+      "nota": "Em Manaus só a Cocil publica preço (reconferidos, iguais, sem preço riscado nem Black Friday): Vedalage 18 kg R$ 316,00 é a mais barata, Quartzolit 18 kg R$ 327,50 (6x R$ 54,58; frete Manaus R$ 30 abaixo de R$ 700 ou retirada), Vedapren branco R$ 372,00, Coral R$ 399,50; Vedapren preto 18 L R$ 346,90. Beny (Quartzolit 18 kg) e Bemol (Quartzolit 18 kg, até 4x sem juros) continuam sem preço visível (carrega via script). Casinova (Manaus) tem Tecplus Lastic Quartzolit 18 kg R$ 487,27, mas é argamassa bicomponente, não manta líquida — não incluída. OLX: só listagens nacionais. Fora: Magalu/eFácil Quartzolit subiu para R$ 211,90 (era R$ 208,90, sem riscado agora); Telhanorte R$ 216,11 Pix igual (cupom APP10); Magalu Copafer Quartzolit caiu para R$ 235,30 Pix (era R$ 241,32); novo Magalu Copafer Eurodecor 18 kg R$ 251,26 Pix (substitui Eurodecor Web Continental R$ 273,85, não reapareceu). Frete de balde 18 kg até Manaus pesa. Amazon (Quartzolit, Coral, Eurodecor, Dryko, Ubeton 18 kg aparecem) e Mercado Livre bloquearam a leitura — sem preço; Casas Bahia deu erro.",
       "ofertas": [
         {
           "loja": "Cocil Home Center",
@@ -2057,15 +2217,14 @@
           "loja": "Magazine Luiza (vend. eFácil)",
           "titulo": "Manta Líquida Quartzolit Branca Balde 18 kg",
           "url": "https://m.magazineluiza.com.br/manta-liquida-quartzolit-branca-balde-18kg/p/hk53g622h2/cj/mali/?seller_id=efacil",
-          "preco": 208.9,
+          "preco": 211.9,
           "oferta_un": "balde 18 kg",
-          "preco_unidade": 208.9,
+          "preco_unidade": 211.9,
           "local": "online",
           "frete_manaus": "",
-          "obs": "preço da lista de busca do Magalu; 2x de R$ 104,45 sem juros; cupom 5% OFF exibido; frete para Manaus não calculado",
+          "obs": "preço da lista de busca do Magalu; sem preço riscado agora (era R$ 208,90 com riscado na anterior); frete para Manaus não calculado",
           "data": "2026-11-26",
-          "marca": "Quartzolit",
-          "promocao": "de R$ 258,15 por R$ 208,90"
+          "marca": "Quartzolit"
         },
         {
           "loja": "Telhanorte",
@@ -2085,15 +2244,29 @@
           "loja": "Magazine Luiza (vend. Copafer)",
           "titulo": "Manta Líquida Membrana Acrílica Impermeabilizante Branca 18 kg Quartzolit",
           "url": "https://m.magazineluiza.com.br/manta-liquida-membrana-acrilica-impermeabilizante-branca-18-kilos-31113-02-34-053-quartzolit/p/fa0eh5eeeg/cj/mali/?seller_id=copafer",
-          "preco": 241.32,
+          "preco": 235.3,
           "oferta_un": "balde 18 kg",
-          "preco_unidade": 241.32,
+          "preco_unidade": 235.3,
           "local": "online",
           "frete_manaus": "",
           "obs": "preço no Pix, visto na lista de busca do Magalu",
           "data": "2026-11-26",
           "marca": "Quartzolit",
-          "promocao": "7% OFF no Pix"
+          "promocao": "de R$ 247,68 por R$ 235,30 no Pix"
+        },
+        {
+          "loja": "Magazine Luiza (vend. Copafer)",
+          "titulo": "Manta Líquida 18 kg Branca Eurodecor (equivalente, não é Quartzolit)",
+          "url": "https://m.magazineluiza.com.br/manta-liquida-18-kilo-branca-03-01-02-0012-eurodecor/p/ddf4j5b3g5/cj/mali/?seller_id=copafer",
+          "preco": 251.26,
+          "oferta_un": "balde 18 kg",
+          "preco_unidade": 251.26,
+          "local": "online",
+          "frete_manaus": "",
+          "obs": "preço no Pix, visto na lista de busca do Magalu",
+          "data": "2026-11-26",
+          "marca": "Eurodecor (equivalente, não é Quartzolit)",
+          "promocao": "de R$ 264,48 por R$ 251,26 no Pix"
         },
         {
           "loja": "Magazine Luiza (vend. Ultramarket)",
@@ -2108,19 +2281,6 @@
           "data": "2026-11-26",
           "marca": "Vedacit/Vedapren (equivalente, não é Quartzolit)",
           "promocao": "de R$ 277,99 por R$ 264,09"
-        },
-        {
-          "loja": "Magazine Luiza (vend. Loja Web Continental)",
-          "titulo": "Manta Líquida Zero Goteira Impermeabilizante Branco 18 kg Eurodecor (equivalente, não é Quartzolit)",
-          "url": "https://m.magazineluiza.com.br/manta-liquida-zero-goteira-impermeabilizante-branco-18kg-eurodecor/p/ddh5akcbf9/cj/mali/?seller_id=lojawebcontinentalmarketplace",
-          "preco": 273.85,
-          "oferta_un": "balde 18 kg",
-          "preco_unidade": 273.85,
-          "local": "online",
-          "frete_manaus": "",
-          "obs": "3x de R$ 91,28 sem juros; preço visto na lista de busca do Magalu",
-          "data": "2026-11-26",
-          "marca": "Eurodecor (equivalente, não é Quartzolit)"
         },
         {
           "loja": "Telhanorte",
