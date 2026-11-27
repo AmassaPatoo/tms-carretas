@@ -196,12 +196,12 @@ function desenharFotos() {
   }).join('')
     + (edFotos.length < max ? `<label class="add"><b>＋</b>${edModo === 'obra' ? 'Fotos ou vídeo' : 'Adicionar fotos'}<input type="file" accept="image/jpeg,image/png,image/webp${edModo === 'obra' ? ',video/mp4,video/webm,video/quicktime' : ''}" multiple hidden id="inFotos"></label>` : '');
 }
-async function reduzir(file) {
+async function reduzir(file, maxLado = 1400, qualidade = 0.82) {
   const b = await createImageBitmap(file);
-  const s = Math.min(1, 1400 / Math.max(b.width, b.height));
+  const s = Math.min(1, maxLado / Math.max(b.width, b.height));
   const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(b.width * s)); c.height = Math.max(1, Math.round(b.height * s));
   c.getContext('2d').drawImage(b, 0, 0, c.width, c.height); b.close && b.close();
-  return new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+  return new Promise(r => c.toBlob(r, 'image/jpeg', qualidade));
 }
 async function enviarFotos(files) {
   const max = edModo === 'obra' ? 12 : 8;
@@ -451,14 +451,74 @@ async function telaSite() {
       <div><label>Parcelas no cartão</label><input name="parcelas" type="number" min="1" max="12" value="${c.parcelas ?? 3}"></div>
       <div><label>Reserva do pedido (minutos)</label><input name="reserva_min" type="number" min="5" max="1440" value="${c.reserva_min ?? 15}"><p class="hint">Pedido não pago nesse prazo expira e libera o estoque.</p></div>
       <div class="full"><label class="sw"><input type="checkbox" name="publicado" ${c.publicado ? 'checked' : ''}><span>Site no ar (visível para clientes)</span></label></div>
-    </div><div class="btn-row"><button class="btn pri" id="btnSite">${CFG ? 'Salvar' : 'Criar site'}</button></div></form></div>`;
+    </div><div class="btn-row"><button class="btn pri" id="btnSite">${CFG ? 'Salvar' : 'Criar site'}</button></div></form></div>
+    ${CFG ? cardAparencia() : ''}`;
+  if (CFG) desenharTema();
+}
+
+/* ---- APARÊNCIA: imagens e textos do topo e do rodapé do site ---- */
+let TEMA = null;
+function temaPadrao() { return { topo: { imagens: [], escurecer: 45, titulo: '' }, rodape: { imagens: [], escurecer: 55, texto: '' } }; }
+function cardAparencia(t = CFG.tema || {}) {
+  const p = temaPadrao();
+  TEMA = { topo: { ...p.topo, ...(t.topo || {}) }, rodape: { ...p.rodape, ...(t.rodape || {}) } };
+  TEMA.topo.imagens = [...TEMA.topo.imagens]; TEMA.rodape.imagens = [...TEMA.rodape.imagens];
+  const bloco = (k, nome, extra) => `<div class="tema-bloco"><h3 style="margin:0 0 6px;color:var(--navy);font-size:15px">${nome}</h3>
+      <div class="fotos larga" id="tema-${k}"></div>
+      <div class="grid" style="margin-top:10px">
+        <div><label>Escurecer a imagem: <b id="esc-${k}">${TEMA[k].escurecer}%</b></label><input type="range" min="0" max="85" step="5" value="${TEMA[k].escurecer}" data-tema-esc="${k}" style="height:auto;padding:0;background:none;border:none"><p class="hint">Mais escuro = texto mais fácil de ler.</p></div>
+        ${extra}
+      </div></div>`;
+  return `<div class="card"><h2>🎨 Aparência do site <a class="btn sm dir" href="${esc(linkSite())}" target="_blank" rel="noopener">Ver no site</a></h2>
+    <p class="sub">Escolha as imagens de fundo do topo e do rodapé (até 6 em cada; com mais de uma, elas se alternam devagar). Use fotos largas e de boa qualidade das suas obras.</p>
+    ${bloco('topo', 'Topo (primeira coisa que o cliente vê)', `<div><label>Título grande</label><input maxlength="80" data-tema-txt="topo.titulo" value="${esc(TEMA.topo.titulo)}" placeholder="Do material à instalação."><p class="hint">A frase menor embaixo é a "Frase de destaque" acima.</p></div>`)}
+    <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+    ${bloco('rodape', 'Rodapé (final da página)', `<div class="full"><label>Texto do rodapé (opcional)</label><textarea rows="2" maxlength="300" data-tema-txt="rodape.texto" placeholder="Ex.: Atendemos toda Manaus. Seg. a sáb., 8h às 18h.">${esc(TEMA.rodape.texto)}</textarea></div>`)}
+    <div class="btn-row"><button class="btn pri" data-act="tema-salvar">Salvar aparência</button><button class="btn" data-act="tema-limpar">Voltar ao padrão</button></div></div>`;
+}
+function desenharTema() {
+  ['topo', 'rodape'].forEach(k => {
+    const box = $('#tema-' + k); if (!box) return;
+    const l = TEMA[k].imagens;
+    box.innerHTML = l.map((u, i) => `<div class="f" style="background-image:url('${esc(u)}')">${i === 0 ? '<span class="selo capa">1ª</span>' : ''}
+        <button type="button" data-act="tema-del" data-k="${k}" data-i="${i}" aria-label="Remover">×</button>
+        ${l.length > 1 ? `<div class="ord">${i > 0 ? `<button type="button" data-act="tema-esq" data-k="${k}" data-i="${i}" aria-label="Mover para a esquerda">◀</button>` : ''}${i < l.length - 1 ? `<button type="button" data-act="tema-dir" data-k="${k}" data-i="${i}" aria-label="Mover para a direita">▶</button>` : ''}</div>` : ''}</div>`).join('')
+      + (l.length < 6 ? `<label class="add"><b>＋</b>Adicionar imagem<input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-tema-up="${k}"></label>` : '')
+      + (!l.length ? '<p class="hint" style="align-self:center;margin:0">Sem imagem: fica o fundo escuro padrão.</p>' : '');
+  });
+}
+async function enviarTema(k, files) {
+  const lista = [...files].slice(0, 6 - TEMA[k].imagens.length); if (!lista.length) return;
+  for (const f of lista) {
+    try {
+      toast('Enviando imagem…', 10000);
+      const blob = await reduzir(f, 2000, 0.8);
+      const caminho = `${EMP}/tema/${uid()}.jpg`;
+      await ok(db.storage.from('loja').upload(caminho, blob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: false }));
+      TEMA[k].imagens.push(db.storage.from('loja').getPublicUrl(caminho).data.publicUrl); desenharTema();
+    } catch (e) { erro(e); }
+  }
+  toast('Imagem pronta. Clique em "Salvar aparência".');
+}
+async function salvarTema() {
+  const antigo = CFG.tema || {};
+  const novo = { topo: { imagens: TEMA.topo.imagens, escurecer: TEMA.topo.escurecer, titulo: TEMA.topo.titulo.trim() },
+                 rodape: { imagens: TEMA.rodape.imagens, escurecer: TEMA.rodape.escurecer, texto: TEMA.rodape.texto.trim() } };
+  try {
+    CFG = await ok(db.from('loj_config').update({ tema: novo }).eq('empresa_id', EMP).select().single());
+    const usadas = [...novo.topo.imagens, ...novo.rodape.imagens];
+    await apagarArquivos([...((antigo.topo || {}).imagens || []), ...((antigo.rodape || {}).imagens || [])].filter(u => !usadas.includes(u)));
+    toast(CFG.publicado ? '✓ Aparência salva. Já está no site.' : '✓ Aparência salva.');
+  } catch (e) {
+    if (/tema/.test(e.message || '') && /column|coluna/i.test(e.message || '')) toast('Rode a migração 012_loja_aparencia.sql no Supabase primeiro.', 6000); else erro(e);
+  }
 }
 async function salvarSite(form) {
   const f = new FormData(form);
   let zap = String(f.get('whatsapp') || '').replace(/\D/g, ''); if (/^55\d{10,11}$/.test(zap)) zap = zap.slice(2);
   if (zap && !/^\d{10,11}$/.test(zap)) return toast('WhatsApp: informe DDD + número.');
   const row = { slug: slugify(f.get('slug')), nome: f.get('nome').trim() || null, cidade: f.get('cidade').trim() || null, frase: f.get('frase').trim() || null,
-    whatsapp: zap || null, pix_chave: f.get('pix_chave').trim() || null, pix_nome: f.get('pix_nome').trim() || null, pix_cidade: f.get('pix_cidade').trim() || null,
+    whatsapp: zap || null, pix_chave: chavePix(f.get('pix_chave')) || null, pix_nome: f.get('pix_nome').trim() || null, pix_cidade: f.get('pix_cidade').trim() || null,
     pix_desconto: Math.min(50, Math.max(0, toNum(f.get('pix_desconto')))), parcelas: Math.min(12, Math.max(1, parseInt(f.get('parcelas'), 10) || 1)),
     reserva_min: Math.min(1440, Math.max(5, parseInt(f.get('reserva_min'), 10) || 15)), publicado: !!f.get('publicado') };
   if (row.publicado && !PRODUTOS.some(p => p.publicado) && !confirm('Nenhum material está marcado para aparecer no site. Colocar no ar mesmo assim?')) return;
@@ -471,6 +531,15 @@ async function salvarSite(form) {
     $('#btnSite').disabled = false;
     if (e.code === '23505') toast('Esse endereço já é usado por outra empresa. Escolha outro.', 5000); else erro(e);
   }
+}
+
+/* chave Pix como o banco espera: CNPJ/CPF só números; celular com +55 */
+function chavePix(k) {
+  k = String(k || '').trim();
+  const d = k.replace(/\D/g, '');
+  if (/^[\d.\-\/\s]+$/.test(k) && (d.length === 14 || d.length === 11) && /[.\-\/]/.test(k)) return d;
+  if (/^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/.test(k)) return '+55' + d;
+  return k;
 }
 
 /* ---------------- tempo real (pedidos chegando) ---------------- */
@@ -516,6 +585,12 @@ document.addEventListener('click', async e => {
         if (!ytId(u)) return toast('Use um link de vídeo do YouTube (https://youtube.com/… ou https://youtu.be/…).');
         if (edFotos.filter(ehVideo).length >= 3) return toast('Máximo de 3 vídeos por obra.');
         if (edFotos.length >= 12) return toast('Máximo atingido.'); edFotos.push(u); return desenharFotos(); }
+      case 'tema-del': TEMA[b.dataset.k].imagens.splice(i, 1); return desenharTema();
+      case 'tema-esq': { const l = TEMA[b.dataset.k].imagens; [l[i - 1], l[i]] = [l[i], l[i - 1]]; return desenharTema(); }
+      case 'tema-dir': { const l = TEMA[b.dataset.k].imagens; [l[i + 1], l[i]] = [l[i], l[i + 1]]; return desenharTema(); }
+      case 'tema-salvar': b.disabled = true; await salvarTema(); b.disabled = false; return;
+      case 'tema-limpar': if (!confirm('Tirar as imagens e textos e voltar ao visual padrão? (só vale depois de "Salvar aparência")')) return;
+        b.closest('.card').outerHTML = cardAparencia({}); desenharTema(); return toast('Clique em "Salvar aparência" para aplicar.');
       case 'fped': UI.fPed = b.dataset.f; return render();
       case 'fsol': UI.fSol = b.dataset.f; return render();
       case 'ped-st': return await mudarStatus(id, b.dataset.st);
@@ -537,6 +612,7 @@ document.addEventListener('click', async e => {
 document.addEventListener('change', async e => {
   const el = e.target;
   if (el.dataset.campo) return salvarCampo(el);
+  if (el.dataset.temaUp) { const fs = [...el.files]; el.value = ''; return enviarTema(el.dataset.temaUp, fs); }
   if (el.id === 'inFotos') { const fs = [...el.files]; el.value = ''; return enviarFotos(fs); }
   if (el.dataset.act === 'conf') return conferir(el.dataset.id, +el.dataset.j, el.checked);
   if (el.dataset.obraPub) {
@@ -546,6 +622,8 @@ document.addEventListener('change', async e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset && e.target.dataset.campo && e.target.dataset.campo !== 'publicado') { e.preventDefault(); e.target.blur(); } if (e.key === 'Escape' && !$('#modal').hidden) fecharModal(); });
 document.addEventListener('input', e => {
+  if (e.target.dataset.temaEsc) { const k = e.target.dataset.temaEsc; TEMA[k].escurecer = +e.target.value; $('#esc-' + k).textContent = e.target.value + '%'; return; }
+  if (e.target.dataset.temaTxt) { const [k, c] = e.target.dataset.temaTxt.split('.'); TEMA[k][c] = e.target.value; return; }
   if (e.target.id === 'busca') { UI.busca = e.target.value; const pos = e.target.selectionStart; render(); const n = $('#busca'); n.focus(); n.setSelectionRange(pos, pos); }
 });
 document.addEventListener('submit', e => {

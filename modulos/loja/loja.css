@@ -66,3 +66,6 @@ a.tb-btn{text-decoration:none}
 .link-site span{flex:1;min-width:200px}
 .aviso{background:#fff6ea;border:1px solid #f3d2ad;color:#7a4a12;border-radius:12px;padding:11px 13px;font-size:13.5px}
 .aviso.ok{background:var(--ok-soft);border-color:#bfe3cc;color:var(--ok)}
+
+.fotos.larga{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.fotos.larga .f,.fotos.larga .add{aspect-ratio:16/9}

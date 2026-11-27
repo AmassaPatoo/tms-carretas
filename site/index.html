@@ -22,7 +22,18 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .primary{background:var(--orange);color:#fff;border-color:var(--orange)}
 .zap{background:#1fa855;color:#fff;border-color:#1fa855}
 .strip{text-align:center;background:var(--orange);color:#fff;padding:9px;font-size:11px;letter-spacing:1.4px;font-weight:700}
-header{background:#242421;color:#fff;padding:22px 20px 30px;text-align:center}
+header{background:#242421;color:#fff;padding:22px 20px 30px;text-align:center;position:relative;overflow:hidden}
+.bgs{position:absolute;inset:0;z-index:0;pointer-events:none}
+.bgs i{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transition:opacity 1.6s ease;transform:scale(1.02)}
+.bgs i.on{opacity:1}
+.bgs b{position:absolute;inset:0;background:#000}
+header>:not(.bgs),footer>:not(.bgs){position:relative;z-index:1}
+header.comfoto{padding:48px 20px 60px;min-height:min(62vh,520px);display:flex;flex-direction:column;justify-content:center}
+header.comfoto h1,header.comfoto p,footer.comfoto{text-shadow:0 1px 12px rgba(0,0,0,.55)}
+header.comfoto p{color:#f1ede6}
+footer.comfoto{padding-top:60px;color:#f1ede6}
+footer.comfoto .muted{color:#e6e1d8!important}
+#ftexto{max-width:640px;margin:10px auto;font-size:14px;line-height:1.5;white-space:pre-line}
 .brand{font-size:32px;font-weight:900;letter-spacing:-2px;color:#ff9855}
 .brand small{display:block;font-size:10px;letter-spacing:3px;color:#fff}
 h1{font:clamp(32px,5vw,58px)/1.05 Georgia,serif;margin:20px 0 8px}
@@ -88,7 +99,7 @@ dialog.wide{width:min(960px,calc(100% - 22px))}
 .notice{background:#fff0d9;padding:11px;border-radius:6px;font-size:12px;color:#69491e}
 .empty{padding:32px;text-align:center;background:#fff;border-radius:9px;color:var(--muted)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
-footer{background:#242421;color:#ddd;padding:25px 20px 100px;text-align:center;font-size:12px}
+footer{background:#242421;color:#ddd;padding:25px 20px 100px;text-align:center;font-size:12px;position:relative;overflow:hidden}
 footer a{color:#ff9855}
 h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
 .badge{display:inline-block;background:#eee6d9;padding:5px 8px;border-radius:5px;font-size:11px;font-weight:700}
@@ -117,7 +128,7 @@ h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
 <div class="strip" id="strip">MATERIAIS • INSTALAÇÃO</div>
 <header>
   <div class="brand" id="brand">K&amp;E<small>OBRA FÁCIL</small></div>
-  <h1>Do material à instalação.</h1>
+  <h1 id="titulo">Do material à instalação.</h1>
   <p id="frase">Acabamentos, serviços e obras reais. Tudo em um só lugar.</p>
   <p id="cidade"></p>
   <div class="heroactions">
@@ -137,6 +148,7 @@ h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
 <main class="wrap" id="main"><div class="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></main>
 <footer>
   <b id="fnome">K&amp;E OBRA FÁCIL</b>
+  <p id="ftexto" hidden></p>
   <p>Materiais e mão de obra<span id="fcidade"></span>.</p>
   <p id="fzap"></p>
   <p class="muted" style="color:#aaa">Preços e disponibilidade atualizados em tempo real. Frete combinado antes do pagamento.</p>
@@ -228,6 +240,31 @@ function cabecalho() {
   if (L.parcelas > 1) s.push(`ATÉ ${L.parcelas}X NO CARTÃO`);
   if (L.pix && L.pix_desconto > 0) s.push(`${fmtQ(L.pix_desconto)}% OFF NO PIX`);
   $('strip').textContent = s.join(' • ');
+  aplicarTema(L.tema || {});
+}
+/* aparência escolhida no painel: imagens (com troca suave) e textos do topo e do rodapé */
+let temaAtual = '', temaTimer = null;
+function aplicarTema(t) {
+  const chave = JSON.stringify(t); if (chave === temaAtual) return; temaAtual = chave;
+  const topo = t.topo || {}, rod = t.rodape || {};
+  $('titulo').textContent = (topo.titulo || '').trim() || 'Do material à instalação.';
+  const tx = (rod.texto || '').trim(); $('ftexto').textContent = tx; $('ftexto').hidden = !tx;
+  fundo(document.querySelector('header'), topo.imagens, topo.escurecer ?? 45);
+  fundo(document.querySelector('footer'), rod.imagens, rod.escurecer ?? 55);
+  clearInterval(temaTimer);
+  temaTimer = setInterval(() => {
+    if (document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.querySelectorAll('.bgs').forEach(b => { const is = [...b.querySelectorAll('i')]; if (is.length < 2) return;
+      const k = is.findIndex(x => x.classList.contains('on')); is[k].classList.remove('on'); is[(k + 1) % is.length].classList.add('on'); });
+  }, 6000);
+}
+function fundo(el, imagens, escurecer) {
+  el.querySelector('.bgs')?.remove();
+  const imgs = (imagens || []).filter(safePhoto).slice(0, 6);
+  el.classList.toggle('comfoto', imgs.length > 0);
+  if (!imgs.length) return;
+  const op = Math.min(90, Math.max(0, Number(escurecer) || 0)) / 100;
+  el.insertAdjacentHTML('afterbegin', `<div class="bgs" aria-hidden="true">${imgs.map((u, i) => `<i class="${i === 0 ? 'on' : ''}" style="background-image:url('${esc(u)}')"></i>`).join('')}<b style="opacity:${op}"></b></div>`);
 }
 
 /* tempo real: a linha da config da loja muda de versão a cada alteração */
@@ -454,7 +491,15 @@ async function createOrder(f) {
 /* Pix Copia e Cola (BR Code) — mesmo padrão do pix/index.html */
 function crc16(s) { let c = 0xFFFF; for (let i = 0; i < s.length; i++) { c ^= s.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF; } return c.toString(16).toUpperCase().padStart(4, '0'); }
 const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9 ]/g, '').toUpperCase().trim();
+function chavePix(k) {
+  k = String(k || '').trim();
+  const d = k.replace(/\D/g, '');
+  if (/^[\d.\-\/\s]+$/.test(k) && (d.length === 14 || d.length === 11) && /[.\-\/]/.test(k)) return d;   // CNPJ/CPF digitado com pontuação
+  if (/^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/.test(k)) return '+55' + d;                                        // celular sem +55
+  return k;
+}
 function brcode(pix, valor, txid) {
+  pix = { ...pix, chave: chavePix(pix.chave) };
   const f = (id, v) => id + String(v.length).padStart(2, '0') + v;
   const p = f('00', '01') + f('26', f('00', 'br.gov.bcb.pix') + f('01', pix.chave)) + f('52', '0000') + f('53', '986') +
     (valor > 0 ? f('54', Number(valor).toFixed(2)) : '') + f('58', 'BR') + f('59', (semAcento(pix.nome) || 'RECEBEDOR').slice(0, 25)) +

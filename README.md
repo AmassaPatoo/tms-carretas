@@ -46,6 +46,7 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
 10. `010_loja_site.sql`: módulo **Loja / Site** (materiais, estoque, obras, pedidos e pedidos de orçamento do site, em tempo real).
    Depois, em **Administração**, ligue "Loja / Site" na empresa.
 11. `011_loja_videos_obras.sql`: vídeos nas obras (arquivo até 50 MB ou link do YouTube), mostrados só nos detalhes da obra.
+12. `012_loja_aparencia.sql`: aparência do site (imagens de fundo e textos do topo e do rodapé), em ⚙️ Site → 🎨 Aparência.
 9. `009_remover_assinatura_link.sql`: botão "Remover assinatura" no orçamento, inclusive para a assinatura feita pelo cliente no link (o orçamento volta para "Enviado" e o link antigo é cancelado).
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
