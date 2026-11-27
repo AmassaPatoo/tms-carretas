@@ -14,6 +14,7 @@ let CFG = null;                  // linha de loj_config (null = site ainda não 
 let PRODUTOS = [], OBRAS = [], PEDIDOS = [], SOLIC = [];
 const UI = { aba: 'materiais', busca: '', fPed: 'abertos', fSol: 'nova', novos: new Set() };
 let edFotos = [];                // fotos do cadastro aberto no modal
+let edVideos = [];               // vídeos da obra aberta no modal
 
 /* ---------------- utilitários ---------------- */
 const money = v => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -30,7 +31,7 @@ const inNum = v => (v === null || v === undefined || v === '') ? '' : String(Mat
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
 function toast(m, ms = 2800) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms); }
 function abrirModal(html, largo) { $('#modalBox').className = 'modal-box' + (largo ? ' largo' : ''); $('#modalBox').innerHTML = html; $('#modal').hidden = false; document.body.classList.add('lock'); }
-function fecharModal() { $('#modal').hidden = true; $('#modalBox').innerHTML = ''; document.body.classList.remove('lock'); edFotos = []; }
+function fecharModal() { $('#modal').hidden = true; $('#modalBox').innerHTML = ''; document.body.classList.remove('lock'); edFotos = []; edVideos = []; }
 const cab = t => `<h3>${t}<button class="x" data-act="fechar" aria-label="Fechar">×</button></h3>`;
 async function ok(p) { const { data, error } = await p; if (error) throw error; return data; }
 function erro(e) { console.error(e); toast('Erro: ' + (e && e.message || e), 5000); }
@@ -358,13 +359,13 @@ function telaObras() {
     <p class="sub">Aparecem em "Obras" e "Onde trabalhamos" no site. Publique só com autorização do cliente e use o bairro, nunca o endereço.</p>
     ${OBRAS.map(o => `<div class="prod obra ${o.publicado ? '' : 'oculto'}" style="grid-template-columns:52px minmax(0,1fr) auto">
       <div class="th" style="background-image:url('${esc(o.fotos[0] || '')}')"></div>
-      <div class="info"><b>${esc(o.titulo)}</b><small>${esc(o.tipo)} · 📍 ${esc(o.local)} · ${o.fotos.length} foto(s)</small>${o.publicado ? '' : '<span class="tag">oculta</span>'}</div>
+      <div class="info"><b>${esc(o.titulo)}</b><small>${esc(o.tipo)} · 📍 ${esc(o.local)} · ${o.fotos.length} foto(s)${(o.videos || []).length ? ' · ' + o.videos.length + ' vídeo(s)' : ''}</small>${o.publicado ? '' : '<span class="tag">oculta</span>'}</div>
       <div class="acoes"><label class="sw"><input type="checkbox" data-obra-pub="${o.id}" ${o.publicado ? 'checked' : ''}><span>Site</span></label><button class="btn sm" data-act="obra-editar" data-id="${o.id}">Editar</button></div></div>`).join('')
       || '<div class="vazio"><b>Nenhuma obra publicada</b>Mostre fotos reais de antes e depois: é o que mais convence o cliente.</div>'}</div>`;
 }
 function formObra(id) {
   const o = OBRAS.find(x => x.id === id) || { titulo: '', tipo: TIPOS_OBRA[0], local: '', area: '', prazo: '', descricao: '', fotos: [], produtos: [], publicado: true, autorizado: false };
-  edFotos = [...o.fotos];
+  edFotos = [...o.fotos]; edVideos = [...(o.videos || [])];
   const tipos = [...new Set([...TIPOS_OBRA, ...OBRAS.map(x => x.tipo)])];
   abrirModal(`${cab(id ? 'Editar obra' : 'Publicar obra')}
     <form id="fObra" data-id="${id || ''}"><div class="grid">
@@ -375,23 +376,46 @@ function formObra(id) {
       <div><label>Prazo de execução</label><input name="prazo" maxlength="40" value="${esc(o.prazo)}" placeholder="Ex.: 2 dias"></div>
       <div class="full"><label>Antes, execução e resultado</label><textarea name="descricao" rows="3" maxlength="2000">${esc(o.descricao)}</textarea></div>
       <div class="full"><label>Fotos (pelo menos 1 · a primeira é a capa)</label><div class="fotos" id="edFotos"></div></div>
+      <div class="full"><label>Vídeos (até 3 · só aparecem ao abrir os detalhes da obra)</label><div id="edVideos"></div>
+        <div class="btn-row" style="margin-top:6px"><label class="btn sm" style="margin:0">🎬 Enviar vídeo<input type="file" accept="video/mp4,video/webm,video/quicktime" hidden id="inVideo"></label>
+        <button type="button" class="btn sm" data-act="video-yt">▶ Link do YouTube</button></div>
+        <p class="hint">Arquivo até 50 MB (mp4, webm ou mov, ~1 min gravado no celular). Vídeo maior: publique no YouTube (pode ser "não listado") e cole o link.</p></div>
       <div class="full"><label>Materiais usados</label>${PRODUTOS.map(p => `<label class="chk" style="padding:4px 0"><input type="checkbox" name="produtos" value="${p.id}" ${o.produtos.includes(p.id) ? 'checked' : ''}> ${esc(p.nome)}</label>`).join('') || '<p class="hint">Cadastre materiais para ligar à obra.</p>'}</div>
       <div class="full"><label class="chk" style="white-space:normal"><input type="checkbox" name="autorizado" required ${o.autorizado ? 'checked' : ''}> Tenho autorização do cliente para publicar as fotos e o local.</label></div>
       <div><label class="sw"><input type="checkbox" name="publicado" ${o.publicado ? 'checked' : ''}><span>Mostrar no site</span></label></div>
     </div>
     <div class="btn-row"><button class="btn pri" id="btnSalvarObra">Salvar</button>${id ? `<button type="button" class="btn perigo" data-act="obra-excluir" data-id="${id}">Excluir</button>` : ''}<button type="button" class="btn" data-act="fechar">Cancelar</button></div></form>`, true);
-  desenharFotos();
+  desenharFotos(); desenharVideos();
+}
+function desenharVideos() {
+  const box = $('#edVideos'); if (!box) return;
+  box.innerHTML = edVideos.map((u, i) => `<div class="linha"><div class="info"><b>${/youtu/.test(u) ? '▶ YouTube' : '🎬 Vídeo enviado'}</b><small style="word-break:break-all">${esc(u)}</small></div>
+    <button type="button" class="btn sm perigo" data-act="video-del" data-i="${i}">Remover</button></div>`).join('') || '<p class="hint" style="margin:0">Nenhum vídeo.</p>';
+}
+async function enviarVideo(file) {
+  if (!file) return;
+  if (edVideos.length >= 3) return toast('Máximo de 3 vídeos por obra.');
+  if (file.size > 50 * 1024 * 1024) return toast(`Vídeo com ${Math.round(file.size / 1048576)} MB: o limite é 50 MB. Corte o vídeo ou use um link do YouTube.`, 6000);
+  const tipo = file.type || 'video/mp4', ext = { 'video/webm': 'webm', 'video/quicktime': 'mov' }[tipo] || 'mp4';
+  const btn = $('#btnSalvarObra'); btn.disabled = true;
+  toast(`Enviando vídeo (${Math.round(file.size / 1048576)} MB)… não feche a janela.`, 120000);
+  try {
+    const caminho = `${EMP}/videos/${uid()}.${ext}`;
+    await ok(db.storage.from('loja').upload(caminho, file, { contentType: tipo, cacheControl: '31536000', upsert: false }));
+    edVideos.push(db.storage.from('loja').getPublicUrl(caminho).data.publicUrl);
+    desenharVideos(); toast('Vídeo pronto. Clique em Salvar.');
+  } catch (e) { erro(e); } finally { btn.disabled = false; }
 }
 async function salvarObra(form) {
   const id = form.dataset.id, f = new FormData(form), antiga = OBRAS.find(x => x.id === id);
   if (!edFotos.length) return toast('Inclua pelo menos uma foto real da obra.');
   const row = { titulo: f.get('titulo').trim(), tipo: f.get('tipo').trim(), local: f.get('local').trim(), area: f.get('area').trim() || null, prazo: f.get('prazo').trim() || null,
-    descricao: f.get('descricao').trim() || null, fotos: edFotos.slice(0, 12), produtos: f.getAll('produtos'), autorizado: !!f.get('autorizado'), publicado: !!f.get('publicado') };
+    descricao: f.get('descricao').trim() || null, fotos: edFotos.slice(0, 12), videos: edVideos.slice(0, 3), produtos: f.getAll('produtos'), autorizado: !!f.get('autorizado'), publicado: !!f.get('publicado') };
   $('#btnSalvarObra').disabled = true;
   try {
     if (id) await ok(db.from('loj_obras').update(row).eq('id', id)); else await ok(db.from('loj_obras').insert({ ...row, empresa_id: EMP }));
-    if (antiga) await apagarArquivos(antiga.fotos.filter(u => !row.fotos.includes(u)));
-    edFotos = []; fecharModal();
+    if (antiga) await apagarArquivos([...antiga.fotos, ...(antiga.videos || [])].filter(u => !row.fotos.includes(u) && !row.videos.includes(u)));
+    edFotos = []; edVideos = []; fecharModal();
     OBRAS = await ok(db.from('loj_obras').select('*').eq('empresa_id', EMP).order('criado_em', { ascending: false }));
     render(); toast('✓ Obra salva');
   } catch (e) { $('#btnSalvarObra').disabled = false; erro(e); }
@@ -485,6 +509,10 @@ document.addEventListener('click', async e => {
       case 'foto-url': { e.preventDefault(); const u = (prompt('Cole o link (https://…) da imagem:') || '').trim(); if (!u) return;
         if (!/^https:\/\/[^\s"'<>]+$/i.test(u)) return toast('O link precisa começar com https://');
         if (edFotos.length >= 8) return toast('Máximo de fotos atingido.'); edFotos.push(u); return desenharFotos(); }
+      case 'video-del': edVideos.splice(i, 1); return desenharVideos();
+      case 'video-yt': { const u = (prompt('Cole o link do vídeo no YouTube:') || '').trim(); if (!u) return;
+        if (!/^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\/\S+$/i.test(u)) return toast('Use um link do YouTube (https://youtube.com/… ou https://youtu.be/…).');
+        if (edVideos.length >= 3) return toast('Máximo de 3 vídeos por obra.'); edVideos.push(u); return desenharVideos(); }
       case 'fped': UI.fPed = b.dataset.f; return render();
       case 'fsol': UI.fSol = b.dataset.f; return render();
       case 'ped-st': return await mudarStatus(id, b.dataset.st);
@@ -497,7 +525,7 @@ document.addEventListener('click', async e => {
       case 'obra-nova': return formObra(null);
       case 'obra-editar': return formObra(id);
       case 'obra-excluir': { const o = OBRAS.find(x => x.id === id); if (!confirm(`Excluir a obra "${o.titulo}"?`)) return;
-        await ok(db.from('loj_obras').delete().eq('id', id)); await apagarArquivos(o.fotos); OBRAS = OBRAS.filter(x => x.id !== id); fecharModal(); render(); return toast('Obra excluída.'); }
+        await ok(db.from('loj_obras').delete().eq('id', id)); await apagarArquivos([...o.fotos, ...(o.videos || [])]); OBRAS = OBRAS.filter(x => x.id !== id); fecharModal(); render(); return toast('Obra excluída.'); }
       case 'copiar-link': try { await navigator.clipboard.writeText(linkSite()); toast('Link copiado!'); } catch (_) { prompt('Copie o link:', linkSite()); } return;
       case 'zap-link': return abrirWhats('', `Conheça nossos materiais e obras, com preço e estoque atualizados: ${linkSite()}`);
     }
@@ -507,6 +535,7 @@ document.addEventListener('change', async e => {
   const el = e.target;
   if (el.dataset.campo) return salvarCampo(el);
   if (el.id === 'inFotos') return enviarFotos(el.files);
+  if (el.id === 'inVideo') { const f = el.files[0]; el.value = ''; return enviarVideo(f); }
   if (el.dataset.act === 'conf') return conferir(el.dataset.id, +el.dataset.j, el.checked);
   if (el.dataset.obraPub) {
     try { await ok(db.from('loj_obras').update({ publicado: el.checked }).eq('id', el.dataset.obraPub)); const o = OBRAS.find(x => x.id === el.dataset.obraPub); o.publicado = el.checked; render(); toast('✓ Atualizado no site'); }
