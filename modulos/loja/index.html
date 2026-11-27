@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KE Loja">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" href="../../icons/icon.svg" type="image/svg+xml">
+<title>Loja / Site · Plataforma KE</title>
+<link rel="stylesheet" href="../cotacoes/cotacoes.css">
+<link rel="stylesheet" href="loja.css">
+<script src="../../vendor/supabase.js"></script>
+<script src="../../config.js"></script>
+<script src="../../core/plataforma.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">🏪</div>
+    <div><strong>Loja / Site</strong><small id="subtitulo">O que você cadastra aqui aparece no site na hora</small></div>
+  </div>
+  <a class="tb-btn" id="verSite" target="_blank" rel="noopener" hidden>🌐<span class="lbl"> Ver site</span></a>
+</header>
+
+<nav class="abas" id="abas">
+  <button data-aba="materiais" class="on">📦 Materiais</button>
+  <button data-aba="pedidos">🧾 Pedidos <span class="cont" id="cPed"></span></button>
+  <button data-aba="solicitacoes">💬 Orçamentos do site <span class="cont" id="cSol"></span></button>
+  <button data-aba="obras">🏗️ Obras</button>
+  <button data-aba="site">⚙️ Site</button>
+</nav>
+
+<main id="conteudo"><div class="carregando">Carregando…</div></main>
+
+<div class="modal" id="modal" hidden><div class="modal-box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="loja.js"></script>
+</body>
+</html>

@@ -5,5 +5,6 @@
 window.PLAT_CONFIG = {
   nome: 'Plataforma KE',
   supabaseUrl: 'https://ilhscefovklryuhdemlv.supabase.co',
-  supabaseAnonKey: 'sb_publishable_hfzPRlEWhbUakMJgTok4Zg_aRdML-_s'
+  supabaseAnonKey: 'sb_publishable_hfzPRlEWhbUakMJgTok4Zg_aRdML-_s',
+  lojaPadrao: 'ke'   // site/ sem ?l= abre esta loja
 };

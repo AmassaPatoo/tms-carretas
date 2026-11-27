@@ -1,7 +1,7 @@
 # Plataforma KE
 
 Todos os sistemas da empresa em um só lugar, com um login só e um banco de dados só (Supabase).
-Hoje tem: **Orçamentos**, **Carreta** (TMS) e **Clientes**. Cada sistema novo entra como um módulo.
+Hoje tem: **Orçamentos**, **Carreta** (TMS), **Cotações**, **Romaneios**, **Loja / Site** e **Clientes**. Cada sistema novo entra como um módulo.
 
 - Instalável no celular (Android e iPhone) como aplicativo.
 - Cada empresa (cada cliente seu) só enxerga os próprios dados: a separação é feita pelo banco (RLS).
@@ -22,6 +22,8 @@ modulos/orcamentos/        sistema de orçamentos
 modulos/carreta/           sistema de carretas (TMS)
 modulos/cotacoes/          pesquisa de preços de material nas lojas
 modulos/romaneios/         romaneio de entrega e ordem de serviço (pedido do fornecedor → documento da empresa)
+modulos/loja/              materiais, estoque e obras do site + pedidos e orçamentos que chegam dele
+site/                      página pública: o site da loja (vitrine em tempo real)
 aprovar/                   página pública: cliente aprova o orçamento
 cotar/                     página pública: loja responde a cotação
 supabase/migrations/       comandos do banco (rodar no SQL Editor, em ordem)
@@ -41,11 +43,13 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
    Depois, em **Administração**, ligue "Cotações" na empresa.
 8. `008_sefaz_pelo_banco.sql`: consulta à SEFAZ-SP/Ambiente Nacional pelo banco (certificado no cofre).
 7. `007_excluir_cte.sql`: permite ao gestor excluir CT-e (apaga junto a receita do DRE) e excluir viagem (com tudo dela).
+10. `010_loja_site.sql`: módulo **Loja / Site** (materiais, estoque, obras, pedidos e pedidos de orçamento do site, em tempo real).
+   Depois, em **Administração**, ligue "Loja / Site" na empresa.
 9. `009_remover_assinatura_link.sql`: botão "Remover assinatura" no orçamento, inclusive para a assinatura feita pelo cliente no link (o orçamento volta para "Enviado" e o link antigo é cancelado).
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
 
-Padrão dos nomes: `core_` = núcleo · `orc_` = Orçamentos · `car_` = Carreta · `cot_` = Cotações.
+Padrão dos nomes: `core_` = núcleo · `orc_` = Orçamentos · `car_` = Carreta · `cot_` = Cotações · `loj_` = Loja / Site.
 
 ### Configurar o login (uma vez)
 
@@ -96,6 +100,24 @@ Para atualizar depois: suba os arquivos alterados de novo e **aumente o número 
 - O link nunca mostra custos e lucro internos. Depois de aprovado, não aceita outra assinatura. Orçamento vencido não pode ser aprovado.
 - A página do link é `aprovar/index.html` (endereço `…/aprovar/?c=CODIGO`). A prévia do WhatsApp usa `aprovar/previa.png`;
   se o endereço do site mudar, atualize o `og:image` dessa página.
+
+## Loja / Site (vitrine em tempo real)
+
+- **Endereço do site**: `…/site/?l=IDENTIFICADOR` (ex.: `https://amassapatoo.github.io/tms-carretas/site/?l=ke`).
+  Sem `?l=` abre a loja de `lojaPadrao` do `config.js`.
+- No módulo **Loja / Site** a equipe cadastra **materiais** (preço, estoque, fotos, mostrar/ocultar), **obras** e as
+  **configurações** (WhatsApp, Pix, desconto no Pix, parcelas, tempo de reserva, site no ar/fora do ar).
+- **Tempo real**: qualquer mudança (preço, estoque, foto, obra, reserva de pedido) troca a `versao` da loja; o site está
+  escutando essa linha pelo Supabase Realtime e recarrega o catálogo sozinho (e confere a cada minuto, por segurança).
+- **Pedido do site**: o banco confere preço e estoque e **reserva** o material pelo tempo configurado (padrão 15 min).
+  No Pix, o cliente recebe QR Code e Pix Copia e Cola com o valor e o código do pedido. Pagamento é **conferido pela equipe**
+  (botão "Confirmar pagamento"); depois: separar (checklist) → pronto → saída/retirada, que **baixa o estoque físico**.
+  Não pago no prazo → expira e libera a reserva.
+- **Pedido de orçamento do site**: chega em "💬 Orçamentos do site"; **Criar orçamento** cadastra o cliente e abre um
+  orçamento rascunho no módulo Orçamentos com bairro, área e detalhes já preenchidos.
+- O visitante não acessa as tabelas: só as funções `loj_publico_*` (catálogo, pedido, consulta, orçamento), com limites
+  (3 pedidos aguardando por WhatsApp, 5 pedidos de orçamento por dia). Fotos ficam no bucket público `loja`.
+- Se o Realtime estiver desligado no projeto, o site continua funcionando e se atualiza a cada minuto.
 
 ## Cotações (preços do mercado)
 

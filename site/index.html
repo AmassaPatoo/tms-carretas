@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#242421">
+<title>K&amp;E Obra Fácil | Materiais e instalação</title>
+<meta name="description" content="Materiais de acabamento, instalação e obras reais em Manaus. Preços e estoque atualizados em tempo real.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="K&amp;E Obra Fácil · Materiais e instalação">
+<meta property="og:description" content="Pisos, rodapés, ripados e colas com estoque em tempo real. Peça seu orçamento de instalação.">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<script src="../vendor/supabase.js"></script>
+<script src="../config.js"></script>
+<script src="../vendor/qrcode.js"></script>
+<style>
+:root{--bg:#f3f1ec;--ink:#242421;--orange:#c65317;--muted:#6e6b65;--line:#dedbd5;--ok:#2d7a46}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;padding:11px;font-weight:650}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+.zap{background:#1fa855;color:#fff;border-color:#1fa855}
+.strip{text-align:center;background:var(--orange);color:#fff;padding:9px;font-size:11px;letter-spacing:1.4px;font-weight:700}
+header{background:#242421;color:#fff;padding:22px 20px 30px;text-align:center}
+.brand{font-size:32px;font-weight:900;letter-spacing:-2px;color:#ff9855}
+.brand small{display:block;font-size:10px;letter-spacing:3px;color:#fff}
+h1{font:clamp(32px,5vw,58px)/1.05 Georgia,serif;margin:20px 0 8px}
+header p{color:#d9d5ce;margin:8px}
+.heroactions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}
+.bar{position:sticky;top:0;z-index:10;background:#f3f1ecf5;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:12px}
+.wrap{max-width:1100px;margin:auto}
+.searchrow{display:flex;gap:8px;align-items:center}
+.search{flex:1;width:100%;padding:12px;border:1px solid var(--line);border-radius:7px;background:#fff}
+.live{font-size:11px;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.live i{width:8px;height:8px;border-radius:50%;background:#bbb;display:inline-block}
+.live.on i{background:#2fb35a;box-shadow:0 0 0 0 #2fb35a88;animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 7px #2fb35a00}100%{box-shadow:0 0 0 0 #2fb35a00}}
+.tabs,.chips{display:flex;gap:7px;overflow:auto;margin:9px 0 0;scrollbar-width:thin}
+.tabs button,.chips button{white-space:nowrap;font-size:12px;border-radius:30px;padding:8px 13px}
+.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{padding:18px 12px 110px;min-height:50vh}
+.sectiontitle{display:flex;align-items:center;gap:12px;margin:18px 0 14px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.sectiontitle:after{content:'';height:1px;background:var(--line);flex:1}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:box-shadow .3s}
+.card.flash{box-shadow:0 0 0 3px #ff985588}
+.gallery{aspect-ratio:1;position:relative;background:#ebe5da;overflow:hidden;cursor:pointer}
+.gallery img,.gallery svg{width:100%;height:100%;object-fit:cover;display:block}
+.detailgrid .gallery img{object-fit:contain}
+.gallery .slide{position:absolute;inset:0;opacity:0;transition:opacity .65s}
+.gallery .slide.on{opacity:1}
+.dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:4px;pointer-events:none}
+.dots i{width:6px;height:6px;background:#aaa;border-radius:50%}.dots i.on{background:var(--orange)}
+.tag{position:absolute;top:8px;left:8px;background:#252421;color:#fff;font-size:9px;padding:5px 7px;border-radius:3px;letter-spacing:1px}
+.tag.out{background:#8a2a1a}
+.body{padding:13px;display:flex;flex-direction:column;gap:7px;flex:1}
+.kicker{font-size:10px;letter-spacing:1.6px;color:var(--orange);text-transform:uppercase}
+.body h3{font:bold 19px/1.15 Georgia,serif;margin:0}
+.body p,.muted{color:var(--muted);font-size:13px;line-height:1.5}
+.body p{margin:0}
+.price{font-size:21px;font-weight:750;margin-top:auto;padding-top:8px}
+.body button{width:100%;font-size:11px;letter-spacing:.6px}
+.step{display:flex;border:1px solid var(--orange);border-radius:6px;overflow:hidden;align-items:center;background:#fff}
+.step button{width:38px;border:0;border-radius:0;background:var(--orange);color:#fff;font-size:18px;padding:6px}
+.step span{flex:1;text-align:center;font-size:13px}
+.cbar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:min(640px,calc(100% - 24px));background:var(--ink);color:#fff;padding:12px 15px;border-radius:12px;z-index:20;display:flex;align-items:center;gap:10px;box-shadow:0 6px 25px #0004}
+.cbar>div{flex:1}
+[hidden]{display:none!important}
+dialog{border:0;border-radius:13px;padding:0;width:min(540px,calc(100% - 22px));max-height:92dvh;background:var(--bg);color:var(--ink);overflow:auto}
+dialog::backdrop{background:#0009}
+dialog.wide{width:min(960px,calc(100% - 22px))}
+.modal{padding:22px}
+.close{float:right;border-radius:50%;padding:6px 12px}
+.detailgrid{display:grid;grid-template-columns:1fr 1fr}
+.detailgrid .modal{min-width:0}
+.detailgrid .gallery{background:#fff}
+.thumbs{display:flex;gap:6px;padding:8px;overflow:auto}
+.thumbs button{padding:3px;min-width:55px}
+.thumbs img,.thumbs svg{width:50px;height:50px;object-fit:cover;display:block}
+.line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.line>div{flex:1;min-width:0}
+.line .step{width:150px}
+.field{display:block;margin:12px 0;font-size:13px;font-weight:650}
+.field input,.field select,.field textarea{width:100%;display:block;margin-top:5px;border:1px solid var(--line);border-radius:6px;padding:11px;background:#fff}
+.panel{background:#fff;border:1px solid var(--line);border-radius:9px;padding:16px;margin:12px 0}
+.full{width:100%;margin-top:7px}
+.notice{background:#fff0d9;padding:11px;border-radius:6px;font-size:12px;color:#69491e}
+.empty{padding:32px;text-align:center;background:#fff;border-radius:9px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
+footer{background:#242421;color:#ddd;padding:25px 20px 100px;text-align:center;font-size:12px}
+footer a{color:#ff9855}
+h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
+.badge{display:inline-block;background:#eee6d9;padding:5px 8px;border-radius:5px;font-size:11px;font-weight:700}
+.badge.ok{background:#dff1e4;color:var(--ok)}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;z-index:100;max-width:90%;font-size:13px}
+.qr{width:220px;height:220px;margin:10px auto;padding:8px;background:#fff;border:1px solid var(--line);border-radius:12px}
+.qr svg{width:100%;height:100%;display:block}
+.code{font:11px ui-monospace,Consolas,monospace;word-break:break-all;background:#f6f4ef;border-radius:8px;padding:9px;color:var(--muted);user-select:all;text-align:left}
+.timer{font-weight:800;color:var(--orange)}
+.places{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.place{background:#fff;border:1px solid var(--line);border-radius:9px;padding:14px;text-align:left}
+.place b{display:block;font-family:Georgia,serif;font-size:17px}
+.skel{background:linear-gradient(90deg,#eee 25%,#f7f7f7 37%,#eee 63%);background-size:400% 100%;animation:sk 1.4s infinite;border-radius:10px;aspect-ratio:.62}
+@keyframes sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
+@media(max-width:850px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.body{padding:10px}.body h3{font-size:16px}.price{font-size:18px}.detailgrid{grid-template-columns:1fr}.detailgrid .gallery{max-height:40vh}dialog.wide{max-height:96dvh}.modal{padding:16px}.line .step{width:120px}.live span{display:none}}
+@media(prefers-reduced-motion:reduce){.slide{transition:none!important}.live.on i{animation:none}}
+</style>
+</head>
+<body>
+<div class="strip" id="strip">MATERIAIS • INSTALAÇÃO</div>
+<header>
+  <div class="brand" id="brand">K&amp;E<small>OBRA FÁCIL</small></div>
+  <h1>Do material à instalação.</h1>
+  <p id="frase">Acabamentos, serviços e obras reais. Tudo em um só lugar.</p>
+  <p id="cidade"></p>
+  <div class="heroactions">
+    <button class="primary" data-tab="Materiais">Comprar materiais</button>
+    <button data-tab="Serviços">Contratar instalação</button>
+    <button data-tab="Obras">Conhecer nossas obras</button>
+  </div>
+</header>
+<div class="bar"><div class="wrap">
+  <div class="searchrow">
+    <input id="search" class="search" placeholder="Busque materiais, serviços ou obras…" type="search" aria-label="Buscar">
+    <span class="live" id="live" title="Preços e estoque atualizados automaticamente"><i></i><span>ao vivo</span></span>
+  </div>
+  <nav id="tabs" class="tabs"></nav>
+  <div id="chips" class="chips"></div>
+</div></div>
+<main class="wrap" id="main"><div class="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></main>
+<footer>
+  <b id="fnome">K&amp;E OBRA FÁCIL</b>
+  <p>Materiais e mão de obra<span id="fcidade"></span>.</p>
+  <p id="fzap"></p>
+  <p class="muted" style="color:#aaa">Preços e disponibilidade atualizados em tempo real. Frete combinado antes do pagamento.</p>
+</footer>
+<div id="cbar" class="cbar" hidden><div><small id="cartcount"></small><br><b id="carttotal"></b></div><button class="primary" data-act="cart">Ver carrinho</button></div>
+<dialog id="detail" class="wide"></dialog>
+<dialog id="modal"></dialog>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(() => {
+'use strict';
+/* =====================================================================
+   K&E OBRA FÁCIL — SITE PÚBLICO
+   Lê o catálogo do Supabase (função loj_publico_loja) e fica escutando
+   mudanças em tempo real: quando a equipe altera preço, estoque, fotos
+   ou obras no módulo "Loja / Site", a página se atualiza sozinha.
+   Endereço: site/?l=SLUG  (sem ?l= usa PLAT_CONFIG.lojaPadrao)
+===================================================================== */
+const cfg = window.PLAT_CONFIG || {};
+const SLUG = (new URLSearchParams(location.search).get('l') || cfg.lojaPadrao || 'ke').toLowerCase();
+const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
+const $ = id => document.getElementById(id);
+const money = n => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const fmtQ = n => (Number(n) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = x => String(x ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const phone = s => String(s || '').replace(/\D/g, '');
+const SERVICOS = ['Piso vinílico', 'Rodapé PVC', 'Ripado PVC', 'Reforma completa'];
+const KCART = 'ke-site-cart-' + SLUG, KPED = 'ke-site-pedidos-' + SLUG;
+
+let L = null, PRODUTOS = [], OBRAS = [], versao = 0;
+let page = 'Materiais', cat = 'Todos', detailId = null, checkoutMethod = 'pix', ultimoPedido = null;
+let cart = ler(KCART, {});
+
+function ler(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v && typeof v === 'object' ? v : d; } catch (e) { return d; } }
+function gravar(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function toast(s, ms = 2600) { $('toast').textContent = s; $('toast').hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => $('toast').hidden = true, ms); }
+const product = id => PRODUTOS.find(p => p.id === id);
+const obra = id => OBRAS.find(o => o.id === id);
+const items = () => Object.entries(cart).map(([id, qty]) => ({ p: product(id), qty })).filter(x => x.p && x.qty > 0);
+function totals() {
+  const sub = items().reduce((s, x) => s + Math.round(x.p.price * x.qty * 100), 0) / 100;
+  const pix = Math.round(sub * (1 - (L?.pix_desconto || 0) / 100) * 100) / 100;
+  return { sub, pix };
+}
+function zapLink(texto) { return L?.whatsapp ? 'https://wa.me/' + (L.whatsapp.length <= 11 ? '55' : '') + L.whatsapp + '?text=' + encodeURIComponent(texto || '') : ''; }
+
+/* ---------------- dados ---------------- */
+async function carregar(primeira) {
+  const { data, error } = await db.rpc('loj_publico_loja', { p_slug: SLUG });
+  if (error) { if (primeira) foraDoAr('Não foi possível carregar a loja agora. Verifique sua internet e tente de novo.'); return; }
+  if (!data) { foraDoAr('Esta loja não está disponível no momento.'); return; }
+  const antes = new Map(PRODUTOS.map(p => [p.id, p.price + '|' + p.disponivel]));
+  L = data.loja; versao = L.versao;
+  PRODUTOS = data.produtos.map(p => ({ ...p, price: Number(p.preco), disponivel: Number(p.disponivel), photos: (p.fotos || []).filter(safePhoto) }));
+  OBRAS = data.obras.map(o => ({ ...o, photos: (o.fotos || []).filter(safePhoto) }));
+  cabecalho();
+  // carrinho nunca maior que o disponível
+  let ajustou = false;
+  for (const [id, q] of Object.entries(cart)) {
+    const p = product(id);
+    if (!p) { delete cart[id]; ajustou = true; }
+    else if (q > p.disponivel) { if (p.disponivel > 0) cart[id] = p.disponivel; else delete cart[id]; ajustou = true; }
+  }
+  if (ajustou) { gravar(KCART, cart); toast('O estoque mudou: ajustamos seu carrinho.', 3500); }
+  render();
+  if (!primeira) {
+    PRODUTOS.forEach(p => { const a = antes.get(p.id); if (a && a !== p.price + '|' + p.disponivel) document.querySelector(`[data-card="${p.id}"]`)?.classList.add('flash'); });
+    setTimeout(() => document.querySelectorAll('.card.flash').forEach(c => c.classList.remove('flash')), 1600);
+    if ($('detail').open && detailId) refreshDetail();
+    if ($('modal').open && $('modal').dataset.mode === 'cart') drawCart();
+  }
+}
+function foraDoAr(msg) { $('main').innerHTML = `<div class="empty">${esc(msg)}</div>`; $('tabs').innerHTML = ''; $('chips').innerHTML = ''; $('cbar').hidden = true; setLive(false); }
+function cabecalho() {
+  const nome = L.nome || 'K&E Obra Fácil';
+  document.title = nome + ' | Materiais e instalação';
+  const partes = nome.split(/\s+/);
+  $('brand').innerHTML = esc(partes[0]) + (partes.length > 1 ? `<small>${esc(partes.slice(1).join(' ').toUpperCase())}</small>` : '');
+  if (L.frase) $('frase').textContent = L.frase;
+  $('cidade').textContent = L.cidade || '';
+  $('fnome').textContent = nome.toUpperCase();
+  $('fcidade').textContent = L.cidade ? ' em ' + L.cidade : '';
+  $('fzap').innerHTML = L.whatsapp ? `<a href="${esc(zapLink('Olá! Vim pelo site.'))}" target="_blank" rel="noopener">Fale no WhatsApp</a>` : '';
+  const s = ['MATERIAIS', 'INSTALAÇÃO'];
+  if (L.parcelas > 1) s.push(`ATÉ ${L.parcelas}X NO CARTÃO`);
+  if (L.pix && L.pix_desconto > 0) s.push(`${fmtQ(L.pix_desconto)}% OFF NO PIX`);
+  $('strip').textContent = s.join(' • ');
+}
+
+/* tempo real: a linha da config da loja muda de versão a cada alteração */
+let canal = null, pend = null;
+function setLive(on) { $('live').classList.toggle('on', !!on); }
+function escutar() {
+  if (canal || !L) return;
+  canal = db.channel('loja-' + L.id)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'loj_config', filter: 'empresa_id=eq.' + L.id }, ev => {
+      if (!ev.new || ev.new.versao === versao) return;
+      if (ev.new.publicado === false) return carregar();
+      clearTimeout(pend); pend = setTimeout(() => carregar(), 400);
+    })
+    .subscribe(st => setLive(st === 'SUBSCRIBED'));
+}
+// rede de segurança: confere a cada minuto e quando a aba volta a ficar visível
+setInterval(() => { if (!document.hidden) carregar(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && L) carregar(); });
+
+/* ---------------- imagens ---------------- */
+function safePhoto(x) { return /^https:\/\/[^\s"'<>]+$/i.test(x || ''); }
+function art(p, i) {
+  const c = norm(p.categoria || p.tipo || '');
+  const shape = /cola/.test(c)
+    ? '<rect x="70" y="47" width="110" height="145" rx="8" fill="#d1c5b4"/><ellipse cx="125" cy="47" rx="55" ry="14" fill="#777"/><rect x="70" y="85" width="110" height="72" fill="#c65317"/><text x="125" y="125" fill="white" text-anchor="middle" font-size="16">' + esc((p.nome || '').split(' ')[0].toUpperCase().slice(0, 10)) + '</text>'
+    : /rodape/.test(c)
+    ? '<path d="M24 145 L205 87 L230 112 L49 170Z" fill="#fff" stroke="#c0bcb4"/><path d="M49 170 L230 112 V145 L49 203Z" fill="#d8d6d0"/>'
+    : Array.from({ length: /ripad/.test(c) ? 10 : 5 }, (_, j) => `<rect x="${24 + j * (/ripad/.test(c) ? 20 : 40)}" y="36" width="${/ripad/.test(c) ? 14 : 38}" height="175" rx="2" fill="${['#98704a', '#bd9670', '#765336'][(j + i) % 3]}"/>`).join('');
+  return `<svg viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustração"><rect width="250" height="250" fill="#f3f0e9"/>${shape}<text x="125" y="235" text-anchor="middle" font-size="10" fill="#6e6b65">ILUSTRAÇÃO</text></svg>`;
+}
+function media(p, i) { return p.photos.length ? `<img loading="lazy" src="${esc(p.photos[i])}" alt="${esc(p.nome || p.titulo)}">` : art(p, i); }
+function gallery(p, act, auto = true) {
+  const n = p.photos.length || 1;
+  const sem = p.disponivel !== undefined && p.disponivel <= 0;
+  return `<div class="gallery" ${auto && n > 1 ? 'data-auto="1"' : ''} ${act}>${Array.from({ length: n }, (_, i) => `<div class="slide ${i === 0 ? 'on' : ''}">${media(p, i)}</div>`).join('')}
+    ${n > 1 ? `<div class="dots">${Array.from({ length: n }, (_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('')}</div>` : ''}
+    ${sem ? '<span class="tag out">ESGOTADO</span>' : ''}</div>`;
+}
+function shift(g, idx) {
+  const ss = [...g.querySelectorAll('.slide')]; if (!ss.length) return;
+  const k = idx ?? (ss.findIndex(s => s.classList.contains('on')) + 1) % ss.length;
+  ss.forEach((s, i) => s.classList.toggle('on', i === k));
+  g.querySelectorAll('.dots i').forEach((s, i) => s.classList.toggle('on', i === k));
+}
+let tick = 0;
+setInterval(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || $('modal').open || $('detail').open) return;
+  document.querySelectorAll('[data-auto]').forEach((g, i) => {
+    const r = g.getBoundingClientRect();
+    if ((tick + i) % 3 === 0 && r.bottom > 0 && r.top < innerHeight && !g.matches(':hover')) shift(g);
+  });
+  tick++;
+}, 1200);
+
+/* ---------------- telas ---------------- */
+function tab(t) { page = t; cat = 'Todos'; $('search').value = ''; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function stepper(p) {
+  const q = cart[p.id] || 0;
+  return q ? `<div class="step"><button data-act="menos" data-id="${p.id}" aria-label="Diminuir">−</button><span>${fmtQ(q)} ${esc(p.unidade)}</span><button data-act="mais" data-id="${p.id}" ${q + 1 > p.disponivel ? 'disabled' : ''} aria-label="Aumentar">+</button></div>`
+    : `<button class="primary" data-act="mais" data-id="${p.id}" ${p.disponivel < 1 ? 'disabled' : ''}>${p.disponivel < 1 ? 'ESGOTADO' : '+ ADICIONAR'}</button>`;
+}
+function change(id, delta) {
+  const p = product(id); if (!p) return;
+  let q = Math.round(((cart[id] || 0) + delta) * 100) / 100;
+  if (q > p.disponivel) { toast(`Só temos ${fmtQ(p.disponivel)} ${p.unidade} disponíveis`); return; }
+  if (q <= 0) delete cart[id]; else cart[id] = q;
+  gravar(KCART, cart); render();
+  if ($('detail').open && detailId === id) refreshDetail();
+  if ($('modal').open && $('modal').dataset.mode === 'cart') drawCart();
+}
+const disponivelTxt = p => p.disponivel > 0 ? `${fmtQ(p.disponivel)} ${esc(p.unidade)} disponíveis` : 'Sem estoque no momento';
+const parcelasTxt = v => L.parcelas > 1 ? `Até ${L.parcelas}x de ${money(v / L.parcelas)}` : '';
+
+function render() {
+  if (!L) return;
+  const tabs = ['Materiais', 'Serviços', 'Obras', 'Onde trabalhamos', 'Meus pedidos'];
+  $('tabs').innerHTML = tabs.map(t => `<button class="${page === t ? 'active' : ''}" data-tab="${t}">${t}</button>`).join('');
+  const cats = page === 'Materiais' ? ['Todos', ...new Set(PRODUTOS.map(p => p.categoria))]
+    : page === 'Obras' ? ['Todos', ...new Set(OBRAS.map(o => o.tipo))] : [];
+  $('chips').innerHTML = cats.length > 2 ? cats.map(c => `<button class="${cat === c ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('') : '';
+  const q = norm($('search').value);
+  let h = '';
+  if (page === 'Materiais') {
+    const lista = PRODUTOS.filter(p => (cat === 'Todos' || cat === p.categoria) && norm(p.nome + ' ' + p.descricao + ' ' + p.categoria).includes(q));
+    h = '<div class="sectiontitle">Materiais para sua obra</div>' + (lista.length ? '<div class="grid">' + lista.map(p => `<article class="card" data-card="${p.id}">${gallery(p, `data-act="produto" data-id="${p.id}"`)}
+      <div class="body"><div class="kicker">${esc(p.categoria)}</div><h3>${esc(p.nome)}</h3><p>${esc(p.descricao)}</p>
+      <div class="price">${money(p.price)} <small class="muted">/${esc(p.unidade)}</small></div>
+      <small class="muted">${[parcelasTxt(p.price), disponivelTxt(p)].filter(Boolean).join(' · ')}</small>
+      ${stepper(p)}<button data-act="produto" data-id="${p.id}">VER DETALHES</button></div></article>`).join('') + '</div>'
+      : `<div class="empty">${PRODUTOS.length ? 'Nenhum material encontrado nessa busca.' : 'Catálogo em atualização. Fale com a gente pelo WhatsApp.'}</div>`);
+  } else if (page === 'Serviços') {
+    h = '<div class="sectiontitle">Mão de obra especializada</div><div class="grid">' + SERVICOS.filter(s => norm(s).includes(q)).map(s => `<article class="card"><div class="body"><div class="kicker">Instalação</div><h3>${esc(s)}</h3>
+      <p>Avaliação do ambiente, planejamento e execução conforme orçamento aprovado.</p>
+      <button class="primary" data-act="quote" data-tipo="${esc(s)}">Solicitar orçamento</button></div></article>`).join('') + '</div>';
+  } else if (page === 'Obras') {
+    const w = OBRAS.filter(o => (cat === 'Todos' || cat === o.tipo) && norm(o.titulo + ' ' + o.local + ' ' + o.tipo).includes(q));
+    h = '<div class="sectiontitle">Obras realizadas</div>' + (w.length ? '<div class="grid">' + w.map(o => `<article class="card">${gallery(o, `data-act="obra" data-id="${o.id}"`)}
+      <div class="body"><div class="kicker">${esc(o.tipo)}</div><h3>${esc(o.titulo)}</h3><p>📍 ${esc(o.local)}</p><p>${[o.area, o.prazo].filter(Boolean).map(esc).join(' · ')}</p>
+      <button data-act="obra" data-id="${o.id}">Ver obra</button><button class="primary" data-act="quote" data-tipo="${esc(o.tipo)}" data-obra="${o.id}">Quero um resultado assim</button></div></article>`).join('') + '</div>'
+      : '<div class="empty">Em breve, fotos das nossas obras por aqui.</div>');
+  } else if (page === 'Onde trabalhamos') {
+    const locais = {};
+    OBRAS.forEach(o => { const k = o.local.trim(); (locais[k] = locais[k] || []).push(o); });
+    const ks = Object.keys(locais).filter(k => norm(k).includes(q)).sort((a, b) => locais[b].length - locais[a].length || a.localeCompare(b));
+    h = '<div class="sectiontitle">Locais atendidos</div>' + (ks.length ? '<div class="places">' + ks.map(k => `<button class="place" data-act="local" data-local="${esc(k)}"><b>📍 ${esc(k)}</b><span class="muted">${locais[k].length} obra(s): ${esc([...new Set(locais[k].map(o => o.tipo))].join(', '))}</span></button>`).join('') + '</div>'
+      : '<div class="empty">Atendemos ' + esc(L.cidade || 'a região') + '. Peça seu orçamento!</div>');
+  } else {
+    const meus = ler(KPED, []);
+    h = `<div class="sectiontitle">Acompanhe seu pedido</div><div class="panel"><p>Digite o código do pedido e o WhatsApp usado na compra.</p>
+      <form data-form="consultar"><label class="field">Código<input name="code" required autocapitalize="characters" placeholder="KE…"></label>
+      <label class="field">WhatsApp<input name="phone" required type="tel" placeholder="(92) 99999-9999"></label><button class="primary">Consultar</button></form><div id="found"></div></div>
+      ${meus.length ? `<div class="panel"><h3>Pedidos feitos neste aparelho</h3>${meus.slice(-8).reverse().map(m => `<div class="line"><div><b>${esc(m.codigo)}</b><p class="muted">${new Date(m.em).toLocaleString('pt-BR')} · ${money(m.total)}</p></div><button data-act="ver-pedido" data-cod="${esc(m.codigo)}" data-fone="${esc(m.telefone)}">Ver</button></div>`).join('')}</div>` : ''}`;
+  }
+  $('main').innerHTML = h;
+  const n = items().length;
+  $('cbar').hidden = !n;
+  $('cartcount').textContent = n + ' produto(s) no carrinho';
+  $('carttotal').textContent = L.pix && L.pix_desconto > 0 ? money(totals().pix) + ' no Pix' : money(totals().sub);
+}
+
+/* ---------------- modais ---------------- */
+function showModal(html, mode = '') { const d = $('modal'); d.dataset.mode = mode; d.innerHTML = html; if (!d.open) d.showModal(); }
+function closeModal() { $('modal').close(); clearInterval(timer); }
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); toast('Copiado!'); }
+  catch (e) { prompt('Copie:', s); }
+}
+function openProduct(id) {
+  const p = product(id); if (!p) return;
+  detailId = id; const d = $('detail');
+  const ob = OBRAS.filter(o => (o.produtos || []).includes(p.id));
+  d.innerHTML = `<div class="detailgrid"><div>${gallery(p, '', false)}${p.photos.length > 1 ? `<div class="thumbs">${p.photos.map((_, i) => `<button data-act="thumb" data-i="${i}">${media(p, i)}</button>`).join('')}</div>` : ''}</div>
+    <div class="modal"><button class="close" data-act="fechar-det" aria-label="Fechar">×</button><div class="kicker">${esc(p.categoria)}</div><h2>${esc(p.nome)}</h2>
+    <div class="panel" id="detprice"></div><div id="detailstep"></div>
+    <button class="full" data-act="copiar-link" data-id="${p.id}">Copiar link do produto</button>
+    ${p.descricao ? `<p>${esc(p.descricao)}</p>` : ''}
+    ${p.tecnico ? `<h3>Características técnicas</h3><p>${esc(p.tecnico)}</p>` : ''}
+    ${p.beneficios ? `<h3>Benefícios</h3><p>${esc(p.beneficios)}</p>` : ''}
+    ${p.cuidados ? `<h3>Modo de uso / Cuidados</h3><p>${esc(p.cuidados)}</p>` : ''}
+    ${/m²|m2/i.test(p.unidade) ? `<div class="panel"><h3>Calcular material</h3><label class="field">Área (m²)<input id="area" type="number" min="0.01" step="0.01" value="20"></label>
+      <label class="field">Sobra (%)<input id="waste" type="number" min="0" max="30" value="10"></label><p id="calcresult"></p>
+      <button data-act="add-area">Adicionar metragem estimada</button><p class="muted">Confira o fechamento por caixa e as condições do ambiente.</p></div>` : ''}
+    <button class="primary full" data-act="quote" data-tipo="Instalação" data-prod="${p.id}">Solicitar material + instalação</button>
+    <h3>Obras com este material</h3>${ob.map(o => `<button class="full" data-act="obra" data-id="${o.id}">${esc(o.titulo)}</button>`).join('') || '<p class="muted">Nenhuma obra vinculada ainda.</p>'}
+    </div></div>`;
+  if (!d.open) d.showModal();
+  refreshDetail();
+  history.replaceState(null, '', '#p=' + p.id);
+}
+function refreshDetail() {
+  const p = product(detailId);
+  if (!p) { $('detail').close(); toast('Este produto saiu do catálogo.'); return; }
+  $('detprice').innerHTML = `<div class="price">${money(p.price)} / ${esc(p.unidade)}</div><p class="muted">${[parcelasTxt(p.price), disponivelTxt(p)].filter(Boolean).join(' · ')}</p>`;
+  $('detailstep').innerHTML = stepper(p);
+  if ($('area')) calc();
+}
+function calc() {
+  const a = Math.max(0, Number($('area').value) || 0), w = Math.min(30, Math.max(0, Number($('waste').value) || 0));
+  const n = Math.ceil(a * (1 + w / 100) * 100) / 100;
+  $('calcresult').textContent = fmtQ(n) + ' m² · ' + money(n * product(detailId).price);
+  return n;
+}
+function openWork(id) {
+  const o = obra(id); if (!o) return;
+  const d = $('detail');
+  d.innerHTML = `<div class="detailgrid"><div>${gallery(o, '', false)}${o.photos.length > 1 ? `<div class="thumbs">${o.photos.map((_, i) => `<button data-act="thumb" data-i="${i}">${media(o, i)}</button>`).join('')}</div>` : ''}</div>
+    <div class="modal"><button class="close" data-act="fechar-det" aria-label="Fechar">×</button><div class="kicker">${esc(o.tipo)}</div><h2>${esc(o.titulo)}</h2>
+    <p>📍 ${esc(o.local)}</p><p>${[o.area, o.prazo].filter(Boolean).map(esc).join(' · ')}</p>
+    ${o.descricao ? `<h3>Execução e resultado</h3><p>${esc(o.descricao)}</p>` : ''}
+    ${(o.produtos || []).some(product) ? '<h3>Materiais utilizados</h3>' + o.produtos.filter(product).map(pid => `<button class="full" data-act="produto" data-id="${pid}">${esc(product(pid).nome)}</button>`).join('') : ''}
+    <button class="primary full" data-act="quote" data-tipo="${esc(o.tipo)}" data-obra="${o.id}">Quero um serviço como esse</button></div></div>`;
+  detailId = null;
+  if (!d.open) d.showModal();
+}
+
+/* carrinho e pedido */
+function openCart() { showModal('<div class="modal" id="cartcontent"></div>', 'cart'); drawCart(); }
+function drawCart() {
+  const its = items(), t = totals(), temPix = L.pix;
+  $('cartcontent').innerHTML = `<button class="close" data-act="fechar" aria-label="Fechar">×</button><div class="kicker">${esc(L.nome)}</div><h2>Seu carrinho</h2>
+    ${its.map(({ p, qty }) => `<div class="line"><div><b>${esc(p.nome)}</b><p class="muted">${fmtQ(qty)} ${esc(p.unidade)} · ${money(p.price * qty)}</p></div>${stepper(p)}</div>`).join('') || '<p>Carrinho vazio.</p>'}
+    <div class="panel"><div class="line">Subtotal <b>${money(t.sub)}</b></div>
+    ${temPix && L.pix_desconto > 0 ? `<div class="line">Total no Pix (${fmtQ(L.pix_desconto)}% off) <b>${money(t.pix)}</b></div>` : ''}
+    <p class="muted">Frete combinado antes do pagamento. Seu pedido reserva o material por ${L.reserva_min} minutos.</p>
+    <div class="actions">${temPix ? `<button class="primary" ${its.length ? '' : 'disabled'} data-act="identify" data-m="pix">Pagar no Pix</button>` : ''}
+    <button ${temPix ? '' : 'class="primary"'} ${its.length ? '' : 'disabled'} data-act="identify" data-m="cartao">Cartão${L.parcelas > 1 ? ' em até ' + L.parcelas + 'x' : ''}</button></div></div>`;
+}
+function identify(m) {
+  checkoutMethod = m;
+  const salvo = ler('ke-site-cliente', {});
+  showModal(`<div class="modal"><button class="close" data-act="fechar" aria-label="Fechar">×</button><h2>Identifique-se</h2><p>Só precisamos do nome e WhatsApp para registrar seu pedido.</p>
+    <form data-form="pedido"><label class="field">Nome<input name="name" required maxlength="100" autocomplete="name" value="${esc(salvo.nome)}"></label>
+    <label class="field">WhatsApp<input name="phone" required type="tel" autocomplete="tel" placeholder="(92) 99999-9999" value="${esc(salvo.telefone)}"></label>
+    <label class="field">Recebimento<select name="delivery"><option>Retirada</option><option>Entrega</option></select></label>
+    <label class="field" id="endbox" hidden>Endereço de entrega<input name="address" maxlength="300" autocomplete="street-address"></label>
+    <button class="primary full" id="btnPedido">Fazer pedido · ${money(m === 'pix' ? totals().pix : totals().sub)}</button></form></div>`, 'id');
+}
+async function createOrder(f) {
+  const ph = phone(f.get('phone'));
+  if (!(ph.length === 10 || ph.length === 11) || !String(f.get('name')).trim()) { toast('Informe nome e WhatsApp com DDD'); return; }
+  const btn = $('btnPedido'); btn.disabled = true; btn.textContent = 'Reservando…';
+  const cliente = { nome: String(f.get('name')).trim(), telefone: ph, entrega: f.get('delivery'), endereco: f.get('address') || '', metodo: checkoutMethod };
+  const { data, error } = await db.rpc('loj_publico_pedido', { p_slug: SLUG, p_cliente: cliente, p_itens: items().map(x => ({ id: x.p.id, qtd: x.qty })) });
+  if (error) { btn.disabled = false; btn.textContent = 'Tentar de novo'; toast(error.message || 'Não foi possível registrar.', 5000); carregar(); return; }
+  gravar('ke-site-cliente', { nome: cliente.nome, telefone: ph });
+  const meus = ler(KPED, []); meus.push({ codigo: data.codigo, telefone: ph, total: data.total, em: Date.now() }); gravar(KPED, meus.slice(-20));
+  cart = {}; gravar(KCART, cart);
+  ultimoPedido = { ...data, cliente: cliente.nome, telefone: ph };
+  render(); payment(ultimoPedido);
+}
+/* Pix Copia e Cola (BR Code) — mesmo padrão do pix/index.html */
+function crc16(s) { let c = 0xFFFF; for (let i = 0; i < s.length; i++) { c ^= s.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF; } return c.toString(16).toUpperCase().padStart(4, '0'); }
+const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9 ]/g, '').toUpperCase().trim();
+function brcode(pix, valor, txid) {
+  const f = (id, v) => id + String(v.length).padStart(2, '0') + v;
+  const p = f('00', '01') + f('26', f('00', 'br.gov.bcb.pix') + f('01', pix.chave)) + f('52', '0000') + f('53', '986') +
+    (valor > 0 ? f('54', Number(valor).toFixed(2)) : '') + f('58', 'BR') + f('59', (semAcento(pix.nome) || 'RECEBEDOR').slice(0, 25)) +
+    f('60', (semAcento(pix.cidade) || 'MANAUS').slice(0, 15)) + f('62', f('05', String(txid).replace(/[^A-Za-z0-9]/g, '').slice(0, 25) || '***')) + '6304';
+  return p + crc16(p);
+}
+let timer = null;
+function payment(o) {
+  const msg = `Olá! Fiz o pedido ${o.codigo} no site (${money(o.total)}).` + (o.metodo === 'pix' ? ' Segue o comprovante do Pix.' : ' Quero pagar no cartão.');
+  let corpo;
+  if (o.metodo === 'pix' && o.pix) {
+    const cod = brcode(o.pix, o.total, o.codigo);
+    const qr = qrcode(0, 'M'); qr.addData(cod); qr.make();
+    corpo = `<div class="panel" style="text-align:center"><h3>Pague com Pix</h3><div class="qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div>
+      <button class="primary full" data-act="copiar" data-txt="${esc(cod)}">Copiar código Pix</button><div class="code" style="margin-top:8px">${esc(cod)}</div>
+      <p class="muted">Recebedor: <b>${esc(o.pix.nome)}</b></p></div>
+      <p class="notice">Material reservado até <span class="timer" id="timer"></span>. Depois de pagar, envie o comprovante pelo WhatsApp para agilizar a separação.</p>`;
+  } else {
+    corpo = `<div class="panel"><h3>Pagamento no cartão</h3><p class="muted">Vamos te enviar o link de pagamento${L.parcelas > 1 ? ' (até ' + L.parcelas + 'x)' : ''} pelo WhatsApp. Se preferir, chame agora:</p></div>
+      <p class="notice">Material reservado até <span class="timer" id="timer"></span>.</p>`;
+  }
+  showModal(`<div class="modal"><button class="close" data-act="fechar" aria-label="Fechar">×</button><div class="kicker">Pedido ${esc(o.codigo)}</div>
+    <h2>${o.metodo === 'pix' ? 'Pagamento via Pix' : 'Pedido registrado'}</h2><div class="price">${money(o.total)}</div>
+    ${o.itens.map(i => `<div class="line"><div>${esc(i.nome)}</div><span class="muted">${fmtQ(i.qtd)} ${esc(i.unidade)}</span></div>`).join('')}
+    ${corpo}
+    ${L.whatsapp ? `<a href="${esc(zapLink(msg))}" target="_blank" rel="noopener"><button class="zap full">Enviar no WhatsApp</button></a>` : ''}
+    <button class="full" data-act="copiar" data-txt="${esc(o.codigo)}">Copiar número do pedido</button>
+    <button class="full" data-act="acompanhar">Acompanhar pedido</button></div>`, 'pay');
+  clearInterval(timer);
+  const fim = new Date(o.expira_em).getTime();
+  const tic = () => { const el = $('timer'); if (!el) return clearInterval(timer); const s = Math.max(0, Math.round((fim - Date.now()) / 1000));
+    el.textContent = new Date(fim).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + ` (${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')})`; };
+  tic(); timer = setInterval(tic, 1000);
+}
+const STATUS = { aguardando: 'Aguardando pagamento', pago: 'Pagamento confirmado', separando: 'Separando o material', pronto: 'Pronto para retirada/entrega', entregue: 'Entregue', cancelado: 'Cancelado', expirado: 'Reserva expirada' };
+async function findOrder(code, fone) {
+  $('found').innerHTML = '<p class="muted">Consultando…</p>';
+  const { data, error } = await db.rpc('loj_publico_consultar', { p_slug: SLUG, p_codigo: code, p_telefone: fone });
+  if (error || !data) { $('found').innerHTML = '<p>Pedido não localizado. Confira o código e o WhatsApp.</p>'; return; }
+  $('found').innerHTML = `<div class="panel"><span class="badge ${['pago', 'separando', 'pronto', 'entregue'].includes(data.status) ? 'ok' : ''}">${esc(STATUS[data.status] || data.status)}</span>
+    <h3>${esc(data.codigo)}</h3>${data.itens.map(i => `<div class="line"><div>${esc(i.nome)}</div><span class="muted">${fmtQ(i.qtd)} ${esc(i.unidade)}</span></div>`).join('')}
+    <div class="price">${money(data.total)}</div><p class="muted">${data.metodo === 'pix' ? 'Pix' : 'Cartão'} · ${esc(data.entrega)} · ${new Date(data.criado_em).toLocaleString('pt-BR')}</p>
+    ${data.status === 'aguardando' ? `<button class="primary full" data-act="repagar" data-cod="${esc(data.codigo)}">Ver pagamento</button>` : ''}</div>`;
+  if (data.status === 'aguardando') findOrder.ultimo = data;
+}
+
+/* orçamento */
+function quote(tipo, obraId = '', prodId = '') {
+  const salvo = ler('ke-site-cliente', {});
+  showModal(`<div class="modal"><button class="close" data-act="fechar" aria-label="Fechar">×</button><h2>Solicitar orçamento</h2>
+    <form data-form="quote" data-obra="${esc(obraId)}" data-prod="${esc(prodId)}">
+    <label class="field">Serviço<input name="servico" value="${esc(tipo)}" required maxlength="120"></label>
+    <label class="field">Nome<input name="nome" required maxlength="100" autocomplete="name" value="${esc(salvo.nome)}"></label>
+    <label class="field">WhatsApp<input name="telefone" type="tel" required autocomplete="tel" value="${esc(salvo.telefone)}"></label>
+    <label class="field">Bairro<input name="bairro" required maxlength="120"></label>
+    <label class="field">Área estimada (m²)<input name="area" type="number" min="0" step="0.01"></label>
+    <label class="field">Modalidade<select name="modalidade"><option>Material + instalação</option><option>Somente instalação</option><option>Somente material</option></select></label>
+    <label class="field">Detalhes<textarea name="detalhes" maxlength="2000" placeholder="Ambiente, piso atual, prazo desejado…"></textarea></label>
+    <button class="primary full" id="btnQuote">Enviar pedido de orçamento</button></form></div>`);
+}
+async function saveQuote(form) {
+  const f = Object.fromEntries(new FormData(form));
+  const ph = phone(f.telefone);
+  if (!(ph.length === 10 || ph.length === 11) || !f.nome.trim()) { toast('Informe nome e WhatsApp com DDD'); return; }
+  const btn = $('btnQuote'); btn.disabled = true; btn.textContent = 'Enviando…';
+  const { data, error } = await db.rpc('loj_publico_solicitar', { p_slug: SLUG, p_dados: { ...f, telefone: ph, obra: form.dataset.obra, produto: form.dataset.prod } });
+  if (error) { btn.disabled = false; btn.textContent = 'Tentar de novo'; toast(error.message || 'Não foi possível enviar.', 5000); return; }
+  gravar('ke-site-cliente', { nome: f.nome.trim(), telefone: ph });
+  const msg = `Olá! Pedi um orçamento pelo site (protocolo ${data}): ${f.servico}, bairro ${f.bairro}${f.area ? ', ' + f.area + ' m²' : ''}.`;
+  showModal(`<div class="modal"><button class="close" data-act="fechar" aria-label="Fechar">×</button><h2>Pedido recebido!</h2>
+    <p>Protocolo <b>${esc(data)}</b>. Nossa equipe vai entrar em contato pelo WhatsApp para combinar a visita e o orçamento.</p>
+    ${L.whatsapp ? `<a href="${esc(zapLink(msg))}" target="_blank" rel="noopener"><button class="zap full">Adiantar pelo WhatsApp</button></a>` : ''}
+    <button class="full" data-act="fechar">Fechar</button></div>`);
+}
+
+/* ---------------- eventos ---------------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab]'); if (t) return tab(t.dataset.tab);
+  const c = e.target.closest('[data-cat]'); if (c) { cat = c.dataset.cat; return render(); }
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const id = b.dataset.id;
+  switch (b.dataset.act) {
+    case 'mais': return change(id, 1);
+    case 'menos': return change(id, -1);
+    case 'produto': $('modal').open && closeModal(); return openProduct(id);
+    case 'obra': return openWork(id);
+    case 'thumb': return shift(b.closest('.detailgrid').querySelector('.gallery'), +b.dataset.i);
+    case 'fechar-det': return $('detail').close();
+    case 'fechar': return closeModal();
+    case 'cart': return openCart();
+    case 'identify': return identify(b.dataset.m);
+    case 'add-area': return change(detailId, calc());
+    case 'copiar': return copyText(b.dataset.txt);
+    case 'copiar-link': return copyText(location.href.split('#')[0] + '#p=' + id);
+    case 'quote': $('detail').open && $('detail').close(); return quote(b.dataset.tipo, b.dataset.obra || '', b.dataset.prod || '');
+    case 'acompanhar': closeModal(); tab('Meus pedidos'); if (ultimoPedido) setTimeout(() => findOrder(ultimoPedido.codigo, ultimoPedido.telefone), 50); return;
+    case 'ver-pedido': return findOrder(b.dataset.cod, b.dataset.fone);
+    case 'repagar': { const d = findOrder.ultimo; if (d) payment({ ...d }); return; }
+    case 'local': page = 'Obras'; cat = 'Todos'; $('search').value = b.dataset.local; render(); return window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'search') return render();
+  if (e.target.id === 'area' || e.target.id === 'waste') return calc();
+});
+document.addEventListener('change', e => {
+  if (e.target.name === 'delivery') { const ent = e.target.value === 'Entrega'; $('endbox').hidden = !ent; e.target.form.address.required = ent; }
+});
+document.addEventListener('submit', e => {
+  const f = e.target.dataset.form; if (!f) return;
+  e.preventDefault();
+  if (f === 'pedido') return createOrder(new FormData(e.target));
+  if (f === 'quote') return saveQuote(e.target);
+  if (f === 'consultar') { const d = new FormData(e.target); return findOrder(String(d.get('code')).trim().toUpperCase(), phone(d.get('phone'))); }
+});
+$('detail').addEventListener('close', () => { detailId = null; if (location.hash) history.replaceState(null, '', location.pathname + location.search); });
+$('modal').addEventListener('close', () => clearInterval(timer));
+window.addEventListener('storage', e => { if (e.key === KCART) { cart = ler(KCART, {}); render(); } });
+
+/* ---------------- início ---------------- */
+(async () => {
+  await carregar(true);
+  if (!L) return;
+  escutar();
+  const h = location.hash.match(/^#p(?:roduto)?=([\w-]+)$/);
+  if (h && product(h[1])) openProduct(h[1]);
+})();
+})();
+</script>
+</body>
+</html>
