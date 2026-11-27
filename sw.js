@@ -2,7 +2,7 @@
    Os dados vêm sempre do Supabase (precisa de internet); aqui guardamos só
    os arquivos do app para abrir rápido e mesmo com sinal fraco.
    Ao publicar uma versão nova, aumente o número da VERSAO. */
-const VERSAO = 'plataforma-v36';
+const VERSAO = 'plataforma-v37';
 const ARQUIVOS = [
   './', './index.html', './config.js', './manifest.webmanifest',
   './core/plataforma.js', './core/inicio.js', './core/inicio.css', './vendor/supabase.js',
@@ -11,7 +11,8 @@ const ARQUIVOS = [
   './modulos/carreta/cte.css', './modulos/carreta/motorista.css',
   './modulos/orcamentos/index.html', './aprovar/index.html', './vendor/qrcode.js', './vendor/pdfjs/pdf.min.js', './vendor/pdfjs/pdf.worker.min.js',
   './modulos/cotacoes/index.html', './modulos/cotacoes/cotacoes.js', './modulos/cotacoes/cotacoes.css', './cotar/index.html', './pix/index.html',
-  './modulos/romaneios/index.html', './modulos/romaneios/romaneios.js', './modulos/romaneios/romaneios.css', './vendor/jspdf.umd.min.js'
+  './modulos/romaneios/index.html', './modulos/romaneios/romaneios.js', './modulos/romaneios/romaneios.css', './vendor/jspdf.umd.min.js',
+  './modulos/loja/index.html', './modulos/loja/loja.js', './modulos/loja/loja.css'
 ];
 self.addEventListener('install', e => e.waitUntil(
   caches.open(VERSAO).then(c => Promise.all(ARQUIVOS.map(a => c.add(a).catch(() => null)))).then(() => self.skipWaiting())
