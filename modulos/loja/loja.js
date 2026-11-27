@@ -14,7 +14,9 @@ let CFG = null;                  // linha de loj_config (null = site ainda não 
 let PRODUTOS = [], OBRAS = [], PEDIDOS = [], SOLIC = [];
 const UI = { aba: 'materiais', busca: '', fPed: 'abertos', fSol: 'nova', novos: new Set() };
 let edFotos = [];                // fotos do cadastro aberto no modal
-let edVideos = [];               // vídeos da obra aberta no modal
+let edModo = 'produto';          // 'produto' (só fotos, até 8) ou 'obra' (fotos e vídeos, até 12)
+const ehVideo = u => /youtube\.com|youtu\.be/i.test(u) || /\.(mp4|webm|mov)(\?|#|$)/i.test(u);
+const ytId = u => (String(u).match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/) || [])[1];
 
 /* ---------------- utilitários ---------------- */
 const money = v => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -31,7 +33,7 @@ const inNum = v => (v === null || v === undefined || v === '') ? '' : String(Mat
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
 function toast(m, ms = 2800) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms); }
 function abrirModal(html, largo) { $('#modalBox').className = 'modal-box' + (largo ? ' largo' : ''); $('#modalBox').innerHTML = html; $('#modal').hidden = false; document.body.classList.add('lock'); }
-function fecharModal() { $('#modal').hidden = true; $('#modalBox').innerHTML = ''; document.body.classList.remove('lock'); edFotos = []; edVideos = []; }
+function fecharModal() { $('#modal').hidden = true; $('#modalBox').innerHTML = ''; document.body.classList.remove('lock'); edFotos = []; }
 const cab = t => `<h3>${t}<button class="x" data-act="fechar" aria-label="Fechar">×</button></h3>`;
 async function ok(p) { const { data, error } = await p; if (error) throw error; return data; }
 function erro(e) { console.error(e); toast('Erro: ' + (e && e.message || e), 5000); }
@@ -158,7 +160,7 @@ async function usarExemplos() {
 /* cadastro / edição de material */
 function formProduto(id) {
   const p = PRODUTOS.find(x => x.id === id) || { nome: '', categoria: '', unidade: 'un', preco: '', estoque: '', descricao: '', tecnico: '', beneficios: '', cuidados: '', fotos: [], publicado: true, ordem: (PRODUTOS.length + 1) * 10 };
-  edFotos = [...(p.fotos || [])];
+  edFotos = [...(p.fotos || [])]; edModo = 'produto';
   const cats = [...new Set(['Colas', 'Pisos', 'Rodapés', 'Ripados', ...PRODUTOS.map(x => x.categoria)])];
   abrirModal(`${cab(id ? 'Editar material' : 'Novo material')}
     <form id="fProd" data-id="${id || ''}"><div class="grid">
@@ -182,9 +184,17 @@ function formProduto(id) {
 }
 function desenharFotos() {
   const box = $('#edFotos'); if (!box) return;
-  box.innerHTML = edFotos.map((u, i) => `<div class="f" style="background-image:url('${esc(u)}')"><button type="button" data-act="foto-del" data-i="${i}" aria-label="Remover foto">×</button>
-      ${edFotos.length > 1 ? `<div class="ord">${i > 0 ? `<button type="button" data-act="foto-esq" data-i="${i}" aria-label="Mover para a esquerda">◀</button>` : ''}${i < edFotos.length - 1 ? `<button type="button" data-act="foto-dir" data-i="${i}" aria-label="Mover para a direita">▶</button>` : ''}</div>` : ''}</div>`).join('')
-    + (edFotos.length < 8 ? `<label class="add"><b>＋</b>Adicionar fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden id="inFotos"></label>` : '');
+  const max = edModo === 'obra' ? 12 : 8;
+  const capa = edFotos.findIndex(u => !ehVideo(u));
+  box.innerHTML = edFotos.map((u, i) => {
+    const v = ehVideo(u), y = v && ytId(u);
+    const fundo = !v ? `background-image:url('${esc(u)}')` : y ? `background-image:url('https://i.ytimg.com/vi/${y}/hqdefault.jpg')` : '';
+    return `<div class="f${v ? ' vid' : ''}" style="${fundo}">${v && !y ? `<video src="${esc(u)}#t=0.1" muted playsinline preload="metadata"></video>` : ''}
+      ${v ? '<span class="selo">▶ vídeo</span>' : i === capa ? '<span class="selo capa">capa</span>' : ''}
+      <button type="button" data-act="foto-del" data-i="${i}" aria-label="Remover">×</button>
+      ${edFotos.length > 1 ? `<div class="ord">${i > 0 ? `<button type="button" data-act="foto-esq" data-i="${i}" aria-label="Mover para a esquerda">◀</button>` : ''}${i < edFotos.length - 1 ? `<button type="button" data-act="foto-dir" data-i="${i}" aria-label="Mover para a direita">▶</button>` : ''}</div>` : ''}</div>`;
+  }).join('')
+    + (edFotos.length < max ? `<label class="add"><b>＋</b>${edModo === 'obra' ? 'Fotos ou vídeo' : 'Adicionar fotos'}<input type="file" accept="image/jpeg,image/png,image/webp${edModo === 'obra' ? ',video/mp4,video/webm,video/quicktime' : ''}" multiple hidden id="inFotos"></label>` : '');
 }
 async function reduzir(file) {
   const b = await createImageBitmap(file);
@@ -194,19 +204,33 @@ async function reduzir(file) {
   return new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
 }
 async function enviarFotos(files) {
-  const lista = [...files].slice(0, 8 - edFotos.length);
+  const max = edModo === 'obra' ? 12 : 8;
+  const lista = [...files].slice(0, max - edFotos.length);
   if (!lista.length) return;
-  toast('Enviando ' + lista.length + ' foto(s)…', 10000);
+  const btn = $('#btnSalvarObra') || $('#btnSalvarProd'); if (btn) btn.disabled = true;
   for (const f of lista) {
     try {
-      const blob = await reduzir(f);
-      const caminho = `${EMP}/${uid()}.jpg`;
-      await ok(db.storage.from('loja').upload(caminho, blob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: false }));
-      edFotos.push(db.storage.from('loja').getPublicUrl(caminho).data.publicUrl);
+      if (/^video\//.test(f.type)) {
+        if (edModo !== 'obra') { toast('Vídeo só nas obras.'); continue; }
+        if (edFotos.filter(ehVideo).length >= 3) { toast('Máximo de 3 vídeos por obra.'); continue; }
+        if (f.size > 50 * 1024 * 1024) { toast(`Vídeo com ${Math.round(f.size / 1048576)} MB: o limite é 50 MB. Corte o vídeo ou use um link do YouTube.`, 6000); continue; }
+        const ext = { 'video/webm': 'webm', 'video/quicktime': 'mov' }[f.type] || 'mp4';
+        toast(`Enviando vídeo (${Math.round(f.size / 1048576)} MB)… não feche a janela.`, 120000);
+        const caminho = `${EMP}/videos/${uid()}.${ext}`;
+        await ok(db.storage.from('loja').upload(caminho, f, { contentType: f.type || 'video/mp4', cacheControl: '31536000', upsert: false }));
+        edFotos.push(db.storage.from('loja').getPublicUrl(caminho).data.publicUrl);
+      } else {
+        toast('Enviando foto…', 10000);
+        const blob = await reduzir(f);
+        const caminho = `${EMP}/${uid()}.jpg`;
+        await ok(db.storage.from('loja').upload(caminho, blob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: false }));
+        edFotos.push(db.storage.from('loja').getPublicUrl(caminho).data.publicUrl);
+      }
       desenharFotos();
     } catch (e) { erro(e); }
   }
-  toast('Fotos prontas. Clique em Salvar.');
+  if (btn) btn.disabled = false;
+  toast('Pronto. Use ◀ ▶ para escolher a posição e clique em Salvar.', 4000);
 }
 const caminhoStorage = u => { const m = String(u).match(/\/storage\/v1\/object\/public\/loja\/(.+)$/); return m ? decodeURIComponent(m[1]) : null; };
 async function apagarArquivos(urls) {
@@ -358,14 +382,14 @@ function telaObras() {
   $('#conteudo').innerHTML = `<div class="card"><h2>🏗️ Obras realizadas <button class="btn pri sm dir" data-act="obra-nova">+ Publicar obra</button></h2>
     <p class="sub">Aparecem em "Obras" e "Onde trabalhamos" no site. Publique só com autorização do cliente e use o bairro, nunca o endereço.</p>
     ${OBRAS.map(o => `<div class="prod obra ${o.publicado ? '' : 'oculto'}" style="grid-template-columns:52px minmax(0,1fr) auto">
-      <div class="th" style="background-image:url('${esc(o.fotos[0] || '')}')"></div>
-      <div class="info"><b>${esc(o.titulo)}</b><small>${esc(o.tipo)} · 📍 ${esc(o.local)} · ${o.fotos.length} foto(s)${(o.videos || []).length ? ' · ' + o.videos.length + ' vídeo(s)' : ''}</small>${o.publicado ? '' : '<span class="tag">oculta</span>'}</div>
+      <div class="th" style="background-image:url('${esc(o.fotos.find(u => !ehVideo(u)) || '')}')"></div>
+      <div class="info"><b>${esc(o.titulo)}</b><small>${esc(o.tipo)} · 📍 ${esc(o.local)} · ${o.fotos.filter(u => !ehVideo(u)).length} foto(s)${[...o.fotos, ...(o.videos || [])].filter(ehVideo).length ? ' · ' + [...o.fotos, ...(o.videos || [])].filter(ehVideo).length + ' vídeo(s)' : ''}</small>${o.publicado ? '' : '<span class="tag">oculta</span>'}</div>
       <div class="acoes"><label class="sw"><input type="checkbox" data-obra-pub="${o.id}" ${o.publicado ? 'checked' : ''}><span>Site</span></label><button class="btn sm" data-act="obra-editar" data-id="${o.id}">Editar</button></div></div>`).join('')
       || '<div class="vazio"><b>Nenhuma obra publicada</b>Mostre fotos reais de antes e depois: é o que mais convence o cliente.</div>'}</div>`;
 }
 function formObra(id) {
   const o = OBRAS.find(x => x.id === id) || { titulo: '', tipo: TIPOS_OBRA[0], local: '', area: '', prazo: '', descricao: '', fotos: [], produtos: [], publicado: true, autorizado: false };
-  edFotos = [...o.fotos]; edVideos = [...(o.videos || [])];
+  edFotos = [...o.fotos, ...(o.videos || [])]; edModo = 'obra';
   const tipos = [...new Set([...TIPOS_OBRA, ...OBRAS.map(x => x.tipo)])];
   abrirModal(`${cab(id ? 'Editar obra' : 'Publicar obra')}
     <form id="fObra" data-id="${id || ''}"><div class="grid">
@@ -375,47 +399,26 @@ function formObra(id) {
       <div><label>Metragem</label><input name="area" maxlength="40" value="${esc(o.area)}" placeholder="Ex.: 32 m²"></div>
       <div><label>Prazo de execução</label><input name="prazo" maxlength="40" value="${esc(o.prazo)}" placeholder="Ex.: 2 dias"></div>
       <div class="full"><label>Antes, execução e resultado</label><textarea name="descricao" rows="3" maxlength="2000">${esc(o.descricao)}</textarea></div>
-      <div class="full"><label>Fotos (pelo menos 1 · a primeira é a capa)</label><div class="fotos" id="edFotos"></div></div>
-      <div class="full"><label>Vídeos (até 3 · só aparecem ao abrir os detalhes da obra)</label><div id="edVideos"></div>
-        <div class="btn-row" style="margin-top:6px"><label class="btn sm" style="margin:0">🎬 Enviar vídeo<input type="file" accept="video/mp4,video/webm,video/quicktime" hidden id="inVideo"></label>
-        <button type="button" class="btn sm" data-act="video-yt">▶ Link do YouTube</button></div>
-        <p class="hint">Arquivo até 50 MB (mp4, webm ou mov, ~1 min gravado no celular). Vídeo maior: publique no YouTube (pode ser "não listado") e cole o link.</p></div>
+      <div class="full"><label>Fotos e vídeos (na ordem em que aparecem nos detalhes da obra)</label><div class="fotos" id="edFotos"></div>
+        <p class="hint">Use ◀ ▶ para colocar cada vídeo onde quiser. A capa do cartão é sempre a primeira <b>foto</b>; vídeo só aparece ao abrir a obra.
+        Vídeo até 50 MB (mp4, webm ou mov, ~1 min de celular). Maior que isso: publique no YouTube (pode ser "não listado") e <a href="#" data-act="video-yt">cole o link</a>.</p></div>
       <div class="full"><label>Materiais usados</label>${PRODUTOS.map(p => `<label class="chk" style="padding:4px 0"><input type="checkbox" name="produtos" value="${p.id}" ${o.produtos.includes(p.id) ? 'checked' : ''}> ${esc(p.nome)}</label>`).join('') || '<p class="hint">Cadastre materiais para ligar à obra.</p>'}</div>
       <div class="full"><label class="chk" style="white-space:normal"><input type="checkbox" name="autorizado" required ${o.autorizado ? 'checked' : ''}> Tenho autorização do cliente para publicar as fotos e o local.</label></div>
       <div><label class="sw"><input type="checkbox" name="publicado" ${o.publicado ? 'checked' : ''}><span>Mostrar no site</span></label></div>
     </div>
     <div class="btn-row"><button class="btn pri" id="btnSalvarObra">Salvar</button>${id ? `<button type="button" class="btn perigo" data-act="obra-excluir" data-id="${id}">Excluir</button>` : ''}<button type="button" class="btn" data-act="fechar">Cancelar</button></div></form>`, true);
-  desenharFotos(); desenharVideos();
-}
-function desenharVideos() {
-  const box = $('#edVideos'); if (!box) return;
-  box.innerHTML = edVideos.map((u, i) => `<div class="linha"><div class="info"><b>${/youtu/.test(u) ? '▶ YouTube' : '🎬 Vídeo enviado'}</b><small style="word-break:break-all">${esc(u)}</small></div>
-    <button type="button" class="btn sm perigo" data-act="video-del" data-i="${i}">Remover</button></div>`).join('') || '<p class="hint" style="margin:0">Nenhum vídeo.</p>';
-}
-async function enviarVideo(file) {
-  if (!file) return;
-  if (edVideos.length >= 3) return toast('Máximo de 3 vídeos por obra.');
-  if (file.size > 50 * 1024 * 1024) return toast(`Vídeo com ${Math.round(file.size / 1048576)} MB: o limite é 50 MB. Corte o vídeo ou use um link do YouTube.`, 6000);
-  const tipo = file.type || 'video/mp4', ext = { 'video/webm': 'webm', 'video/quicktime': 'mov' }[tipo] || 'mp4';
-  const btn = $('#btnSalvarObra'); btn.disabled = true;
-  toast(`Enviando vídeo (${Math.round(file.size / 1048576)} MB)… não feche a janela.`, 120000);
-  try {
-    const caminho = `${EMP}/videos/${uid()}.${ext}`;
-    await ok(db.storage.from('loja').upload(caminho, file, { contentType: tipo, cacheControl: '31536000', upsert: false }));
-    edVideos.push(db.storage.from('loja').getPublicUrl(caminho).data.publicUrl);
-    desenharVideos(); toast('Vídeo pronto. Clique em Salvar.');
-  } catch (e) { erro(e); } finally { btn.disabled = false; }
+  desenharFotos();
 }
 async function salvarObra(form) {
   const id = form.dataset.id, f = new FormData(form), antiga = OBRAS.find(x => x.id === id);
-  if (!edFotos.length) return toast('Inclua pelo menos uma foto real da obra.');
+  if (!edFotos.some(u => !ehVideo(u))) return toast('Inclua pelo menos uma foto real da obra (ela vira a capa).');
   const row = { titulo: f.get('titulo').trim(), tipo: f.get('tipo').trim(), local: f.get('local').trim(), area: f.get('area').trim() || null, prazo: f.get('prazo').trim() || null,
-    descricao: f.get('descricao').trim() || null, fotos: edFotos.slice(0, 12), videos: edVideos.slice(0, 3), produtos: f.getAll('produtos'), autorizado: !!f.get('autorizado'), publicado: !!f.get('publicado') };
+    descricao: f.get('descricao').trim() || null, fotos: edFotos.slice(0, 12), videos: [], produtos: f.getAll('produtos'), autorizado: !!f.get('autorizado'), publicado: !!f.get('publicado') };
   $('#btnSalvarObra').disabled = true;
   try {
     if (id) await ok(db.from('loj_obras').update(row).eq('id', id)); else await ok(db.from('loj_obras').insert({ ...row, empresa_id: EMP }));
-    if (antiga) await apagarArquivos([...antiga.fotos, ...(antiga.videos || [])].filter(u => !row.fotos.includes(u) && !row.videos.includes(u)));
-    edFotos = []; edVideos = []; fecharModal();
+    if (antiga) await apagarArquivos([...antiga.fotos, ...(antiga.videos || [])].filter(u => !row.fotos.includes(u)));
+    edFotos = []; fecharModal();
     OBRAS = await ok(db.from('loj_obras').select('*').eq('empresa_id', EMP).order('criado_em', { ascending: false }));
     render(); toast('✓ Obra salva');
   } catch (e) { $('#btnSalvarObra').disabled = false; erro(e); }
@@ -508,11 +511,11 @@ document.addEventListener('click', async e => {
       case 'foto-dir': [edFotos[i + 1], edFotos[i]] = [edFotos[i], edFotos[i + 1]]; return desenharFotos();
       case 'foto-url': { e.preventDefault(); const u = (prompt('Cole o link (https://…) da imagem:') || '').trim(); if (!u) return;
         if (!/^https:\/\/[^\s"'<>]+$/i.test(u)) return toast('O link precisa começar com https://');
-        if (edFotos.length >= 8) return toast('Máximo de fotos atingido.'); edFotos.push(u); return desenharFotos(); }
-      case 'video-del': edVideos.splice(i, 1); return desenharVideos();
-      case 'video-yt': { const u = (prompt('Cole o link do vídeo no YouTube:') || '').trim(); if (!u) return;
-        if (!/^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\/\S+$/i.test(u)) return toast('Use um link do YouTube (https://youtube.com/… ou https://youtu.be/…).');
-        if (edVideos.length >= 3) return toast('Máximo de 3 vídeos por obra.'); edVideos.push(u); return desenharVideos(); }
+        if (edFotos.length >= (edModo === 'obra' ? 12 : 8)) return toast('Máximo atingido.'); edFotos.push(u); return desenharFotos(); }
+      case 'video-yt': { e.preventDefault(); const u = (prompt('Cole o link do vídeo no YouTube:') || '').trim(); if (!u) return;
+        if (!ytId(u)) return toast('Use um link de vídeo do YouTube (https://youtube.com/… ou https://youtu.be/…).');
+        if (edFotos.filter(ehVideo).length >= 3) return toast('Máximo de 3 vídeos por obra.');
+        if (edFotos.length >= 12) return toast('Máximo atingido.'); edFotos.push(u); return desenharFotos(); }
       case 'fped': UI.fPed = b.dataset.f; return render();
       case 'fsol': UI.fSol = b.dataset.f; return render();
       case 'ped-st': return await mudarStatus(id, b.dataset.st);
@@ -534,8 +537,7 @@ document.addEventListener('click', async e => {
 document.addEventListener('change', async e => {
   const el = e.target;
   if (el.dataset.campo) return salvarCampo(el);
-  if (el.id === 'inFotos') return enviarFotos(el.files);
-  if (el.id === 'inVideo') { const f = el.files[0]; el.value = ''; return enviarVideo(f); }
+  if (el.id === 'inFotos') { const fs = [...el.files]; el.value = ''; return enviarFotos(fs); }
   if (el.dataset.act === 'conf') return conferir(el.dataset.id, +el.dataset.j, el.checked);
   if (el.dataset.obraPub) {
     try { await ok(db.from('loj_obras').update({ publicado: el.checked }).eq('id', el.dataset.obraPub)); const o = OBRAS.find(x => x.id === el.dataset.obraPub); o.publicado = el.checked; render(); toast('✓ Atualizado no site'); }
