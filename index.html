@@ -12,8 +12,18 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Plataforma KE</title>
 <link rel="stylesheet" href="core/inicio.css">
+<script src="config.js"></script>
+<script>
+/* Acessou pelo domínio próprio de uma loja (ex.: lojadamary.com.br)? Abre o site da loja.
+   A plataforma (login) só abre em github.io, *.pages.dev, localhost ou nos
+   endereços listados em PLAT_CONFIG.hostsPlataforma. */
+(function () {
+  var h = location.hostname.toLowerCase(), extra = (window.PLAT_CONFIG && PLAT_CONFIG.hostsPlataforma) || [];
+  var plataforma = /^(localhost|127\.0\.0\.1)$/.test(h) || /\.github\.io$/.test(h) || /\.pages\.dev$/.test(h) || extra.indexOf(h) >= 0;
+  if (!plataforma) location.replace('site/' + location.search + location.hash);
+})();
+</script>
 <script defer src="vendor/supabase.js"></script>
-<script defer src="config.js"></script>
 <script defer src="core/plataforma.js"></script>
 <script defer src="core/inicio.js"></script>
 </head>
