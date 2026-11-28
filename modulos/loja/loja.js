@@ -440,6 +440,7 @@ async function telaSite() {
     <div class="card"><h2>⚙️ ${CFG ? 'Configurações do site' : 'Criar o site da empresa'}</h2>
     <form id="fSite"><div class="grid">
       <div><label>Endereço (identificador)</label><input name="slug" required pattern="[a-z0-9][a-z0-9\\-]{1,39}" maxlength="40" value="${v('slug', slugify(CTX.empresa.empresa_nome))}"><p class="hint">Letras minúsculas, números e hífen. Fica: …/site/?l=<b>identificador</b></p></div>
+      <div><label>Domínio próprio (opcional)</label><input name="dominio" maxlength="100" placeholder="lojadamary.com.br" value="${v('dominio', '')}"><p class="hint">Sem www e sem https. O domínio precisa estar apontado para o site.</p></div>
       <div><label>Nome no site</label><input name="nome" maxlength="80" value="${v('nome', CTX.empresa.empresa_nome)}"></div>
       <div><label>Cidade</label><input name="cidade" maxlength="80" value="${v('cidade', 'Manaus · AM')}"></div>
       <div><label>WhatsApp comercial</label><input name="whatsapp" inputmode="tel" value="${esc(foneBR(c.whatsapp || ''))}" placeholder="(92) 99999-9999"></div>
@@ -517,7 +518,9 @@ async function salvarSite(form) {
   const f = new FormData(form);
   let zap = String(f.get('whatsapp') || '').replace(/\D/g, ''); if (/^55\d{10,11}$/.test(zap)) zap = zap.slice(2);
   if (zap && !/^\d{10,11}$/.test(zap)) return toast('WhatsApp: informe DDD + número.');
-  const row = { slug: slugify(f.get('slug')), nome: f.get('nome').trim() || null, cidade: f.get('cidade').trim() || null, frase: f.get('frase').trim() || null,
+  const dominio = String(f.get('dominio') || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
+  if (dominio && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(dominio)) return toast('Domínio inválido. Ex.: lojadamary.com.br');
+  const row = { slug: slugify(f.get('slug')), dominio: dominio || null, nome: f.get('nome').trim() || null, cidade: f.get('cidade').trim() || null, frase: f.get('frase').trim() || null,
     whatsapp: zap || null, pix_chave: chavePix(f.get('pix_chave')) || null, pix_nome: f.get('pix_nome').trim() || null, pix_cidade: f.get('pix_cidade').trim() || null,
     pix_desconto: Math.min(50, Math.max(0, toNum(f.get('pix_desconto')))), parcelas: Math.min(12, Math.max(1, parseInt(f.get('parcelas'), 10) || 1)),
     reserva_min: Math.min(1440, Math.max(5, parseInt(f.get('reserva_min'), 10) || 15)), publicado: !!f.get('publicado') };
@@ -529,7 +532,7 @@ async function salvarSite(form) {
     render(); toast(CFG.publicado ? '✓ Salvo. O site já mostra as mudanças.' : '✓ Salvo');
   } catch (e) {
     $('#btnSite').disabled = false;
-    if (e.code === '23505') toast('Esse endereço já é usado por outra empresa. Escolha outro.', 5000); else erro(e);
+    if (e.code === '23505') toast('Esse endereço ou domínio já é usado por outra empresa. Escolha outro.', 5000); else erro(e);
   }
 }
 
