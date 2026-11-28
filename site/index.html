@@ -166,10 +166,14 @@ h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
    Lê o catálogo do Supabase (função loj_publico_loja) e fica escutando
    mudanças em tempo real: quando a equipe altera preço, estoque, fotos
    ou obras no módulo "Loja / Site", a página se atualiza sozinha.
-   Endereço: site/?l=SLUG  (sem ?l= usa PLAT_CONFIG.lojaPadrao)
+   Endereço: site/?l=SLUG, ou o domínio próprio da loja (loj_config.dominio).
+   Sem nenhum dos dois, usa PLAT_CONFIG.lojaPadrao.
 ===================================================================== */
 const cfg = window.PLAT_CONFIG || {};
-const SLUG = (new URLSearchParams(location.search).get('l') || cfg.lojaPadrao || 'ke').toLowerCase();
+const SLUG_URL = (new URLSearchParams(location.search).get('l') || '').toLowerCase();
+const HOST = location.hostname.toLowerCase().replace(/^www\./, '');
+const DOMINIO_PROPRIO = !SLUG_URL && !!HOST && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(HOST) && !HOST.endsWith('github.io');
+let SLUG = SLUG_URL || cfg.lojaPadrao || 'ke';
 const db = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
 const $ = id => document.getElementById(id);
@@ -179,7 +183,7 @@ const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const norm = x => String(x ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const phone = s => String(s || '').replace(/\D/g, '');
 const SERVICOS = ['Piso vinílico', 'Rodapé PVC', 'Ripado PVC', 'Reforma completa'];
-const KCART = 'ke-site-cart-' + SLUG, KPED = 'ke-site-pedidos-' + SLUG;
+let KCART = 'ke-site-cart-' + SLUG, KPED = 'ke-site-pedidos-' + SLUG;
 
 let L = null, PRODUTOS = [], OBRAS = [], versao = 0;
 let page = 'Materiais', cat = 'Todos', detailId = null, checkoutMethod = 'pix', ultimoPedido = null;
@@ -621,6 +625,10 @@ window.addEventListener('storage', e => { if (e.key === KCART) { cart = ler(KCAR
 
 /* ---------------- início ---------------- */
 (async () => {
+  if (DOMINIO_PROPRIO) {   // ex.: lojadamary.com.br -> descobre o identificador da loja
+    const { data } = await db.rpc('loj_slug_do_dominio', { p_dominio: HOST });
+    if (data) { SLUG = data; KCART = 'ke-site-cart-' + SLUG; KPED = 'ke-site-pedidos-' + SLUG; cart = ler(KCART, {}); }
+  }
   await carregar(true);
   if (!L) return;
   escutar();
