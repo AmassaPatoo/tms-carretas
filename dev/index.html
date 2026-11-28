@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0C3446">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<title>Painel Dev</title>
+<link rel="stylesheet" href="../core/inicio.css">
+<link rel="stylesheet" href="dev.css">
+<script defer src="../vendor/supabase.js"></script>
+<script defer src="../config.js"></script>
+<script defer src="../core/plataforma.js"></script>
+<script defer src="dev.js"></script>
+</head>
+<body>
+<header class="topo">
+  <div class="marca"><span class="k">K</span><span class="e">E</span></div>
+  <div class="topo-tt">
+    <strong>Painel Dev</strong>
+    <span class="dev-sub" id="devPlat">carregando…</span>
+  </div>
+  <a class="topo-btn" href="../index.html" title="Abrir a plataforma">↗</a>
+</header>
+<main id="conteudo" class="conteudo"><div class="card vazio">Carregando…</div></main>
+<dialog id="modal"><div id="modal-corpo"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

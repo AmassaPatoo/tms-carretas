@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#242421">
-<title>K&amp;E Obra Fácil | Materiais e instalação</title>
-<meta name="description" content="Materiais de acabamento, instalação e obras reais em Manaus. Preços e estoque atualizados em tempo real.">
+<title>Loja online</title>
+<meta name="description" content="Catálogo com preços e estoque atualizados em tempo real. Peça pelo site ou pelo WhatsApp.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="K&amp;E Obra Fácil · Materiais e instalação">
-<meta property="og:description" content="Pisos, rodapés, ripados e colas com estoque em tempo real. Peça seu orçamento de instalação.">
+<meta property="og:title" content="Loja online">
+<meta property="og:description" content="Catálogo com preços e estoque atualizados em tempo real. Peça pelo site ou pelo WhatsApp.">
 <link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
 <script src="../vendor/supabase.js"></script>
 <script src="../config.js"></script>
@@ -125,16 +125,16 @@ h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
 </style>
 </head>
 <body>
-<div class="strip" id="strip">MATERIAIS • INSTALAÇÃO</div>
+<div class="strip" id="strip">&nbsp;</div>
 <header>
-  <div class="brand" id="brand">K&amp;E<small>OBRA FÁCIL</small></div>
-  <h1 id="titulo">Do material à instalação.</h1>
-  <p id="frase">Acabamentos, serviços e obras reais. Tudo em um só lugar.</p>
+  <div class="brand" id="brand">&nbsp;</div>
+  <h1 id="titulo">&nbsp;</h1>
+  <p id="frase"></p>
   <p id="cidade"></p>
   <div class="heroactions">
-    <button class="primary" data-tab="Materiais">Comprar materiais</button>
-    <button data-tab="Serviços">Contratar instalação</button>
-    <button data-tab="Obras">Conhecer nossas obras</button>
+    <button class="primary" data-tab="Materiais" id="heroMat">Comprar materiais</button>
+    <button data-tab="Serviços" id="heroServ" hidden>Contratar instalação</button>
+    <button data-tab="Obras" id="heroObr">Conhecer nossas obras</button>
   </div>
 </header>
 <div class="bar"><div class="wrap">
@@ -147,7 +147,7 @@ h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
 </div></div>
 <main class="wrap" id="main"><div class="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div></main>
 <footer>
-  <b id="fnome">K&amp;E OBRA FÁCIL</b>
+  <b id="fnome"></b>
   <p id="ftexto" hidden></p>
   <p>Materiais e mão de obra<span id="fcidade"></span>.</p>
   <p id="fzap"></p>
@@ -182,7 +182,19 @@ const fmtQ = n => (Number(n) || 0).toLocaleString('pt-BR', { maximumFractionDigi
 const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const norm = x => String(x ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const phone = s => String(s || '').replace(/\D/g, '');
-const SERVICOS = ['Piso vinílico', 'Rodapé PVC', 'Ripado PVC', 'Reforma completa'];
+// Serviços e o nome deles vêm do painel (⚙️ Site → 🎨 Aparência → Serviços).
+// Sem configuração salva, usa a lista abaixo (a da K&E). Lista vazia = loja só de produtos.
+const SERVICOS_PADRAO = ['Piso vinílico', 'Rodapé PVC', 'Ripado PVC', 'Reforma completa'];
+let SERVICOS = SERVICOS_PADRAO, ROTULO = 'Instalação';
+const rl = () => ROTULO.toLowerCase();
+const ABA_CHAVE = { 'Materiais': 'materiais', 'Serviços': 'servicos', 'Obras': 'obras' };
+const abaPersonalizada = t => { const k = ABA_CHAVE[t]; return k ? String(((L && L.tema && L.tema.abas) || {})[k] || '').trim() : ''; };
+const nomeAba = t => abaPersonalizada(t) || t;
+function lerServicos(t) {
+  const sv = (t && t.servicos) || {};
+  SERVICOS = Array.isArray(sv.lista) ? sv.lista.map(x => String(x || '').trim()).filter(Boolean).slice(0, 20) : SERVICOS_PADRAO;
+  ROTULO = String(sv.rotulo || '').trim().slice(0, 30) || 'Instalação';
+}
 let KCART = 'ke-site-cart-' + SLUG, KPED = 'ke-site-pedidos-' + SLUG;
 
 let L = null, PRODUTOS = [], OBRAS = [], versao = 0;
@@ -231,8 +243,12 @@ async function carregar(primeira) {
 }
 function foraDoAr(msg) { $('main').innerHTML = `<div class="empty">${esc(msg)}</div>`; $('tabs').innerHTML = ''; $('chips').innerHTML = ''; $('cbar').hidden = true; setLive(false); }
 function cabecalho() {
-  const nome = L.nome || 'K&E Obra Fácil';
-  document.title = nome + ' | Materiais e instalação';
+  lerServicos(L.tema || {});
+  const nome = L.nome || 'Loja online';
+  document.title = nome + ' | ' + (SERVICOS.length ? 'Materiais e ' + rl() : 'Materiais');
+  $('heroServ').hidden = !SERVICOS.length; $('heroServ').textContent = abaPersonalizada('Serviços') ? nomeAba('Serviços') : 'Contratar ' + rl();
+  $('heroMat').textContent = abaPersonalizada('Materiais') ? 'Ver ' + nomeAba('Materiais').toLowerCase() : 'Comprar materiais';
+  $('heroObr').textContent = abaPersonalizada('Obras') ? 'Ver ' + nomeAba('Obras').toLowerCase() : 'Conhecer nossas obras';
   const partes = nome.split(/\s+/);
   $('brand').innerHTML = esc(partes[0]) + (partes.length > 1 ? `<small>${esc(partes.slice(1).join(' ').toUpperCase())}</small>` : '');
   if (L.frase) $('frase').textContent = L.frase;
@@ -240,7 +256,7 @@ function cabecalho() {
   $('fnome').textContent = nome.toUpperCase();
   $('fcidade').textContent = L.cidade ? ' em ' + L.cidade : '';
   $('fzap').innerHTML = L.whatsapp ? `<a href="${esc(zapLink('Olá! Vim pelo site.'))}" target="_blank" rel="noopener">Fale no WhatsApp</a>` : '';
-  const s = ['MATERIAIS', 'INSTALAÇÃO'];
+  const s = ['MATERIAIS']; if (SERVICOS.length) s.push(ROTULO.toUpperCase());
   if (L.parcelas > 1) s.push(`ATÉ ${L.parcelas}X NO CARTÃO`);
   if (L.pix && L.pix_desconto > 0) s.push(`${fmtQ(L.pix_desconto)}% OFF NO PIX`);
   $('strip').textContent = s.join(' • ');
@@ -251,7 +267,7 @@ let temaAtual = '', temaTimer = null;
 function aplicarTema(t) {
   const chave = JSON.stringify(t); if (chave === temaAtual) return; temaAtual = chave;
   const topo = t.topo || {}, rod = t.rodape || {};
-  $('titulo').textContent = (topo.titulo || '').trim() || 'Do material à instalação.';
+  $('titulo').textContent = (topo.titulo || '').trim() || (SERVICOS.length ? 'Do material à ' + rl() + '.' : 'Tudo para a sua obra.');
   const tx = (rod.texto || '').trim(); $('ftexto').textContent = tx; $('ftexto').hidden = !tx;
   fundo(document.querySelector('header'), topo.imagens, topo.escurecer ?? 45);
   fundo(document.querySelector('footer'), rod.imagens, rod.escurecer ?? 55);
@@ -350,8 +366,9 @@ const parcelasTxt = v => L.parcelas > 1 ? `Até ${L.parcelas}x de ${money(v / L.
 
 function render() {
   if (!L) return;
-  const tabs = ['Materiais', 'Serviços', 'Obras', 'Onde trabalhamos', 'Meus pedidos'];
-  $('tabs').innerHTML = tabs.map(t => `<button class="${page === t ? 'active' : ''}" data-tab="${t}">${t}</button>`).join('');
+  if (page === 'Serviços' && !SERVICOS.length) page = 'Materiais';
+  const tabs = ['Materiais', ...(SERVICOS.length ? ['Serviços'] : []), 'Obras', 'Onde trabalhamos', 'Meus pedidos'];
+  $('tabs').innerHTML = tabs.map(t => `<button class="${page === t ? 'active' : ''}" data-tab="${t}">${esc(nomeAba(t))}</button>`).join('');
   const cats = page === 'Materiais' ? ['Todos', ...new Set(PRODUTOS.map(p => p.categoria))]
     : page === 'Obras' ? ['Todos', ...new Set(OBRAS.map(o => o.tipo))] : [];
   $('chips').innerHTML = cats.length > 2 ? cats.map(c => `<button class="${cat === c ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('') : '';
@@ -359,19 +376,19 @@ function render() {
   let h = '';
   if (page === 'Materiais') {
     const lista = PRODUTOS.filter(p => (cat === 'Todos' || cat === p.categoria) && norm(p.nome + ' ' + p.descricao + ' ' + p.categoria).includes(q));
-    h = '<div class="sectiontitle">Materiais para sua obra</div>' + (lista.length ? '<div class="grid">' + lista.map(p => `<article class="card" data-card="${p.id}">${gallery(p, `data-act="produto" data-id="${p.id}"`)}
+    h = '<div class="sectiontitle">' + (abaPersonalizada('Materiais') ? esc(nomeAba('Materiais')) : 'Materiais para sua obra') + '</div>' + (lista.length ? '<div class="grid">' + lista.map(p => `<article class="card" data-card="${p.id}">${gallery(p, `data-act="produto" data-id="${p.id}"`)}
       <div class="body"><div class="kicker">${esc(p.categoria)}</div><h3>${esc(p.nome)}</h3><p>${esc(p.descricao)}</p>
       <div class="price">${money(p.price)} <small class="muted">/${esc(p.unidade)}</small></div>
       <small class="muted">${[parcelasTxt(p.price), disponivelTxt(p)].filter(Boolean).join(' · ')}</small>
       ${stepper(p)}<button data-act="produto" data-id="${p.id}">VER DETALHES</button></div></article>`).join('') + '</div>'
       : `<div class="empty">${PRODUTOS.length ? 'Nenhum material encontrado nessa busca.' : 'Catálogo em atualização. Fale com a gente pelo WhatsApp.'}</div>`);
   } else if (page === 'Serviços') {
-    h = '<div class="sectiontitle">Mão de obra especializada</div><div class="grid">' + SERVICOS.filter(s => norm(s).includes(q)).map(s => `<article class="card"><div class="body"><div class="kicker">Instalação</div><h3>${esc(s)}</h3>
+    h = '<div class="sectiontitle">' + (abaPersonalizada('Serviços') ? esc(nomeAba('Serviços')) : 'Mão de obra especializada') + '</div><div class="grid">' + SERVICOS.filter(s => norm(s).includes(q)).map(s => `<article class="card"><div class="body"><div class="kicker">${esc(ROTULO)}</div><h3>${esc(s)}</h3>
       <p>Avaliação do ambiente, planejamento e execução conforme orçamento aprovado.</p>
       <button class="primary" data-act="quote" data-tipo="${esc(s)}">Solicitar orçamento</button></div></article>`).join('') + '</div>';
   } else if (page === 'Obras') {
     const w = OBRAS.filter(o => (cat === 'Todos' || cat === o.tipo) && norm(o.titulo + ' ' + o.local + ' ' + o.tipo).includes(q));
-    h = '<div class="sectiontitle">Obras realizadas</div>' + (w.length ? '<div class="grid">' + w.map(o => `<article class="card">${gallery(o, `data-act="obra" data-id="${o.id}"`)}
+    h = '<div class="sectiontitle">' + (abaPersonalizada('Obras') ? esc(nomeAba('Obras')) : 'Obras realizadas') + '</div>' + (w.length ? '<div class="grid">' + w.map(o => `<article class="card">${gallery(o, `data-act="obra" data-id="${o.id}"`)}
       <div class="body"><div class="kicker">${esc(o.tipo)}</div><h3>${esc(o.titulo)}</h3><p>📍 ${esc(o.local)}</p><p>${[o.area, o.prazo].filter(Boolean).map(esc).join(' · ')}</p>
       <button data-act="obra" data-id="${o.id}">Ver obra</button><button class="primary" data-act="quote" data-tipo="${esc(o.tipo)}" data-obra="${o.id}">Quero um resultado assim</button></div></article>`).join('') + '</div>'
       : '<div class="empty">Em breve, fotos das nossas obras por aqui.</div>');
@@ -417,7 +434,7 @@ function openProduct(id) {
     ${/m²|m2/i.test(p.unidade) ? `<div class="panel"><h3>Calcular material</h3><label class="field">Área (m²)<input id="area" type="number" min="0.01" step="0.01" value="20"></label>
       <label class="field">Sobra (%)<input id="waste" type="number" min="0" max="30" value="10"></label><p id="calcresult"></p>
       <button data-act="add-area">Adicionar metragem estimada</button><p class="muted">Confira o fechamento por caixa e as condições do ambiente.</p></div>` : ''}
-    <button class="primary full" data-act="quote" data-tipo="Instalação" data-prod="${p.id}">Solicitar material + instalação</button>
+    ${SERVICOS.length ? `<button class="primary full" data-act="quote" data-tipo="${esc(ROTULO)}" data-prod="${p.id}">Solicitar material + ${esc(rl())}</button>` : ''}
     <h3>Obras com este material</h3>${ob.map(o => `<button class="full" data-act="obra" data-id="${o.id}">${esc(o.titulo)}</button>`).join('') || '<p class="muted">Nenhuma obra vinculada ainda.</p>'}
     </div></div>`;
   if (!d.open) d.showModal();
@@ -560,7 +577,7 @@ function quote(tipo, obraId = '', prodId = '') {
     <label class="field">WhatsApp<input name="telefone" type="tel" required autocomplete="tel" value="${esc(salvo.telefone)}"></label>
     <label class="field">Bairro<input name="bairro" required maxlength="120"></label>
     <label class="field">Área estimada (m²)<input name="area" type="number" min="0" step="0.01"></label>
-    <label class="field">Modalidade<select name="modalidade"><option>Material + instalação</option><option>Somente instalação</option><option>Somente material</option></select></label>
+    <label class="field">Modalidade<select name="modalidade">${SERVICOS.length ? `<option>Material + ${esc(rl())}</option><option>Somente ${esc(rl())}</option>` : ""}<option>Somente material</option></select></label>
     <label class="field">Detalhes<textarea name="detalhes" maxlength="2000" placeholder="Ambiente, piso atual, prazo desejado…"></textarea></label>
     <button class="primary full" id="btnQuote">Enviar pedido de orçamento</button></form></div>`);
 }

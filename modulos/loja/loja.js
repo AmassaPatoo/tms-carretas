@@ -60,6 +60,10 @@ async function carregarTudo() {
     db.from('loj_solicitacoes').select('*').eq('empresa_id', EMP).order('criado_em', { ascending: false }).limit(300).then(ok)
   ]);
   CFG = cfg; PRODUTOS = prods; OBRAS = obras; PEDIDOS = peds; SOLIC = sols;
+  const temOrc = (CTX.empresa.modulos || []).includes('orcamentos');
+  const op = await db.from('dev_empresa_opcoes').select('loja_integra_orcamentos').eq('empresa_id', EMP).maybeSingle();
+  // sem a migração 014 ainda: mantém o comportamento antigo (integrado se tiver Orçamentos)
+  INTEGRA = temOrc && (op.error ? true : !!(op.data && op.data.loja_integra_orcamentos));
 }
 async function recarregarProdutos() { PRODUTOS = await db.from('loj_produtos').select('*').eq('empresa_id', EMP).order('ordem').order('nome').then(ok); }
 async function recarregarPedidos() {
@@ -68,6 +72,11 @@ async function recarregarPedidos() {
     db.from('loj_solicitacoes').select('*').eq('empresa_id', EMP).order('criado_em', { ascending: false }).limit(300).then(ok)]);
 }
 const ABERTOS = ['aguardando', 'pago', 'separando', 'pronto'];
+// Nomes das abas: o dono da loja muda em ⚙️ Site → 🎨 Aparência → Nomes das abas.
+const ABAS_PADRAO = { materiais: 'Materiais', pedidos: 'Pedidos', solicitacoes: 'Orçamentos do site', obras: 'Obras', servicos: 'Serviços' };
+const nomeAba = k => String(((CFG && CFG.tema && CFG.tema.abas) || {})[k] || '').trim() || ABAS_PADRAO[k];
+// Pedidos de orçamento do site viram orçamento no módulo Orçamentos? Quem decide é o dev (Painel Dev).
+let INTEGRA = false;
 function contadores() {
   const np = PEDIDOS.filter(p => ['aguardando', 'pago', 'separando'].includes(p.status)).length;
   const ns = SOLIC.filter(s => s.status === 'nova').length;
@@ -78,6 +87,7 @@ function contadores() {
 /* ---------------- render ---------------- */
 function render() {
   document.querySelectorAll('#abas button').forEach(b => b.classList.toggle('on', b.dataset.aba === UI.aba));
+  document.querySelectorAll('#abas [data-rot]').forEach(el => { el.textContent = nomeAba(el.dataset.rot); });
   contadores();
   const c = $('#conteudo');
   if (!CFG && UI.aba !== 'site') {
@@ -329,16 +339,17 @@ function zapPedido(id) {
 
 /* ---- SOLICITAÇÕES (pedidos de orçamento do site) ---- */
 function telaSolicitacoes() {
-  const temOrc = (CTX.empresa.modulos || []).includes('orcamentos');
-  const filtros = { nova: 'Novas', em_orcamento: 'Em orçamento', descartada: 'Descartadas', todas: 'Todas' };
+  const temOrc = INTEGRA;
+  const stNome = { nova: 'Nova', em_orcamento: temOrc ? 'Em orçamento' : 'Atendido', descartada: 'Descartada' };
+  const filtros = { nova: 'Novas', em_orcamento: temOrc ? 'Em orçamento' : 'Atendidos', descartada: 'Descartadas', todas: 'Todas' };
   const lista = SOLIC.filter(s => UI.fSol === 'todas' || s.status === UI.fSol);
-  $('#conteudo').innerHTML = `<div class="card"><h2>💬 Pedidos de orçamento do site</h2>
-    <p class="sub">${temOrc ? 'Toque em <b>Criar orçamento</b> para abrir um orçamento já com cliente, bairro e detalhes preenchidos.' : 'Libere o módulo Orçamentos para transformar estes pedidos em orçamento com um toque.'}</p>
+  $('#conteudo').innerHTML = `<div class="card"><h2>💬 ${esc(nomeAba('solicitacoes'))}</h2>
+    <p class="sub">${temOrc ? 'Toque em <b>Criar orçamento</b> para abrir um orçamento já com cliente, bairro e detalhes preenchidos.' : 'Pedidos que os clientes fizeram pelo site. Responda pelo <b>WhatsApp</b> e depois marque como <b>atendido</b>.'}</p>
     <div class="filtro-st">${Object.entries(filtros).map(([k, v]) => `<button data-act="fsol" data-f="${k}" class="${UI.fSol === k ? 'on' : ''}">${v}</button>`).join('')}</div>
     ${lista.map(s => {
       const prod = s.produto_id && PRODUTOS.find(p => p.id === s.produto_id), ob = s.obra_id && OBRAS.find(o => o.id === s.obra_id);
       return `<div class="ped ${UI.novos.has(s.id) ? 'novo' : ''}">
-        <div class="ped-top"><span class="tag ${s.status === 'nova' ? 'lar' : s.status === 'em_orcamento' ? 'ok' : ''}">${{ nova: 'Nova', em_orcamento: 'Em orçamento', descartada: 'Descartada' }[s.status]}</span>
+        <div class="ped-top"><span class="tag ${s.status === 'nova' ? 'lar' : s.status === 'em_orcamento' ? 'ok' : ''}">${stNome[s.status]}</span>
           <b>${esc(s.servico)}</b><small class="hint" style="margin:0">${esc(s.codigo)} · ${tempo(s.criado_em)}</small></div>
         <div class="cli"><b style="color:var(--ink)">${esc(s.nome)}</b> · ${foneBR(s.telefone)} · 📍 ${esc(s.bairro)}</div>
         <div class="cli">${esc(s.modalidade)}${s.area ? ' · ' + fmtN(s.area) + ' m²' : ''}${prod ? ' · material: ' + esc(prod.nome) : ''}${ob ? ' · inspirado na obra: ' + esc(ob.titulo) : ''}</div>
@@ -346,7 +357,8 @@ function telaSolicitacoes() {
         <div class="btn-row" style="margin-top:8px">
           ${s.orcamento_id && temOrc ? `<button class="btn pri sm" data-act="sol-abrir" data-id="${s.id}">📄 Abrir orçamento</button>` : temOrc && s.status !== 'descartada' ? `<button class="btn pri sm" data-act="sol-orc" data-id="${s.id}">📄 Criar orçamento</button>` : ''}
           <button class="btn sm zap" data-act="sol-zap" data-id="${s.id}">WhatsApp</button>
-          ${s.status === 'nova' ? `<button class="btn sm" data-act="sol-st" data-id="${s.id}" data-st="descartada">Descartar</button>` : s.status === 'descartada' ? `<button class="btn sm" data-act="sol-st" data-id="${s.id}" data-st="nova">Reabrir</button>` : ''}
+          ${!temOrc && s.status === 'nova' ? `<button class="btn pri sm" data-act="sol-st" data-id="${s.id}" data-st="em_orcamento">✓ Marcar como atendido</button>` : ''}
+          ${s.status === 'nova' ? `<button class="btn sm" data-act="sol-st" data-id="${s.id}" data-st="descartada">Descartar</button>` : s.status === 'descartada' || (!temOrc && s.status === 'em_orcamento' && !s.orcamento_id) ? `<button class="btn sm" data-act="sol-st" data-id="${s.id}" data-st="nova">Reabrir</button>` : ''}
         </div></div>`;
     }).join('') || '<div class="vazio">Nenhum pedido de orçamento aqui.</div>'}</div>`;
 }
@@ -459,11 +471,16 @@ async function telaSite() {
 
 /* ---- APARÊNCIA: imagens e textos do topo e do rodapé do site ---- */
 let TEMA = null;
-function temaPadrao() { return { topo: { imagens: [], escurecer: 45, titulo: '' }, rodape: { imagens: [], escurecer: 55, texto: '' } }; }
+const SERVICOS_PADRAO = ['Piso vinílico', 'Rodapé PVC', 'Ripado PVC', 'Reforma completa'];
+function temaPadrao() { return { topo: { imagens: [], escurecer: 45, titulo: '' }, rodape: { imagens: [], escurecer: 55, texto: '' },
+  servicos: { rotulo: 'Instalação', lista: SERVICOS_PADRAO } }; }
 function cardAparencia(t = CFG.tema || {}) {
   const p = temaPadrao();
   TEMA = { topo: { ...p.topo, ...(t.topo || {}) }, rodape: { ...p.rodape, ...(t.rodape || {}) } };
   TEMA.topo.imagens = [...TEMA.topo.imagens]; TEMA.rodape.imagens = [...TEMA.rodape.imagens];
+  const sv = { ...p.servicos, ...(t.servicos || {}) };
+  TEMA.servicos = { rotulo: sv.rotulo || 'Instalação', texto: (Array.isArray(sv.lista) ? sv.lista : []).join('\n') };
+  TEMA.abas = { ...(t.abas || {}) };
   const bloco = (k, nome, extra) => `<div class="tema-bloco"><h3 style="margin:0 0 6px;color:var(--navy);font-size:15px">${nome}</h3>
       <div class="fotos larga" id="tema-${k}"></div>
       <div class="grid" style="margin-top:10px">
@@ -475,6 +492,16 @@ function cardAparencia(t = CFG.tema || {}) {
     ${bloco('topo', 'Topo (primeira coisa que o cliente vê)', `<div><label>Título grande</label><input maxlength="80" data-tema-txt="topo.titulo" value="${esc(TEMA.topo.titulo)}" placeholder="Do material à instalação."><p class="hint">A frase menor embaixo é a "Frase de destaque" acima.</p></div>`)}
     <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
     ${bloco('rodape', 'Rodapé (final da página)', `<div class="full"><label>Texto do rodapé (opcional)</label><textarea rows="2" maxlength="300" data-tema-txt="rodape.texto" placeholder="Ex.: Atendemos toda Manaus. Seg. a sáb., 8h às 18h.">${esc(TEMA.rodape.texto)}</textarea></div>`)}
+    <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+    <div class="tema-bloco"><h3 style="margin:0 0 6px;color:var(--navy);font-size:15px">Serviços</h3>
+      <div class="grid">
+        <div><label>Nome do serviço</label><input maxlength="30" data-tema-txt="servicos.rotulo" value="${esc(TEMA.servicos.rotulo)}" placeholder="Instalação"><p class="hint">Ex.: Instalação, Montagem, Entrega, Pintura. Aparece nos botões e no topo do site.</p></div>
+        <div class="full"><label>Serviços oferecidos (um por linha)</label><textarea rows="4" data-tema-txt="servicos.texto" placeholder="Piso vinílico&#10;Rodapé PVC">${esc(TEMA.servicos.texto)}</textarea><p class="hint">Deixe vazio se a loja só vende produtos: a aba Serviços e os botões de serviço somem do site.</p></div>
+      </div></div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+    <div class="tema-bloco"><h3 style="margin:0 0 6px;color:var(--navy);font-size:15px">Nomes das abas</h3>
+      <p class="hint" style="margin-top:0">Troque os nomes como preferir (ex.: Materiais → Produtos, Obras → Portfólio). Vale aqui no painel e no site. Vazio = nome padrão.</p>
+      <div class="grid">${Object.entries(ABAS_PADRAO).map(([k, v]) => `<div><label>${esc(v)}${k === 'pedidos' || k === 'solicitacoes' ? ' <small>(só no painel)</small>' : k === 'servicos' ? ' <small>(só no site)</small>' : ''}</label><input maxlength="30" data-tema-txt="abas.${k}" value="${esc(TEMA.abas[k] || '')}" placeholder="${esc(v)}"></div>`).join('')}</div></div>
     <div class="btn-row"><button class="btn pri" data-act="tema-salvar">Salvar aparência</button><button class="btn" data-act="tema-limpar">Voltar ao padrão</button></div></div>`;
 }
 function desenharTema() {
@@ -504,9 +531,13 @@ async function enviarTema(k, files) {
 async function salvarTema() {
   const antigo = CFG.tema || {};
   const novo = { topo: { imagens: TEMA.topo.imagens, escurecer: TEMA.topo.escurecer, titulo: TEMA.topo.titulo.trim() },
-                 rodape: { imagens: TEMA.rodape.imagens, escurecer: TEMA.rodape.escurecer, texto: TEMA.rodape.texto.trim() } };
+                 rodape: { imagens: TEMA.rodape.imagens, escurecer: TEMA.rodape.escurecer, texto: TEMA.rodape.texto.trim() },
+                 servicos: { rotulo: TEMA.servicos.rotulo.trim().slice(0, 30) || 'Instalação',
+                   lista: [...new Set(TEMA.servicos.texto.split('\n').map(x => x.trim().slice(0, 60)).filter(Boolean))].slice(0, 20) },
+                 abas: Object.fromEntries(Object.keys(ABAS_PADRAO).map(k => [k, String(TEMA.abas[k] || '').trim().slice(0, 30)]).filter(([, v]) => v)) };
   try {
     CFG = await ok(db.from('loj_config').update({ tema: novo }).eq('empresa_id', EMP).select().single());
+    document.querySelectorAll('#abas [data-rot]').forEach(el => { el.textContent = nomeAba(el.dataset.rot); });
     const usadas = [...novo.topo.imagens, ...novo.rodape.imagens];
     await apagarArquivos([...((antigo.topo || {}).imagens || []), ...((antigo.rodape || {}).imagens || [])].filter(u => !usadas.includes(u)));
     toast(CFG.publicado ? '✓ Aparência salva. Já está no site.' : '✓ Aparência salva.');
@@ -520,10 +551,12 @@ async function salvarSite(form) {
   if (zap && !/^\d{10,11}$/.test(zap)) return toast('WhatsApp: informe DDD + número.');
   const dominio = String(f.get('dominio') || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
   if (dominio && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(dominio)) return toast('Domínio inválido. Ex.: lojadamary.com.br');
-  const row = { slug: slugify(f.get('slug')), dominio: dominio || null, nome: f.get('nome').trim() || null, cidade: f.get('cidade').trim() || null, frase: f.get('frase').trim() || null,
+  const row = { slug: slugify(f.get('slug')), nome: f.get('nome').trim() || null, cidade: f.get('cidade').trim() || null, frase: f.get('frase').trim() || null,
     whatsapp: zap || null, pix_chave: chavePix(f.get('pix_chave')) || null, pix_nome: f.get('pix_nome').trim() || null, pix_cidade: f.get('pix_cidade').trim() || null,
     pix_desconto: Math.min(50, Math.max(0, toNum(f.get('pix_desconto')))), parcelas: Math.min(12, Math.max(1, parseInt(f.get('parcelas'), 10) || 1)),
     reserva_min: Math.min(1440, Math.max(5, parseInt(f.get('reserva_min'), 10) || 15)), publicado: !!f.get('publicado') };
+  // só grava o domínio se a coluna já existe (migração 013 rodada) ou se foi preenchido
+  if (dominio || (CFG && 'dominio' in CFG)) row.dominio = dominio || null;
   if (row.publicado && !PRODUTOS.some(p => p.publicado) && !confirm('Nenhum material está marcado para aparecer no site. Colocar no ar mesmo assim?')) return;
   $('#btnSite').disabled = true;
   try {

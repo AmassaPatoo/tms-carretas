@@ -15,6 +15,11 @@
 
   const st = { user: null, perfil: null, admin: false, empresas: [], empresa: null, catalogo: [], modsAdmin: [], aba: 'inicio', clientes: [] };
   let instalar = null;
+  let NOME = P.cfg.nome || 'Plataforma';
+  async function carregarNome() {
+    try { const { data } = await db.from('core_config').select('nome_plataforma').maybeSingle(); if (data && data.nome_plataforma) NOME = data.nome_plataforma; } catch (e) {}
+    $('#nomePlataforma').textContent = NOME; document.title = NOME;
+  }
 
   /* ---------------- utilidades ---------------- */
   let tt;
@@ -114,16 +119,15 @@
     if (st.empresa) P.definirEmpresa(st.empresa.id);
 
     $('#tela-entrada').hidden = true; $('#tela-app').hidden = false;
-    $('#topoNome').textContent = P.cfg.nome || 'Plataforma KE';
+    $('#topoNome').textContent = NOME;
     $('#selEmpresa').innerHTML = st.empresas.length
       ? st.empresas.map(e => `<option value="${e.id}"${st.empresa && e.id === st.empresa.id ? ' selected' : ''}>${esc(e.nome)}${e.ativo === false ? ' (inativa)' : ''}</option>`).join('')
       : '<option>Nenhuma empresa</option>';
     $('#selEmpresa').disabled = st.empresas.length < 2;
     const podeEquipe = st.empresa && (st.admin || st.empresa.papel === 'dono');
     $('[data-aba="equipe"]').hidden = !podeEquipe;
-    $('[data-aba="admin"]').hidden = !st.admin;
     $('[data-aba="clientes"]').hidden = !st.empresa;
-    if ((st.aba === 'equipe' && !podeEquipe) || (st.aba === 'admin' && !st.admin) || (st.aba === 'clientes' && !st.empresa)) st.aba = 'inicio';
+    if ((st.aba === 'equipe' && !podeEquipe) || (st.aba === 'clientes' && !st.empresa)) st.aba = 'inicio';
     const aviso = params.get('aviso');
     if (aviso) { toast(aviso, 5500); history.replaceState(null, '', location.pathname); }
     irAba(st.aba);
@@ -138,7 +142,7 @@
   function irAba(aba) {
     st.aba = aba;
     $$('#abas [data-aba]').forEach(b => b.classList.toggle('on', b.dataset.aba === aba));
-    ({ inicio: abaInicio, clientes: abaClientes, equipe: abaEquipe, admin: abaAdmin }[aba] || abaInicio)().catch(erro);
+    ({ inicio: abaInicio, clientes: abaClientes, equipe: abaEquipe }[aba] || abaInicio)().catch(erro);
     window.scrollTo({ top: 0 });
   }
   const cont = () => $('#conteudo');
@@ -149,9 +153,9 @@
     if (!st.empresa) {
       cont().innerHTML = `<div class="titulo"><div><h2>Olá, ${esc(nome)}!</h2></div></div>
         <div class="card vazio">${st.admin
-          ? 'Nenhuma empresa cadastrada ainda. Crie a primeira em <b>Administração</b>.'
+          ? 'Nenhuma empresa cadastrada ainda. Crie a primeira no <b>Painel Dev</b>.'
           : `Sua conta (<b>${esc(st.user.email)}</b>) ainda não foi liberada.<br>Peça ao responsável pela empresa para adicionar este e-mail na equipe.`}
-          <div class="acoes" style="justify-content:center;margin-top:14px">${st.admin ? '<button class="btn" data-ir-aba="admin">Ir para Administração</button>' : ''}<button class="btn" id="btnSairVazio">Sair</button></div></div>`;
+          <div class="acoes" style="justify-content:center;margin-top:14px">${st.admin ? '<a class="btn" href="dev/">Abrir Painel Dev</a>' : ''}<button class="btn" id="btnSairVazio">Sair</button></div></div>`;
       $('#btnSairVazio').onclick = () => P.sair();
       return;
     }
@@ -159,7 +163,7 @@
     cont().innerHTML = `<div class="titulo"><div><h2>Olá, ${esc(nome)}!</h2><p>${esc(st.empresa.nome)} · ${PAPEIS[st.empresa.papel] || ''}</p></div></div>
       ${st.empresa.ativo === false ? '<div class="aviso">Esta empresa está inativa. Só o administrador consegue acessar.</div>' : ''}
       ${mods.length ? `<div class="grade">${mods.map(cardModulo).join('')}</div>`
-        : `<div class="card vazio">Nenhum sistema liberado para esta empresa ainda.${st.admin ? '<br>Libere os sistemas em <b>Administração</b>.' : ''}</div>`}`;
+        : `<div class="card vazio">Nenhum sistema liberado para esta empresa ainda.${st.admin ? '<br>Libere os sistemas no <b>Painel Dev</b>.' : ''}</div>`}`;
   }
   function cardModulo(m) {
     const ico = ICONES[m.icone] || '🧩';
@@ -267,73 +271,6 @@
     });
   }
 
-  /* ---------------- administração ---------------- */
-  async function abaAdmin() {
-    const cat = st.catalogo;
-    cont().innerHTML = `<div class="titulo"><div><h2>Administração</h2><p>Empresas atendidas pela plataforma e os sistemas de cada uma. Só você vê esta tela.</p></div>
-        <button class="btn sm" id="novaEmp" style="background:var(--orange);color:#fff;border-color:var(--orange)">+ Nova empresa</button></div>
-      ${st.empresas.map(e => `<div class="card empresa-adm" data-emp="${e.id}">
-          <div class="cab"><b>${esc(e.nome)}</b>${e.ativo === false ? '<span class="tag off">inativa</span>' : ''}
-            <button class="btn sm" data-editar>Editar</button><button class="btn sm" data-dono>+ Pessoa</button></div>
-          <div class="chips">${cat.map(m => `<button class="chip${e.modulos.includes(m.codigo) ? ' on' : ''}" data-mod="${m.codigo}">${ICONES[m.icone] || '🧩'} ${esc(m.nome)}</button>`).join('')}</div>
-        </div>`).join('') || '<div class="card vazio">Nenhuma empresa ainda.</div>'}`;
-    $('#novaEmp').onclick = () => formEmpresa();
-    $$('[data-emp]').forEach(card => {
-      const emp = st.empresas.find(e => e.id === card.dataset.emp);
-      card.querySelector('[data-editar]').onclick = () => formEmpresa(emp);
-      card.querySelector('[data-dono]').onclick = () => formPessoa(emp);
-      card.querySelectorAll('[data-mod]').forEach(b => b.onclick = async () => {
-        const cod = b.dataset.mod, linha = st.modsAdmin.find(x => x.empresa_id === emp.id && x.modulo === cod);
-        try {
-          if (linha) ok(await db.from('core_empresa_modulos').update({ ativo: !linha.ativo }).eq('empresa_id', emp.id).eq('modulo', cod));
-          else ok(await db.from('core_empresa_modulos').insert({ empresa_id: emp.id, modulo: cod }));
-          await entrarApp(st.user);
-        } catch (ex) { erro(ex); }
-      });
-    });
-  }
-  function formEmpresa(e = {}) {
-    modal(`<h3>${e.id ? 'Editar empresa' : 'Nova empresa'}</h3>
-      <form id="fEmp" class="form-grid">
-        <label class="full">Nome<input name="nome" required value="${esc(e.nome)}"></label>
-        <label>CNPJ / CPF<input name="documento" value="${esc(e.documento)}"></label>
-        <label>Telefone<input name="telefone" value="${esc(e.telefone)}"></label>
-        <label class="full">Cidade / UF<input name="cidade" value="${esc(e.cidade)}"></label>
-        ${e.id ? `<label class="full" style="display:flex;gap:10px;align-items:center"><input type="checkbox" name="ativo" style="width:20px;height:20px;margin:0" ${e.ativo !== false ? 'checked' : ''}> Empresa ativa</label>` : ''}
-        <div class="acoes full"><button type="button" class="btn" id="cancEmp">Cancelar</button><button class="btn pri" style="width:auto">Salvar</button></div>
-      </form>`);
-    $('#cancEmp').onclick = fecharModal;
-    $('#fEmp').onsubmit = async ev => {
-      ev.preventDefault(); const f = dados(ev.target);
-      const row = { nome: f.nome.trim(), documento: f.documento.trim() || null, telefone: f.telefone.trim() || null, cidade: f.cidade.trim() || null };
-      if (e.id) row.ativo = !!f.ativo;
-      await ocupado(ev.submitter, async () => {
-        try {
-          if (e.id) ok(await db.from('core_empresas').update(row).eq('id', e.id));
-          else { const n = ok(await db.from('core_empresas').insert(row).select('id').single()); P.definirEmpresa(n.id); }
-          fecharModal(); toast('Empresa salva.'); await entrarApp(st.user);
-        } catch (ex) { erro(ex); }
-      });
-    };
-  }
-  function formPessoa(emp) {
-    modal(`<h3>Adicionar pessoa — ${esc(emp.nome)}</h3>
-      <form id="fPes" class="form-grid">
-        <label>E-mail<input name="email" type="email" required></label>
-        <label>Papel<select name="papel"><option value="dono">Dono</option><option value="gerente">Gerente</option><option value="usuario">Usuário</option></select></label>
-        <p class="sub full" style="font-size:12.5px">A pessoa precisa ter criado a conta antes (tela de entrada → Criar conta).</p>
-        <div class="acoes full"><button type="button" class="btn" id="cancPes">Cancelar</button><button class="btn pri" style="width:auto">Adicionar</button></div>
-      </form>`);
-    $('#cancPes').onclick = fecharModal;
-    $('#fPes').onsubmit = async ev => {
-      ev.preventDefault(); const f = dados(ev.target);
-      await ocupado(ev.submitter, async () => {
-        try { await P.rpc('core_adicionar_membro', { p_empresa: emp.id, p_email: f.email.trim(), p_papel: f.papel }); fecharModal(); toast('Pessoa adicionada.'); await entrarApp(st.user); }
-        catch (ex) { erro(ex); }
-      });
-    };
-  }
-
   /* ---------------- minha conta ---------------- */
   $('#btnPerfil').addEventListener('click', () => {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone;
@@ -344,6 +281,7 @@
         <label class="full">Nova senha <em>(deixe vazio para não trocar)</em><input name="senha" type="password" minlength="6" autocomplete="new-password"></label>
         <div class="acoes full"><button type="button" class="btn perigo" id="btnSair">Sair</button><button type="button" class="btn" id="cancPerfil">Fechar</button><button class="btn pri" style="width:auto">Salvar</button></div>
       </form>
+      ${st.admin ? '<a class="btn" href="dev/" style="width:100%;margin-top:12px;display:flex;align-items:center;justify-content:center;text-decoration:none">🛠️ Painel Dev</a>' : ''}
       ${instalar ? '<button class="btn" id="btnInstalar" style="width:100%;margin-top:12px">📲 Instalar aplicativo no aparelho</button>' : ''}
       ${ios ? '<p class="sub" style="margin-top:12px;font-size:13px">📲 Para instalar no iPhone: toque em <b>Compartilhar</b> (quadrado com seta) → <b>Adicionar à Tela de Início</b>.</p>' : ''}`);
     $('#cancPerfil').onclick = fecharModal;
@@ -365,8 +303,7 @@
   /* ---------------- início ---------------- */
   (async () => {
     try {
-      $('#nomePlataforma').textContent = P.cfg.nome || 'Plataforma KE';
-      document.title = P.cfg.nome || 'Plataforma KE';
+      await carregarNome();
       if (/type=recovery/.test(location.hash)) return mostrarEntrada('nova-senha');
       const u = await P.usuario();
       if (!u) return mostrarEntrada('login', new URL(location.href).searchParams.get('voltar') ? 'Entre para continuar.' : '');

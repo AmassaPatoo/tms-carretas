@@ -48,6 +48,7 @@ Rode no **SQL Editor**, em ordem (cada arquivo inteiro → Run):
 11. `011_loja_videos_obras.sql`: vídeos nas obras (arquivo até 50 MB ou link do YouTube), mostrados só nos detalhes da obra.
 12. `012_loja_aparencia.sql`: aparência do site (imagens de fundo e textos do topo e do rodapé), em ⚙️ Site → 🎨 Aparência.
 13. `013_loja_dominio.sql`: domínio próprio para o site de cada empresa (ex.: lojadamary.com.br abre direto na loja, sem `?l=`). Rode **antes** de publicar os arquivos novos do painel.
+14. `014_painel_dev.sql`: **Painel Dev** (`…/dev/`): nome da plataforma, empresas, sistemas, pessoas, sites e a chave "orçamentos do site → módulo Orçamentos" de cada empresa.
 9. `009_remover_assinatura_link.sql`: botão "Remover assinatura" no orçamento, inclusive para a assinatura feita pelo cliente no link (o orçamento volta para "Enviado" e o link antigo é cancelado).
 
 > Depois da 002, o app antigo `tms-carretas` para de funcionar. Use a plataforma.
@@ -73,6 +74,41 @@ Em **Authentication → Sign In / Providers → Email** você escolhe se exige c
 
 Para atualizar depois: suba os arquivos alterados de novo e **aumente o número da `VERSAO` no `sw.js`**
 (ex.: `plataforma-v2`). Isso faz os aparelhos baixarem a versão nova.
+
+## Painel Dev (só o administrador)
+
+Endereço: `…/dev/` (também em 👤 Minha conta → 🛠️ Painel Dev). É o único lugar de administração:
+
+- **Plataforma**: o nome que aparece na entrada e no topo.
+- **Empresas**: criar, editar, desativar e entrar nelas para dar suporte.
+- **Sistemas liberados** de cada empresa (liga e desliga com um toque).
+- **Pessoas com acesso**: adicionar pelo e-mail, trocar o papel, remover.
+- **Site**: no ar ou fora, link e números (produtos, pedidos, orçamentos novos).
+- **Orçamentos do site → módulo Orçamentos**: ligado só onde fizer sentido (a K&E).
+  Desligado, os pedidos de orçamento ficam numa caixa de entrada dentro da loja
+  (responder no WhatsApp e marcar como atendido).
+
+Nomes das abas da loja (Materiais, Pedidos, Orçamentos do site, Obras, Serviços): cada loja muda em
+⚙️ Site → 🎨 Aparência → **Nomes das abas**. Vale no painel e no site.
+
+## Domínio próprio para a loja de um cliente
+
+O GitHub Pages aceita só um domínio por repositório. Para cada cliente ter o próprio endereço
+(ex.: `lojadamary.com.br`), publique este mesmo repositório também no **Cloudflare Pages** (grátis):
+
+1. Em dash.cloudflare.com → **Workers & Pages → Create → Pages → Connect to Git** → escolha este repositório.
+2. *Framework preset*: **None** · *Build command*: vazio · *Build output directory*: `/` → **Save and Deploy**.
+3. No projeto → **Custom domains → Set up a domain** → digite o domínio do cliente e siga as instruções de DNS.
+4. Na plataforma, entre na empresa do cliente → ⚙️ Site → **Domínio próprio** → digite o mesmo domínio → Salvar.
+
+Pronto: quem abre `lojadamary.com.br` cai direto no site da loja dela. Cada `git push` atualiza todas as lojas.
+O endereço `*.pages.dev` do projeto abre a plataforma (login). Se quiser a plataforma num domínio seu,
+coloque-o em `hostsPlataforma` no `config.js`.
+
+## Serviços de cada loja
+
+Em ⚙️ Site → 🎨 Aparência → **Serviços**, cada empresa escolhe o nome do serviço (Instalação, Montagem,
+Pintura…) e a lista de serviços. Lista vazia = loja só de produtos (a aba Serviços e os botões somem).
 
 ## Primeiro acesso
 
