@@ -1,0 +1,35 @@
+# Roda um arquivo de supabase/migrations no banco do Supabase.
+# Uso: Actions → "Rodar migração no Supabase" → Run workflow → nome do arquivo.
+# Precisa do segredo SUPABASE_DB_URL (Settings → Secrets and variables → Actions).
+name: Rodar migração no Supabase
+
+on:
+  workflow_dispatch:
+    inputs:
+      arquivo:
+        description: 'Arquivo em supabase/migrations (ex.: 013_loja_dominio.sql)'
+        required: true
+
+concurrency: supabase-migracao
+
+jobs:
+  migrar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir o arquivo
+        env:
+          ARQ: ${{ inputs.arquivo }}
+        run: |
+          [[ "$ARQ" =~ ^[0-9]{3}_[a-z0-9_]+\.sql$ ]] || { echo "::error::Nome inválido: $ARQ"; exit 1; }
+          test -f "supabase/migrations/$ARQ" || { echo "::error::Não existe supabase/migrations/$ARQ"; exit 1; }
+
+      - name: Rodar no banco
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          ARQ: ${{ inputs.arquivo }}
+        run: |
+          test -n "$DB_URL" || { echo "::error::Falta o segredo SUPABASE_DB_URL"; exit 1; }
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -X -q -f "supabase/migrations/$ARQ"
+          echo "✓ $ARQ aplicado"
