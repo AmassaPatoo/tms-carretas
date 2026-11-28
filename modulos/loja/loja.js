@@ -459,11 +459,15 @@ async function telaSite() {
 
 /* ---- APARÊNCIA: imagens e textos do topo e do rodapé do site ---- */
 let TEMA = null;
-function temaPadrao() { return { topo: { imagens: [], escurecer: 45, titulo: '' }, rodape: { imagens: [], escurecer: 55, texto: '' } }; }
+const SERVICOS_PADRAO = ['Piso vinílico', 'Rodapé PVC', 'Ripado PVC', 'Reforma completa'];
+function temaPadrao() { return { topo: { imagens: [], escurecer: 45, titulo: '' }, rodape: { imagens: [], escurecer: 55, texto: '' },
+  servicos: { rotulo: 'Instalação', lista: SERVICOS_PADRAO } }; }
 function cardAparencia(t = CFG.tema || {}) {
   const p = temaPadrao();
   TEMA = { topo: { ...p.topo, ...(t.topo || {}) }, rodape: { ...p.rodape, ...(t.rodape || {}) } };
   TEMA.topo.imagens = [...TEMA.topo.imagens]; TEMA.rodape.imagens = [...TEMA.rodape.imagens];
+  const sv = { ...p.servicos, ...(t.servicos || {}) };
+  TEMA.servicos = { rotulo: sv.rotulo || 'Instalação', texto: (Array.isArray(sv.lista) ? sv.lista : []).join('\n') };
   const bloco = (k, nome, extra) => `<div class="tema-bloco"><h3 style="margin:0 0 6px;color:var(--navy);font-size:15px">${nome}</h3>
       <div class="fotos larga" id="tema-${k}"></div>
       <div class="grid" style="margin-top:10px">
@@ -475,6 +479,12 @@ function cardAparencia(t = CFG.tema || {}) {
     ${bloco('topo', 'Topo (primeira coisa que o cliente vê)', `<div><label>Título grande</label><input maxlength="80" data-tema-txt="topo.titulo" value="${esc(TEMA.topo.titulo)}" placeholder="Do material à instalação."><p class="hint">A frase menor embaixo é a "Frase de destaque" acima.</p></div>`)}
     <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
     ${bloco('rodape', 'Rodapé (final da página)', `<div class="full"><label>Texto do rodapé (opcional)</label><textarea rows="2" maxlength="300" data-tema-txt="rodape.texto" placeholder="Ex.: Atendemos toda Manaus. Seg. a sáb., 8h às 18h.">${esc(TEMA.rodape.texto)}</textarea></div>`)}
+    <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+    <div class="tema-bloco"><h3 style="margin:0 0 6px;color:var(--navy);font-size:15px">Serviços</h3>
+      <div class="grid">
+        <div><label>Nome do serviço</label><input maxlength="30" data-tema-txt="servicos.rotulo" value="${esc(TEMA.servicos.rotulo)}" placeholder="Instalação"><p class="hint">Ex.: Instalação, Montagem, Entrega, Pintura. Aparece nos botões e no topo do site.</p></div>
+        <div class="full"><label>Serviços oferecidos (um por linha)</label><textarea rows="4" data-tema-txt="servicos.texto" placeholder="Piso vinílico&#10;Rodapé PVC">${esc(TEMA.servicos.texto)}</textarea><p class="hint">Deixe vazio se a loja só vende produtos: a aba Serviços e os botões de serviço somem do site.</p></div>
+      </div></div>
     <div class="btn-row"><button class="btn pri" data-act="tema-salvar">Salvar aparência</button><button class="btn" data-act="tema-limpar">Voltar ao padrão</button></div></div>`;
 }
 function desenharTema() {
@@ -504,7 +514,9 @@ async function enviarTema(k, files) {
 async function salvarTema() {
   const antigo = CFG.tema || {};
   const novo = { topo: { imagens: TEMA.topo.imagens, escurecer: TEMA.topo.escurecer, titulo: TEMA.topo.titulo.trim() },
-                 rodape: { imagens: TEMA.rodape.imagens, escurecer: TEMA.rodape.escurecer, texto: TEMA.rodape.texto.trim() } };
+                 rodape: { imagens: TEMA.rodape.imagens, escurecer: TEMA.rodape.escurecer, texto: TEMA.rodape.texto.trim() },
+                 servicos: { rotulo: TEMA.servicos.rotulo.trim().slice(0, 30) || 'Instalação',
+                   lista: [...new Set(TEMA.servicos.texto.split('\n').map(x => x.trim().slice(0, 60)).filter(Boolean))].slice(0, 20) } };
   try {
     CFG = await ok(db.from('loj_config').update({ tema: novo }).eq('empresa_id', EMP).select().single());
     const usadas = [...novo.topo.imagens, ...novo.rodape.imagens];

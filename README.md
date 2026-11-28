@@ -74,6 +74,25 @@ Em **Authentication → Sign In / Providers → Email** você escolhe se exige c
 Para atualizar depois: suba os arquivos alterados de novo e **aumente o número da `VERSAO` no `sw.js`**
 (ex.: `plataforma-v2`). Isso faz os aparelhos baixarem a versão nova.
 
+## Domínio próprio para a loja de um cliente
+
+O GitHub Pages aceita só um domínio por repositório. Para cada cliente ter o próprio endereço
+(ex.: `lojadamary.com.br`), publique este mesmo repositório também no **Cloudflare Pages** (grátis):
+
+1. Em dash.cloudflare.com → **Workers & Pages → Create → Pages → Connect to Git** → escolha este repositório.
+2. *Framework preset*: **None** · *Build command*: vazio · *Build output directory*: `/` → **Save and Deploy**.
+3. No projeto → **Custom domains → Set up a domain** → digite o domínio do cliente e siga as instruções de DNS.
+4. Na plataforma, entre na empresa do cliente → ⚙️ Site → **Domínio próprio** → digite o mesmo domínio → Salvar.
+
+Pronto: quem abre `lojadamary.com.br` cai direto no site da loja dela. Cada `git push` atualiza todas as lojas.
+O endereço `*.pages.dev` do projeto abre a plataforma (login). Se quiser a plataforma num domínio seu,
+coloque-o em `hostsPlataforma` no `config.js`.
+
+## Serviços de cada loja
+
+Em ⚙️ Site → 🎨 Aparência → **Serviços**, cada empresa escolhe o nome do serviço (Instalação, Montagem,
+Pintura…) e a lista de serviços. Lista vazia = loja só de produtos (a aba Serviços e os botões somem).
+
 ## Primeiro acesso
 
 1. Abra o endereço e entre com o seu e-mail (o que é administrador).
