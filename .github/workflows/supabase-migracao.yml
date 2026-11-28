@@ -1,9 +1,17 @@
 # Roda um arquivo de supabase/migrations no banco do Supabase.
-# Uso: Actions → "Rodar migração no Supabase" → Run workflow → nome do arquivo.
+#
+# Duas formas de usar:
+#  • Escreva o nome do arquivo (ex.: 013_loja_dominio.sql) em supabase/aplicar.txt e faça push.
+#  • Ou: Actions → "Rodar migração no Supabase" → Run workflow → nome do arquivo.
+#
+# O resultado fica gravado em supabase/resultado.txt.
 # Precisa do segredo SUPABASE_DB_URL (Settings → Secrets and variables → Actions).
 name: Rodar migração no Supabase
 
 on:
+  push:
+    branches: [main]
+    paths: ['supabase/aplicar.txt']
   workflow_dispatch:
     inputs:
       arquivo:
@@ -12,24 +20,52 @@ on:
 
 concurrency: supabase-migracao
 
+permissions:
+  contents: write
+
 jobs:
   migrar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Conferir o arquivo
+      - name: Qual arquivo
+        id: arq
         env:
-          ARQ: ${{ inputs.arquivo }}
+          ENTRADA: ${{ inputs.arquivo }}
         run: |
+          ARQ="${ENTRADA:-$(head -n1 supabase/aplicar.txt | tr -d '[:space:]')}"
           [[ "$ARQ" =~ ^[0-9]{3}_[a-z0-9_]+\.sql$ ]] || { echo "::error::Nome inválido: $ARQ"; exit 1; }
           test -f "supabase/migrations/$ARQ" || { echo "::error::Não existe supabase/migrations/$ARQ"; exit 1; }
+          echo "nome=$ARQ" >> "$GITHUB_OUTPUT"
 
       - name: Rodar no banco
+        id: rodar
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-          ARQ: ${{ inputs.arquivo }}
+          ARQ: ${{ steps.arq.outputs.nome }}
         run: |
-          test -n "$DB_URL" || { echo "::error::Falta o segredo SUPABASE_DB_URL"; exit 1; }
-          psql "$DB_URL" -v ON_ERROR_STOP=1 -X -q -f "supabase/migrations/$ARQ"
-          echo "✓ $ARQ aplicado"
+          set +e
+          if [ -z "$DB_URL" ]; then
+            echo "Falta o segredo SUPABASE_DB_URL" > /tmp/saida.txt; STATUS=ERRO
+          else
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -X -q -f "supabase/migrations/$ARQ" > /tmp/saida.txt 2>&1
+            [ $? -eq 0 ] && STATUS=OK || STATUS=ERRO
+          fi
+          # nunca grava a senha no resultado
+          sed -i -E 's#postgres(ql)?://[^ ]+#postgres://***#g' /tmp/saida.txt
+          { echo "$STATUS  $ARQ  $(date -u +%Y-%m-%dT%H:%M:%SZ)"; echo "---"; tail -n 40 /tmp/saida.txt; } > supabase/resultado.txt
+          cat supabase/resultado.txt
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+
+      - name: Gravar resultado no repositório
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/resultado.txt
+          git commit -m "Resultado da migração: $(head -n1 supabase/resultado.txt)" || exit 0
+          git push
+
+      - name: Falhou?
+        if: steps.rodar.outputs.status != 'OK'
+        run: exit 1
