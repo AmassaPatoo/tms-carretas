@@ -532,10 +532,12 @@ async function salvarSite(form) {
   if (zap && !/^\d{10,11}$/.test(zap)) return toast('WhatsApp: informe DDD + número.');
   const dominio = String(f.get('dominio') || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
   if (dominio && !/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(dominio)) return toast('Domínio inválido. Ex.: lojadamary.com.br');
-  const row = { slug: slugify(f.get('slug')), dominio: dominio || null, nome: f.get('nome').trim() || null, cidade: f.get('cidade').trim() || null, frase: f.get('frase').trim() || null,
+  const row = { slug: slugify(f.get('slug')), nome: f.get('nome').trim() || null, cidade: f.get('cidade').trim() || null, frase: f.get('frase').trim() || null,
     whatsapp: zap || null, pix_chave: chavePix(f.get('pix_chave')) || null, pix_nome: f.get('pix_nome').trim() || null, pix_cidade: f.get('pix_cidade').trim() || null,
     pix_desconto: Math.min(50, Math.max(0, toNum(f.get('pix_desconto')))), parcelas: Math.min(12, Math.max(1, parseInt(f.get('parcelas'), 10) || 1)),
     reserva_min: Math.min(1440, Math.max(5, parseInt(f.get('reserva_min'), 10) || 15)), publicado: !!f.get('publicado') };
+  // só grava o domínio se a coluna já existe (migração 013 rodada) ou se foi preenchido
+  if (dominio || (CFG && 'dominio' in CFG)) row.dominio = dominio || null;
   if (row.publicado && !PRODUTOS.some(p => p.publicado) && !confirm('Nenhum material está marcado para aparecer no site. Colocar no ar mesmo assim?')) return;
   $('#btnSite').disabled = true;
   try {
