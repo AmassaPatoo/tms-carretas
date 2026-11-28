@@ -67,7 +67,7 @@ window.Plataforma = (() => {
     if (document.getElementById('plat-barra')) return;
     const b = document.createElement('div');
     b.id = 'plat-barra';
-    b.innerHTML = `<a href="${raiz}index.html" title="Voltar para a plataforma">← ${esc(cfg.nome || 'Plataforma')}</a>
+    b.innerHTML = `<a href="${raiz}index.html" title="Voltar para o início">← Início</a>
       <span>${esc(nomeModulo)} · <b>${esc(ctx.empresa.empresa_nome)}</b></span>`;
     const st = document.createElement('style');
     st.textContent = `#plat-barra{position:sticky;top:0;z-index:999;height:34px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;

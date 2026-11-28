@@ -132,9 +132,9 @@ h2,h3{margin:12px 0}h2{font-family:Georgia,serif}
   <p id="frase"></p>
   <p id="cidade"></p>
   <div class="heroactions">
-    <button class="primary" data-tab="Materiais">Comprar materiais</button>
+    <button class="primary" data-tab="Materiais" id="heroMat">Comprar materiais</button>
     <button data-tab="Serviços" id="heroServ" hidden>Contratar instalação</button>
-    <button data-tab="Obras">Conhecer nossas obras</button>
+    <button data-tab="Obras" id="heroObr">Conhecer nossas obras</button>
   </div>
 </header>
 <div class="bar"><div class="wrap">
@@ -187,6 +187,9 @@ const phone = s => String(s || '').replace(/\D/g, '');
 const SERVICOS_PADRAO = ['Piso vinílico', 'Rodapé PVC', 'Ripado PVC', 'Reforma completa'];
 let SERVICOS = SERVICOS_PADRAO, ROTULO = 'Instalação';
 const rl = () => ROTULO.toLowerCase();
+const ABA_CHAVE = { 'Materiais': 'materiais', 'Serviços': 'servicos', 'Obras': 'obras' };
+const abaPersonalizada = t => { const k = ABA_CHAVE[t]; return k ? String(((L && L.tema && L.tema.abas) || {})[k] || '').trim() : ''; };
+const nomeAba = t => abaPersonalizada(t) || t;
 function lerServicos(t) {
   const sv = (t && t.servicos) || {};
   SERVICOS = Array.isArray(sv.lista) ? sv.lista.map(x => String(x || '').trim()).filter(Boolean).slice(0, 20) : SERVICOS_PADRAO;
@@ -243,7 +246,9 @@ function cabecalho() {
   lerServicos(L.tema || {});
   const nome = L.nome || 'Loja online';
   document.title = nome + ' | ' + (SERVICOS.length ? 'Materiais e ' + rl() : 'Materiais');
-  $('heroServ').hidden = !SERVICOS.length; $('heroServ').textContent = 'Contratar ' + rl();
+  $('heroServ').hidden = !SERVICOS.length; $('heroServ').textContent = abaPersonalizada('Serviços') ? nomeAba('Serviços') : 'Contratar ' + rl();
+  $('heroMat').textContent = abaPersonalizada('Materiais') ? 'Ver ' + nomeAba('Materiais').toLowerCase() : 'Comprar materiais';
+  $('heroObr').textContent = abaPersonalizada('Obras') ? 'Ver ' + nomeAba('Obras').toLowerCase() : 'Conhecer nossas obras';
   const partes = nome.split(/\s+/);
   $('brand').innerHTML = esc(partes[0]) + (partes.length > 1 ? `<small>${esc(partes.slice(1).join(' ').toUpperCase())}</small>` : '');
   if (L.frase) $('frase').textContent = L.frase;
@@ -363,7 +368,7 @@ function render() {
   if (!L) return;
   if (page === 'Serviços' && !SERVICOS.length) page = 'Materiais';
   const tabs = ['Materiais', ...(SERVICOS.length ? ['Serviços'] : []), 'Obras', 'Onde trabalhamos', 'Meus pedidos'];
-  $('tabs').innerHTML = tabs.map(t => `<button class="${page === t ? 'active' : ''}" data-tab="${t}">${t}</button>`).join('');
+  $('tabs').innerHTML = tabs.map(t => `<button class="${page === t ? 'active' : ''}" data-tab="${t}">${esc(nomeAba(t))}</button>`).join('');
   const cats = page === 'Materiais' ? ['Todos', ...new Set(PRODUTOS.map(p => p.categoria))]
     : page === 'Obras' ? ['Todos', ...new Set(OBRAS.map(o => o.tipo))] : [];
   $('chips').innerHTML = cats.length > 2 ? cats.map(c => `<button class="${cat === c ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('') : '';
@@ -371,19 +376,19 @@ function render() {
   let h = '';
   if (page === 'Materiais') {
     const lista = PRODUTOS.filter(p => (cat === 'Todos' || cat === p.categoria) && norm(p.nome + ' ' + p.descricao + ' ' + p.categoria).includes(q));
-    h = '<div class="sectiontitle">Materiais para sua obra</div>' + (lista.length ? '<div class="grid">' + lista.map(p => `<article class="card" data-card="${p.id}">${gallery(p, `data-act="produto" data-id="${p.id}"`)}
+    h = '<div class="sectiontitle">' + (abaPersonalizada('Materiais') ? esc(nomeAba('Materiais')) : 'Materiais para sua obra') + '</div>' + (lista.length ? '<div class="grid">' + lista.map(p => `<article class="card" data-card="${p.id}">${gallery(p, `data-act="produto" data-id="${p.id}"`)}
       <div class="body"><div class="kicker">${esc(p.categoria)}</div><h3>${esc(p.nome)}</h3><p>${esc(p.descricao)}</p>
       <div class="price">${money(p.price)} <small class="muted">/${esc(p.unidade)}</small></div>
       <small class="muted">${[parcelasTxt(p.price), disponivelTxt(p)].filter(Boolean).join(' · ')}</small>
       ${stepper(p)}<button data-act="produto" data-id="${p.id}">VER DETALHES</button></div></article>`).join('') + '</div>'
       : `<div class="empty">${PRODUTOS.length ? 'Nenhum material encontrado nessa busca.' : 'Catálogo em atualização. Fale com a gente pelo WhatsApp.'}</div>`);
   } else if (page === 'Serviços') {
-    h = '<div class="sectiontitle">Mão de obra especializada</div><div class="grid">' + SERVICOS.filter(s => norm(s).includes(q)).map(s => `<article class="card"><div class="body"><div class="kicker">${esc(ROTULO)}</div><h3>${esc(s)}</h3>
+    h = '<div class="sectiontitle">' + (abaPersonalizada('Serviços') ? esc(nomeAba('Serviços')) : 'Mão de obra especializada') + '</div><div class="grid">' + SERVICOS.filter(s => norm(s).includes(q)).map(s => `<article class="card"><div class="body"><div class="kicker">${esc(ROTULO)}</div><h3>${esc(s)}</h3>
       <p>Avaliação do ambiente, planejamento e execução conforme orçamento aprovado.</p>
       <button class="primary" data-act="quote" data-tipo="${esc(s)}">Solicitar orçamento</button></div></article>`).join('') + '</div>';
   } else if (page === 'Obras') {
     const w = OBRAS.filter(o => (cat === 'Todos' || cat === o.tipo) && norm(o.titulo + ' ' + o.local + ' ' + o.tipo).includes(q));
-    h = '<div class="sectiontitle">Obras realizadas</div>' + (w.length ? '<div class="grid">' + w.map(o => `<article class="card">${gallery(o, `data-act="obra" data-id="${o.id}"`)}
+    h = '<div class="sectiontitle">' + (abaPersonalizada('Obras') ? esc(nomeAba('Obras')) : 'Obras realizadas') + '</div>' + (w.length ? '<div class="grid">' + w.map(o => `<article class="card">${gallery(o, `data-act="obra" data-id="${o.id}"`)}
       <div class="body"><div class="kicker">${esc(o.tipo)}</div><h3>${esc(o.titulo)}</h3><p>📍 ${esc(o.local)}</p><p>${[o.area, o.prazo].filter(Boolean).map(esc).join(' · ')}</p>
       <button data-act="obra" data-id="${o.id}">Ver obra</button><button class="primary" data-act="quote" data-tipo="${esc(o.tipo)}" data-obra="${o.id}">Quero um resultado assim</button></div></article>`).join('') + '</div>'
       : '<div class="empty">Em breve, fotos das nossas obras por aqui.</div>');
